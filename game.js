@@ -79,8 +79,9 @@
   function buildingCount(landId) { return state.buildings.filter((building) => building.landId === landId).length; }
   function population() { return state.buildings.reduce((total, building) => total + BUILDINGS[building.type].people, 0); }
   function storedTax() { return state.buildings.reduce((total, building) => total + building.tax, 0); }
+  function workerIncomeMultiplier() { return 1 + (state.workers || 0) * 0.001; }
   function countCategory(category) { return state.buildings.filter((building) => BUILDINGS[building.type].category === category).length; }
-  function incomePerTick() { return state.buildings.reduce((total, building) => total + BUILDINGS[building.type].income, 0); }
+  function incomePerTick() { return state.buildings.reduce((total, building) => total + BUILDINGS[building.type].income, 0) * workerIncomeMultiplier(); }
   function missionProgress(mission) {
     if (!mission) return 0;
     if (mission.id === 'homes') return countCategory('residential');
@@ -255,7 +256,8 @@
       els.missionText.textContent = 'Crownvale의 전설이 시작됩니다.';
       els.missionProgress.style.width = '100%'; els.claimMission.disabled = true; els.claimMission.textContent = '완료';
     }
-    els.workerInfo.textContent = state.autoCollect ? '왕실 자동 수금이 모든 세금을 관리합니다.' : `수집자 ${state.workers}명 · 매 10초 건물 ${Math.min(state.workers, state.buildings.length)}채를 수금합니다.`;
+    const bonus = ((workerIncomeMultiplier() - 1) * 100).toFixed(1);
+    els.workerInfo.textContent = state.autoCollect ? `왕실 자동 수금 · 골드 수입 +${bonus}%` : `수집자 ${state.workers}명 · 골드 수입 +${bonus}% · 매 10초 건물 ${Math.min(state.workers, state.buildings.length)}채를 수금합니다.`;
     const item = selectedBuilding && BUILDINGS[selectedBuilding]; els.selectionName.textContent = item ? item.name : '건물을 선택하세요'; els.selectionMeta.textContent = item ? `${format(item.price)} 골드 · 현재 회전 ${state.rotation}°` : '건설 메뉴에서 건물을 선택';
   }
 
@@ -312,7 +314,8 @@
 
   function tick(now) {
     const dt = Math.min(.25,(now-lastTime)/1000); lastTime=now;
-    for (const building of state.buildings) { const item=BUILDINGS[building.type]; building.tax = Math.min(item.income*20, building.tax + item.income*dt/10); }
+    const multiplier = workerIncomeMultiplier();
+    for (const building of state.buildings) { const item=BUILDINGS[building.type]; building.tax = Math.min(item.income * 20 * multiplier, building.tax + item.income * multiplier * dt / 10); }
     autoTimer += dt;
     if (autoTimer >= 10) { autoTimer = 0; if (state.autoCollect) collectTax(false); else if (state.workers > 0) { const targets=state.buildings.slice(0,state.workers); const amount=targets.reduce((sum,b)=>sum+b.tax,0); targets.forEach((b)=>b.tax=0); state.cash+=amount; } save(true); updateUI(); }
     requestAnimationFrame(tick);
