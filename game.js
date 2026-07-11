@@ -40,7 +40,8 @@
   let lastTime = performance.now();
   let autoTimer = 0;
   let viewW = 0, viewH = 0, dpr = 1;
-  const camera = { x: 0, z: 0, yaw: -0.76, pitch: 0.66, zoom: 1220 };
+  // High bird's-eye view keeps every buildable tile visible at the start.
+  const camera = { x: 0, z: 0, yaw: -0.76, pitch: 1.12, zoom: 1460 };
   const hitTiles = [];
 
   function load() {
