@@ -24,6 +24,14 @@
     royalGarden: { name: '왕실 정원', icon: '🌳', category: 'landmark', price: 1080, income: 90, people: 5, body: '#83ad78', roof: '#3d7559', size: [16, 7, 14] },
   };
   const CATEGORIES = [{ id: 'all', name: '전체' }, { id: 'residential', name: '주거' }, { id: 'production', name: '생산' }, { id: 'landmark', name: '랜드마크' }];
+  const MISSIONS = [
+    { id: 'homes', title: '주거 건물 3채를 건설하세요', goal: 3, reward: 450 },
+    { id: 'lands', title: '새 영토 2곳을 확보하세요', goal: 5, reward: 700 },
+    { id: 'production', title: '생산 건물 2채를 건설하세요', goal: 2, reward: 900 },
+    { id: 'income', title: '10초 수입을 150으로 늘리세요', goal: 150, reward: 1200 },
+    { id: 'landmarks', title: '랜드마크 2개를 건설하세요', goal: 2, reward: 1600 },
+    { id: 'population', title: '주민 30명을 달성하세요', goal: 30, reward: 2200 },
+  ];
   const LANDS = [
     { id: 'core1', name: '왕실 들판', x: -96, z: -24, price: 0, owned: true },
     { id: 'core2', name: '햇살 초원', x: -48, z: -24, price: 0, owned: true },
@@ -36,7 +44,7 @@
     { id: 'pass3', name: '수호자의 언덕', x: 48, z: 24, price: 900, owned: false },
     { id: 'pass4', name: '황금 항구', x: 96, z: 24, price: 900, owned: false },
   ];
-  const START = { cash: 1000, owned: ['core1', 'core2', 'core3'], buildings: [], workers: 0, autoCollect: false, rotation: 0, missionClaimed: false };
+  const START = { cash: 1000, owned: ['core1', 'core2', 'core3'], buildings: [], workers: 0, autoCollect: false, rotation: 0, missionIndex: 0 };
   const storageKey = 'crownvale-browser-v1';
   let state = load();
   let selectedBuilding = null;
@@ -56,7 +64,11 @@
   function load() {
     try {
       const saved = JSON.parse(localStorage.getItem(storageKey));
-      if (saved && Array.isArray(saved.owned) && Array.isArray(saved.buildings)) return { ...START, ...saved };
+      if (saved && Array.isArray(saved.owned) && Array.isArray(saved.buildings)) {
+        const profile = { ...START, ...saved };
+        if (!Number.isInteger(saved.missionIndex)) profile.missionIndex = saved.missionClaimed ? 1 : 0;
+        return profile;
+      }
     } catch (_) { /* start a new kingdom */ }
     return structuredClone(START);
   }
@@ -67,6 +79,18 @@
   function buildingCount(landId) { return state.buildings.filter((building) => building.landId === landId).length; }
   function population() { return state.buildings.reduce((total, building) => total + BUILDINGS[building.type].people, 0); }
   function storedTax() { return state.buildings.reduce((total, building) => total + building.tax, 0); }
+  function countCategory(category) { return state.buildings.filter((building) => BUILDINGS[building.type].category === category).length; }
+  function incomePerTick() { return state.buildings.reduce((total, building) => total + BUILDINGS[building.type].income, 0); }
+  function missionProgress(mission) {
+    if (!mission) return 0;
+    if (mission.id === 'homes') return countCategory('residential');
+    if (mission.id === 'lands') return state.owned.length;
+    if (mission.id === 'production') return countCategory('production');
+    if (mission.id === 'income') return incomePerTick();
+    if (mission.id === 'landmarks') return countCategory('landmark');
+    if (mission.id === 'population') return population();
+    return 0;
+  }
 
   function resize() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -218,11 +242,19 @@
       button.innerHTML = `<span class="card-icon">${active?'🌿':'🔒'}</span><span><span class="card-title">${land.name}</span><span class="card-detail">${active ? `${buildingCount(land.id)} / 8 건물` : '새로운 건설 부지'}</span></span><b class="card-price">${active?'보유':`${format(land.price)} ✦`}</b>`;
       button.onclick = () => active ? (selectedLand=land.id, updateUI()) : purchaseLand(land.id); els.landList.append(button);
     });
-    const homes = state.buildings.filter((b) => BUILDINGS[b.type].category === 'residential').length, goal = 3;
-    els.missionTitle.textContent = state.missionClaimed ? 'Crownvale을 계속 성장시키세요' : `오두막 ${goal}채를 건설하세요`;
-    els.missionText.textContent = state.missionClaimed ? '보상 완료' : `${homes} / ${goal}`;
-    els.missionProgress.style.width = `${Math.min(100, homes/goal*100)}%`; els.claimMission.disabled = state.missionClaimed || homes < goal;
-    els.claimMission.textContent = state.missionClaimed ? '완료' : '보상 수령';
+    const mission = MISSIONS[state.missionIndex];
+    if (mission) {
+      const progress = missionProgress(mission);
+      els.missionTitle.textContent = mission.title;
+      els.missionText.textContent = `${Math.min(progress, mission.goal)} / ${mission.goal} · 보상 ${format(mission.reward)} 골드`;
+      els.missionProgress.style.width = `${Math.min(100, progress / mission.goal * 100)}%`;
+      els.claimMission.disabled = progress < mission.goal;
+      els.claimMission.textContent = `의뢰 ${state.missionIndex + 1}/${MISSIONS.length}`;
+    } else {
+      els.missionTitle.textContent = '모든 왕실 의뢰를 달성했습니다!';
+      els.missionText.textContent = 'Crownvale의 전설이 시작됩니다.';
+      els.missionProgress.style.width = '100%'; els.claimMission.disabled = true; els.claimMission.textContent = '완료';
+    }
     els.workerInfo.textContent = state.autoCollect ? '왕실 자동 수금이 모든 세금을 관리합니다.' : `수집자 ${state.workers}명 · 매 10초 건물 ${Math.min(state.workers, state.buildings.length)}채를 수금합니다.`;
     const item = selectedBuilding && BUILDINGS[selectedBuilding]; els.selectionName.textContent = item ? item.name : '건물을 선택하세요'; els.selectionMeta.textContent = item ? `${format(item.price)} 골드 · 현재 회전 ${state.rotation}°` : '건설 메뉴에서 건물을 선택';
   }
@@ -234,7 +266,12 @@
   $('#collectTax').onclick = () => collectTax();
   $('#hireWorker').onclick = () => { if (state.workers >= 5) return toast('수집자는 최대 5명입니다.'); if (state.cash < 600) return toast('골드가 부족합니다.'); state.cash -= 600; state.workers++; toast('새 세금 수집자가 도착했습니다.'); save(true); updateUI(); };
   $('#unlockAuto').onclick = () => { if (state.autoCollect) return toast('이미 왕실 자동 수금이 활성화되어 있습니다.'); if (state.cash < 1200) return toast('골드가 부족합니다.'); state.cash -= 1200; state.autoCollect = true; toast('왕실 자동 수금이 시작되었습니다.'); save(true); updateUI(); };
-  els.claimMission.onclick = () => { if (state.missionClaimed) return; state.cash += 450; state.missionClaimed = true; toast('왕실이 450 골드를 하사했습니다!'); save(true); updateUI(); };
+  els.claimMission.onclick = () => {
+    const mission = MISSIONS[state.missionIndex];
+    if (!mission || missionProgress(mission) < mission.goal) return;
+    state.cash += mission.reward; state.missionIndex++;
+    toast(`왕실이 ${format(mission.reward)} 골드를 하사했습니다!`); save(true); updateUI();
+  };
 
   function tileAtPoint(x, y) {
     return [...hitTiles].sort((a,b)=>a.depth-b.depth).find((entry) => pointInPolygon(x, y, entry.points));
