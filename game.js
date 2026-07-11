@@ -16,7 +16,12 @@
     warehouse: { name: '왕실 곡창고', icon: '🏰', category: 'production', price: 180, income: 14, people: 1, body: '#b88455', roof: '#5f4c4a', size: [10, 6, 12] },
     woodhouse: { name: '나무꾼의 집', icon: '🪵', category: 'residential', price: 280, income: 22, people: 3, body: '#a96f45', roof: '#6a4040', size: [12, 6, 8] },
     village: { name: '마을 저택', icon: '🏠', category: 'residential', price: 420, income: 34, people: 5, body: '#dfc27e', roof: '#69445c', size: [12, 7, 12] },
+    manor: { name: '귀족 저택', icon: '🏘️', category: 'residential', price: 760, income: 58, people: 9, body: '#d7b279', roof: '#5b496e', size: [16, 8, 12] },
+    farm: { name: '풍차 농장', icon: '🌾', category: 'production', price: 260, income: 26, people: 2, body: '#d7c384', roof: '#8b5b3d', size: [12, 6, 10] },
+    market: { name: '왕국 시장', icon: '🏪', category: 'production', price: 520, income: 48, people: 4, body: '#cf9160', roof: '#a94752', size: [14, 7, 12] },
     homestead: { name: '영주의 영지', icon: '🏛️', category: 'landmark', price: 650, income: 50, people: 8, body: '#c99459', roof: '#473e61', size: [16, 8, 12] },
+    watchtower: { name: '수호자 탑', icon: '🗼', category: 'landmark', price: 820, income: 68, people: 2, body: '#9ea5ab', roof: '#535a70', size: [9, 11, 9] },
+    royalGarden: { name: '왕실 정원', icon: '🌳', category: 'landmark', price: 1080, income: 90, people: 5, body: '#83ad78', roof: '#3d7559', size: [16, 7, 14] },
   };
   const CATEGORIES = [{ id: 'all', name: '전체' }, { id: 'residential', name: '주거' }, { id: 'production', name: '생산' }, { id: 'landmark', name: '랜드마크' }];
   const LANDS = [
@@ -213,7 +218,7 @@
       button.innerHTML = `<span class="card-icon">${active?'🌿':'🔒'}</span><span><span class="card-title">${land.name}</span><span class="card-detail">${active ? `${buildingCount(land.id)} / 8 건물` : '새로운 건설 부지'}</span></span><b class="card-price">${active?'보유':`${format(land.price)} ✦`}</b>`;
       button.onclick = () => active ? (selectedLand=land.id, updateUI()) : purchaseLand(land.id); els.landList.append(button);
     });
-    const homes = state.buildings.filter((b) => b.type !== 'warehouse').length, goal = 3;
+    const homes = state.buildings.filter((b) => BUILDINGS[b.type].category === 'residential').length, goal = 3;
     els.missionTitle.textContent = state.missionClaimed ? 'Crownvale을 계속 성장시키세요' : `오두막 ${goal}채를 건설하세요`;
     els.missionText.textContent = state.missionClaimed ? '보상 완료' : `${homes} / ${goal}`;
     els.missionProgress.style.width = `${Math.min(100, homes/goal*100)}%`; els.claimMission.disabled = state.missionClaimed || homes < goal;
