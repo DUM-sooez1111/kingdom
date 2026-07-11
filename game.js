@@ -41,7 +41,7 @@
   let autoTimer = 0;
   let viewW = 0, viewH = 0, dpr = 1;
   // High bird's-eye view keeps every buildable tile visible at the start.
-  const camera = { x: 0, z: 0, yaw: -0.76, pitch: 1.12, zoom: 1460 };
+  const camera = { x: 0, z: 0, yaw: -0.76, pitch: 1.12, zoom: 1050 };
   const hitTiles = [];
 
   function load() {
@@ -139,7 +139,6 @@
     for (const x of [-w*.25,w*.25]) box(local(x,-d/2-.12,h*.68+1), [1.25,1.3,.13], '#ffd16e', r);
   }
   function drawWorldArt() {
-    box({x:0,y:-2,z:0}, [340,2,220], '#2e8bb6');
     box({x:0,y:.65,z:0}, [242,.18,5], '#b7986f');
     for (const x of [-72,-24,24,72]) box({x,y:.65,z:0}, [4,.18,98], '#ad8e68');
     box({x:153,y:8,z:0}, [62,16,14], '#535e70');
@@ -149,7 +148,12 @@
     box({x:126,y:1,z:0}, [13,2,13], '#aeb8c3'); box({x:126,y:2.12,z:0}, [10,.25,10], '#5db7dc'); box({x:126,y:4,z:0}, [1.4,4,1.4], '#c9d3dd');
   }
   function render() {
-    ctx.clearRect(0,0,viewW,viewH); faces.length = 0; hitTiles.length = 0;
+    // The sea is intentionally a screen-space background. A giant 3D water
+    // plane cannot be depth-sorted correctly against every individual tile.
+    const water = ctx.createLinearGradient(0, 0, 0, viewH);
+    water.addColorStop(0, '#3b89ae'); water.addColorStop(1, '#236783');
+    ctx.fillStyle = water; ctx.fillRect(0, 0, viewW, viewH);
+    faces.length = 0; hitTiles.length = 0;
     drawWorldArt(); LANDS.forEach(drawLand); state.buildings.forEach(drawBuilding);
     faces.sort((a,b) => b.depth-a.depth);
     for (const face of faces) {
