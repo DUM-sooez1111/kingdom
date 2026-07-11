@@ -39,6 +39,7 @@
   let toastTimer = 0;
   let lastTime = performance.now();
   let autoTimer = 0;
+  let cameraDrag = null;
   let viewW = 0, viewH = 0, dpr = 1;
   // High bird's-eye view keeps every buildable tile visible at the start.
   const camera = { x: 0, z: 0, yaw: -0.76, pitch: 1.12, zoom: 1050 };
@@ -220,6 +221,26 @@
     const x = event.clientX, y = event.clientY;
     const tile = [...hitTiles].sort((a,b)=>a.depth-b.depth).find((entry) => pointInPolygon(x,y,entry.points));
     if (tile) buildOn(tile.id);
+  });
+  canvas.addEventListener('contextmenu', (event) => event.preventDefault());
+  canvas.addEventListener('pointerdown', (event) => {
+    if (event.button !== 2) return;
+    event.preventDefault();
+    cameraDrag = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
+    canvas.setPointerCapture(event.pointerId);
+  });
+  canvas.addEventListener('pointermove', (event) => {
+    if (!cameraDrag || event.pointerId !== cameraDrag.pointerId) return;
+    const dx = event.clientX - cameraDrag.x, dy = event.clientY - cameraDrag.y;
+    const speed = 0.07 * (1400 / camera.zoom);
+    const c = Math.cos(camera.yaw), s = Math.sin(camera.yaw);
+    camera.x += (-dx * c + dy * s) * speed;
+    camera.z += (dx * s + dy * c) * speed;
+    cameraDrag.x = event.clientX; cameraDrag.y = event.clientY;
+  });
+  canvas.addEventListener('pointerup', (event) => {
+    if (!cameraDrag || event.pointerId !== cameraDrag.pointerId) return;
+    canvas.releasePointerCapture(event.pointerId); cameraDrag = null;
   });
   canvas.addEventListener('wheel', (event) => { event.preventDefault(); camera.zoom = Math.max(700, Math.min(1900, camera.zoom - event.deltaY * .55)); }, { passive: false });
   window.addEventListener('keydown', (event) => { if (event.key.toLowerCase() === 'q') camera.yaw -= .08; if (event.key.toLowerCase() === 'e') camera.yaw += .08; if (event.key === 'Escape') { selectedBuilding = null; updateUI(); } });
