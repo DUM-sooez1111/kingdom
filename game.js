@@ -5,19 +5,20 @@
   const ctx = canvas.getContext('2d');
   const $ = (selector) => document.querySelector(selector);
   const els = {
-    cash: $('#cash'), population: $('#population'), buildingList: $('#buildingList'), landList: $('#landList'),
+    cash: $('#cash'), population: $('#population'), categoryList: $('#categoryList'), buildingList: $('#buildingList'), landList: $('#landList'),
     selectionName: $('#selectionName'), selectionMeta: $('#selectionMeta'), workerInfo: $('#workerInfo'),
     storedTax: $('#storedTax'), missionTitle: $('#missionTitle'), missionText: $('#missionText'),
     missionProgress: $('#missionProgress'), claimMission: $('#claimMission'), toast: $('#toast'),
   };
 
   const BUILDINGS = {
-    hut: { name: '농민 오두막', icon: '🏡', price: 100, income: 8, people: 2, body: '#d4bd83', roof: '#7e4745', size: [8, 5, 8] },
-    warehouse: { name: '왕실 곡창고', icon: '🏰', price: 180, income: 14, people: 1, body: '#b88455', roof: '#5f4c4a', size: [10, 6, 12] },
-    woodhouse: { name: '나무꾼의 집', icon: '🪵', price: 280, income: 22, people: 3, body: '#a96f45', roof: '#6a4040', size: [12, 6, 8] },
-    village: { name: '마을 저택', icon: '🏠', price: 420, income: 34, people: 5, body: '#dfc27e', roof: '#69445c', size: [12, 7, 12] },
-    homestead: { name: '영주의 영지', icon: '🏛️', price: 650, income: 50, people: 8, body: '#c99459', roof: '#473e61', size: [16, 8, 12] },
+    hut: { name: '농민 오두막', icon: '🏡', category: 'residential', price: 100, income: 8, people: 2, body: '#d4bd83', roof: '#7e4745', size: [8, 5, 8] },
+    warehouse: { name: '왕실 곡창고', icon: '🏰', category: 'production', price: 180, income: 14, people: 1, body: '#b88455', roof: '#5f4c4a', size: [10, 6, 12] },
+    woodhouse: { name: '나무꾼의 집', icon: '🪵', category: 'residential', price: 280, income: 22, people: 3, body: '#a96f45', roof: '#6a4040', size: [12, 6, 8] },
+    village: { name: '마을 저택', icon: '🏠', category: 'residential', price: 420, income: 34, people: 5, body: '#dfc27e', roof: '#69445c', size: [12, 7, 12] },
+    homestead: { name: '영주의 영지', icon: '🏛️', category: 'landmark', price: 650, income: 50, people: 8, body: '#c99459', roof: '#473e61', size: [16, 8, 12] },
   };
+  const CATEGORIES = [{ id: 'all', name: '전체' }, { id: 'residential', name: '주거' }, { id: 'production', name: '생산' }, { id: 'landmark', name: '랜드마크' }];
   const LANDS = [
     { id: 'core1', name: '왕실 들판', x: -96, z: -24, price: 0, owned: true },
     { id: 'core2', name: '햇살 초원', x: -48, z: -24, price: 0, owned: true },
@@ -34,6 +35,7 @@
   const storageKey = 'crownvale-browser-v1';
   let state = load();
   let selectedBuilding = null;
+  let selectedCategory = 'all';
   let selectedLand = 'core1';
   let activeTab = 'build';
   let toastTimer = 0;
@@ -189,7 +191,11 @@
 
   function updateUI() {
     els.cash.textContent = format(state.cash); els.population.textContent = format(population()); els.storedTax.textContent = format(storedTax());
-    els.buildingList.innerHTML = ''; Object.entries(BUILDINGS).forEach(([id,item]) => {
+    els.categoryList.innerHTML = ''; CATEGORIES.forEach((category) => {
+      const button = document.createElement('button'); button.className = `category-chip ${selectedCategory === category.id ? 'active' : ''}`; button.textContent = category.name;
+      button.onclick = () => { selectedCategory = category.id; updateUI(); }; els.categoryList.append(button);
+    });
+    els.buildingList.innerHTML = ''; Object.entries(BUILDINGS).filter(([, item]) => selectedCategory === 'all' || item.category === selectedCategory).forEach(([id,item]) => {
       const button = document.createElement('button'); button.className = `building-card ${selectedBuilding === id ? 'selected':''}`;
       button.innerHTML = `<span class="card-icon">${item.icon}</span><span><span class="card-title">${item.name}</span><span class="card-detail">+${item.income} / 10초 · 주민 ${item.people}</span></span><b class="card-price">${format(item.price)} ✦</b>`;
       button.onclick = () => { selectedBuilding = selectedBuilding === id ? null : id; state.rotation = 0; updateUI(); }; els.buildingList.append(button);
