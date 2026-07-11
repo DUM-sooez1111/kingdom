@@ -74,8 +74,10 @@
     const cp = Math.cos(camera.pitch), sp = Math.sin(camera.pitch);
     const rx = dx * cy - dz * sy;
     const rz = dx * sy + dz * cy;
-    const py = point.y * cp - rz * sp;
-    const depth = point.y * sp + rz * cp + 185;
+    // Rotate the world away from a camera above it: taller objects become
+    // closer and appear above their bases, rather than looking up from below.
+    const py = point.y * cp + rz * sp;
+    const depth = -point.y * sp + rz * cp + 185;
     const scale = camera.zoom / Math.max(50, depth);
     return { x: viewW * .5 + rx * scale, y: viewH * .57 - py * scale, depth };
   }
