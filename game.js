@@ -36,6 +36,7 @@
   let state = load();
   let selectedBuilding = null;
   let selectedCategory = 'all';
+  let hoveredLand = null;
   let selectedLand = 'core1';
   let activeTab = 'build';
   let toastTimer = 0;
@@ -94,11 +95,11 @@
   }
 
   const faces = [];
-  function addFace(vertices, color, outline = 'rgba(17,31,42,.33)') {
+  function addFace(vertices, color, outline = 'rgba(17,31,42,.33)', alpha = 1) {
     const points = vertices.map(project);
-    faces.push({ points, depth: points.reduce((sum, point) => sum + point.depth, 0) / points.length, color, outline });
+    faces.push({ points, depth: points.reduce((sum, point) => sum + point.depth, 0) / points.length, color, outline, alpha });
   }
-  function box(center, size, color, rotation = 0) {
+  function box(center, size, color, rotation = 0, alpha = 1) {
     const [sx, sy, sz] = size; const x = sx / 2, y = sy / 2, z = sz / 2;
     const vertices = [
       { x: center.x - x, y: center.y - y, z: center.z - z }, { x: center.x + x, y: center.y - y, z: center.z - z },
@@ -106,15 +107,15 @@
       { x: center.x - x, y: center.y + y, z: center.z - z }, { x: center.x + x, y: center.y + y, z: center.z - z },
       { x: center.x + x, y: center.y + y, z: center.z + z }, { x: center.x - x, y: center.y + y, z: center.z + z },
     ].map((point) => rotation ? rotatePoint(point, center, rotation) : point);
-    [[0,1,2,3,-22], [0,4,5,1,-12], [1,5,6,2,2], [2,6,7,3,13], [3,7,4,0,-5], [4,7,6,5,22]].forEach(([a,b,c,d,tint]) => addFace([vertices[a],vertices[b],vertices[c],vertices[d]], shade(color, tint)));
+    [[0,1,2,3,-22], [0,4,5,1,-12], [1,5,6,2,2], [2,6,7,3,13], [3,7,4,0,-5], [4,7,6,5,22]].forEach(([a,b,c,d,tint]) => addFace([vertices[a],vertices[b],vertices[c],vertices[d]], shade(color, tint), undefined, alpha));
   }
-  function prism(center, width, depth, eaveY, ridgeY, color, rotation = 0) {
+  function prism(center, width, depth, eaveY, ridgeY, color, rotation = 0, alpha = 1) {
     const base = [
       { x: center.x - width/2, y: eaveY, z: center.z - depth/2 }, { x: center.x, y: ridgeY, z: center.z - depth/2 }, { x: center.x + width/2, y: eaveY, z: center.z - depth/2 },
       { x: center.x - width/2, y: eaveY, z: center.z + depth/2 }, { x: center.x, y: ridgeY, z: center.z + depth/2 }, { x: center.x + width/2, y: eaveY, z: center.z + depth/2 },
     ].map((point) => rotation ? rotatePoint(point, center, rotation) : point);
-    addFace([base[0],base[1],base[4],base[3]], shade(color, -8)); addFace([base[1],base[2],base[5],base[4]], shade(color, 14));
-    addFace([base[0],base[2],base[1]], shade(color, 4)); addFace([base[3],base[4],base[5]], shade(color, 25));
+    addFace([base[0],base[1],base[4],base[3]], shade(color, -8), undefined, alpha); addFace([base[1],base[2],base[5],base[4]], shade(color, 14), undefined, alpha);
+    addFace([base[0],base[2],base[1]], shade(color, 4), undefined, alpha); addFace([base[3],base[4],base[5]], shade(color, 25), undefined, alpha);
   }
   function pyramid(center, size, color) {
     const h = size * 1.5, r = size * .62;
@@ -130,16 +131,17 @@
     const top = [{x:land.x-23.7,y:.58,z:land.z-23.7},{x:land.x+23.7,y:.58,z:land.z-23.7},{x:land.x+23.7,y:.58,z:land.z+23.7},{x:land.x-23.7,y:.58,z:land.z+23.7}].map(project);
     hitTiles.push({ id: land.id, points: top, depth: top.reduce((sum,p)=>sum+p.depth,0)/4 });
   }
-  function drawBuilding(building) {
+  function drawBuilding(building, isGhost = false) {
     const item = BUILDINGS[building.type]; const [w,h,d] = item.size; const position = { x: building.x, y: 1, z: building.z };
-    box({ x: position.x, y: 1.45, z: position.z }, [w, .8, d], '#68717c', building.rotation);
-    box({ x: position.x, y: 1.8 + h/2, z: position.z }, [w-.55,h,d-.55], item.body, building.rotation);
-    prism(position, w+1, d+1, h+1.55, h+4, item.roof, building.rotation);
+    const alpha = isGhost ? .42 : 1;
+    box({ x: position.x, y: 1.45, z: position.z }, [w, .8, d], isGhost ? '#65d7a7' : '#68717c', building.rotation, alpha);
+    box({ x: position.x, y: 1.8 + h/2, z: position.z }, [w-.55,h,d-.55], isGhost ? '#65d7a7' : item.body, building.rotation, alpha);
+    prism(position, w+1, d+1, h+1.55, h+4, isGhost ? '#35a977' : item.roof, building.rotation, alpha);
     const r = building.rotation, c = Math.cos(r), s = Math.sin(r);
     const local = (x,z,y) => ({ x:position.x+x*c-z*s, y, z:position.z+x*s+z*c });
-    for (const x of [-w*.37,w*.37]) for (const z of [-d*.37,d*.37]) box(local(x,z,h/2+1.8), [.3,h+1.1,.3], '#5c392a', r);
-    const door = local(0,-d/2-.04,3); box(door, [1.8,3.3,.18], '#513322', r);
-    for (const x of [-w*.25,w*.25]) box(local(x,-d/2-.12,h*.68+1), [1.25,1.3,.13], '#ffd16e', r);
+    for (const x of [-w*.37,w*.37]) for (const z of [-d*.37,d*.37]) box(local(x,z,h/2+1.8), [.3,h+1.1,.3], isGhost ? '#d4fff0' : '#5c392a', r, alpha);
+    const door = local(0,-d/2-.04,3); box(door, [1.8,3.3,.18], isGhost ? '#d4fff0' : '#513322', r, alpha);
+    for (const x of [-w*.25,w*.25]) box(local(x,-d/2-.12,h*.68+1), [1.25,1.3,.13], isGhost ? '#e8fff7' : '#ffd16e', r, alpha);
   }
   function drawWorldArt() {
     box({x:0,y:.65,z:0}, [242,.18,5], '#b7986f');
@@ -158,11 +160,17 @@
     ctx.fillStyle = water; ctx.fillRect(0, 0, viewW, viewH);
     faces.length = 0; hitTiles.length = 0;
     drawWorldArt(); LANDS.forEach(drawLand); state.buildings.forEach(drawBuilding);
+    const previewLand = selectedBuilding && hoveredLand && LANDS.find((land) => land.id === hoveredLand);
+    if (previewLand && owned(previewLand)) {
+      const slot = slotsFor(previewLand)[buildingCount(previewLand.id)];
+      if (slot) drawBuilding({ type: selectedBuilding, x: slot.x, z: slot.z, rotation: state.rotation }, true);
+    }
     faces.sort((a,b) => b.depth-a.depth);
     for (const face of faces) {
       ctx.beginPath(); face.points.forEach((point,index) => index ? ctx.lineTo(point.x,point.y) : ctx.moveTo(point.x,point.y)); ctx.closePath();
-      ctx.fillStyle = face.color; ctx.fill(); ctx.strokeStyle = face.outline; ctx.lineWidth = 1; ctx.stroke();
+      ctx.globalAlpha = face.alpha; ctx.fillStyle = face.color; ctx.fill(); ctx.strokeStyle = face.outline; ctx.lineWidth = 1; ctx.stroke();
     }
+    ctx.globalAlpha = 1;
     requestAnimationFrame(render);
   }
 
@@ -223,9 +231,11 @@
   $('#unlockAuto').onclick = () => { if (state.autoCollect) return toast('이미 왕실 자동 수금이 활성화되어 있습니다.'); if (state.cash < 1200) return toast('골드가 부족합니다.'); state.cash -= 1200; state.autoCollect = true; toast('왕실 자동 수금이 시작되었습니다.'); save(true); updateUI(); };
   els.claimMission.onclick = () => { if (state.missionClaimed) return; state.cash += 450; state.missionClaimed = true; toast('왕실이 450 골드를 하사했습니다!'); save(true); updateUI(); };
 
+  function tileAtPoint(x, y) {
+    return [...hitTiles].sort((a,b)=>a.depth-b.depth).find((entry) => pointInPolygon(x, y, entry.points));
+  }
   canvas.addEventListener('click', (event) => {
-    const x = event.clientX, y = event.clientY;
-    const tile = [...hitTiles].sort((a,b)=>a.depth-b.depth).find((entry) => pointInPolygon(x,y,entry.points));
+    const tile = tileAtPoint(event.clientX, event.clientY);
     if (tile) buildOn(tile.id);
   });
   canvas.addEventListener('contextmenu', (event) => event.preventDefault());
@@ -236,7 +246,12 @@
     canvas.setPointerCapture(event.pointerId);
   });
   canvas.addEventListener('pointermove', (event) => {
-    if (!cameraDrag || event.pointerId !== cameraDrag.pointerId) return;
+    if (!cameraDrag || event.pointerId !== cameraDrag.pointerId) {
+      const tile = tileAtPoint(event.clientX, event.clientY);
+      hoveredLand = selectedBuilding && tile ? tile.id : null;
+      canvas.style.cursor = selectedBuilding && tile ? 'crosshair' : 'default';
+      return;
+    }
     const dx = event.clientX - cameraDrag.x, dy = event.clientY - cameraDrag.y;
     const speed = 0.07 * (1400 / camera.zoom);
     const c = Math.cos(camera.yaw), s = Math.sin(camera.yaw);
@@ -248,6 +263,7 @@
     if (!cameraDrag || event.pointerId !== cameraDrag.pointerId) return;
     canvas.releasePointerCapture(event.pointerId); cameraDrag = null;
   });
+  canvas.addEventListener('pointerleave', () => { if (!cameraDrag) hoveredLand = null; });
   canvas.addEventListener('wheel', (event) => { event.preventDefault(); camera.zoom = Math.max(700, Math.min(1900, camera.zoom - event.deltaY * .55)); }, { passive: false });
   window.addEventListener('keydown', (event) => { if (event.key.toLowerCase() === 'q') camera.yaw -= .08; if (event.key.toLowerCase() === 'e') camera.yaw += .08; if (event.key === 'Escape') { selectedBuilding = null; updateUI(); } });
   function pointInPolygon(x,y,points) { let inside=false; for(let i=0,j=points.length-1;i<points.length;j=i++) { const a=points[i],b=points[j]; if (((a.y>y)!==(b.y>y)) && (x < (b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x)) inside=!inside; } return inside; }
