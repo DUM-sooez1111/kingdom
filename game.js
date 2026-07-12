@@ -173,7 +173,9 @@
   }
   function drawBuilding(building, isGhost = false) {
     const item = BUILDINGS[building.type]; const [w,h,d] = item.size; const position = { x: building.x, y: 1, z: building.z };
-    const alpha = isGhost ? .42 : 1;
+    // The placement preview uses the same solid model as the finished building
+    // so overlapping translucent roof faces never make it look broken.
+    const alpha = 1;
     box({ x: position.x, y: 1.45, z: position.z }, [w, .8, d], '#68717c', building.rotation, alpha);
     box({ x: position.x, y: 1.8 + h/2, z: position.z }, [w-.55,h,d-.55], item.body, building.rotation, alpha);
     prism(position, w+1, d+1, h+1.55, h+4, item.roof, building.rotation, alpha);
