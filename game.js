@@ -166,14 +166,14 @@
   function drawBuilding(building, isGhost = false) {
     const item = BUILDINGS[building.type]; const [w,h,d] = item.size; const position = { x: building.x, y: 1, z: building.z };
     const alpha = isGhost ? .42 : 1;
-    box({ x: position.x, y: 1.45, z: position.z }, [w, .8, d], isGhost ? '#65d7a7' : '#68717c', building.rotation, alpha);
-    box({ x: position.x, y: 1.8 + h/2, z: position.z }, [w-.55,h,d-.55], isGhost ? '#65d7a7' : item.body, building.rotation, alpha);
-    prism(position, w+1, d+1, h+1.55, h+4, isGhost ? '#35a977' : item.roof, building.rotation, alpha);
+    box({ x: position.x, y: 1.45, z: position.z }, [w, .8, d], '#68717c', building.rotation, alpha);
+    box({ x: position.x, y: 1.8 + h/2, z: position.z }, [w-.55,h,d-.55], item.body, building.rotation, alpha);
+    prism(position, w+1, d+1, h+1.55, h+4, item.roof, building.rotation, alpha);
     const r = building.rotation, c = Math.cos(r), s = Math.sin(r);
     const local = (x,z,y) => ({ x:position.x+x*c-z*s, y, z:position.z+x*s+z*c });
-    for (const x of [-w*.37,w*.37]) for (const z of [-d*.37,d*.37]) box(local(x,z,h/2+1.8), [.3,h+1.1,.3], isGhost ? '#d4fff0' : '#5c392a', r, alpha);
-    const door = local(0,-d/2-.04,3); box(door, [1.8,3.3,.18], isGhost ? '#d4fff0' : '#513322', r, alpha);
-    for (const x of [-w*.25,w*.25]) box(local(x,-d/2-.12,h*.68+1), [1.25,1.3,.13], isGhost ? '#e8fff7' : '#ffd16e', r, alpha);
+    for (const x of [-w*.37,w*.37]) for (const z of [-d*.37,d*.37]) box(local(x,z,h/2+1.8), [.3,h+1.1,.3], '#5c392a', r, alpha);
+    const door = local(0,-d/2-.04,3); box(door, [1.8,3.3,.18], '#513322', r, alpha);
+    for (const x of [-w*.25,w*.25]) box(local(x,-d/2-.12,h*.68+1), [1.25,1.3,.13], '#ffd16e', r, alpha);
     if (isGhost) return;
     if (building.type === 'farm') {
       box(local(0, .2, h + 3.2), [.55, 5.4, .55], '#8c6544', r);
