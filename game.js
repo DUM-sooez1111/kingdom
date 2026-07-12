@@ -92,6 +92,7 @@
   }
   function save(silent = false) { localStorage.setItem(storageKey, JSON.stringify(state)); if (!silent) toast('왕국 기록을 저장했습니다.'); }
   function format(value) { return Math.floor(value).toLocaleString('ko-KR'); }
+  function formatTax(value) { return value.toLocaleString('ko-KR', { maximumFractionDigits: 1 }); }
   function toast(message) { clearTimeout(toastTimer); els.toast.textContent = message; els.toast.classList.add('show'); toastTimer = setTimeout(() => els.toast.classList.remove('show'), 2600); }
   function owned(land) { return state.owned.includes(land.id); }
   function buildingCount(landId) { return state.buildings.filter((building) => building.landId === landId).length; }
@@ -400,7 +401,7 @@
   }
 
   function updateUI() {
-    els.cash.textContent = format(state.cash); els.population.textContent = format(population()); els.rebirths.textContent = format(state.rebirths || 0); els.storedTax.textContent = format(storedTax());
+    els.cash.textContent = format(state.cash); els.population.textContent = format(population()); els.rebirths.textContent = format(state.rebirths || 0); els.storedTax.textContent = formatTax(storedTax());
     const rebirthNeed = rebirthRequirements(), rebirthButton = $('#rebirthButton');
     rebirthButton.textContent = `♛ ${format(rebirthNeed.cash)}G · ${rebirthNeed.lands}땅`;
     rebirthButton.title = `다음 환생: ${format(rebirthNeed.cash)} 골드 · 주민 ${rebirthNeed.population}명 · 영토 ${rebirthNeed.lands}곳`;
@@ -510,6 +511,7 @@
     worldTime += dt;
     const multiplier = workerIncomeMultiplier();
     for (const building of state.buildings) { const item=BUILDINGS[building.type]; building.tax = Math.min(item.income * 20 * multiplier, building.tax + item.income * multiplier * dt / 10); }
+    els.storedTax.textContent = formatTax(storedTax());
     autoTimer += dt;
     const move = 18 * dt * (1400 / camera.zoom), c = Math.cos(camera.yaw), s = Math.sin(camera.yaw);
     if (pressedKeys.has('w')) { camera.x += s * move; camera.z += c * move; }
