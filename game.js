@@ -50,12 +50,14 @@
   let selectedBuilding = null;
   let selectedCategory = 'all';
   let hoveredLand = null;
+  let hoveredPlacement = null;
   let deleteMode = false;
   let selectedLand = 'core1';
   let activeTab = 'build';
   let toastTimer = 0;
   let lastTime = performance.now();
   let autoTimer = 0;
+  let worldTime = 0;
   let cameraDrag = null;
   let viewW = 0, viewH = 0, dpr = 1;
   // High bird's-eye view keeps every buildable tile visible at the start.
@@ -115,6 +117,41 @@
     const depth = -point.y * sp + rz * cp + 185;
     const scale = camera.zoom / Math.max(50, depth);
     return { x: viewW * .5 + rx * scale, y: viewH * .57 - py * scale, depth };
+  }
+  function screenToGround(screenX, screenY, groundY = .7) {
+    const cy = Math.cos(camera.yaw), sy = Math.sin(camera.yaw);
+    const cp = Math.cos(camera.pitch), sp = Math.sin(camera.pitch);
+    const q = (viewH * .57 - screenY) / camera.zoom;
+    const denominator = q * cp - sp;
+    if (Math.abs(denominator) < .0001) return null;
+    const rz = (groundY * cp + q * groundY * sp - q * 185) / denominator;
+    const depth = -groundY * sp + rz * cp + 185;
+    const rx = (screenX - viewW * .5) * depth / camera.zoom;
+    return { x: camera.x + rx * cy + rz * sy, z: camera.z - rx * sy + rz * cy };
+  }
+  function landAtWorld(position) {
+    return LANDS.find((land) => Math.abs(position.x - land.x) <= 24 && Math.abs(position.z - land.z) <= 24);
+  }
+  function footprint(item, rotation) {
+    const turn = Math.round((rotation || 0) / 90) % 2;
+    return turn ? [item.size[2], item.size[0]] : [item.size[0], item.size[2]];
+  }
+  function placementFromScreen(screenX, screenY) {
+    if (!selectedBuilding) return null;
+    const world = screenToGround(screenX, screenY), item = BUILDINGS[selectedBuilding];
+    const land = world && landAtWorld(world);
+    if (!land || !owned(land)) return null;
+    const [width, depth] = footprint(item, state.rotation);
+    const snap = (value) => Math.round(value / 4) * 4;
+    const margin = 1;
+    const x = Math.max(land.x - 24 + width * .5 + margin, Math.min(land.x + 24 - width * .5 - margin, snap(world.x)));
+    const z = Math.max(land.z - 24 + depth * .5 + margin, Math.min(land.z + 24 - depth * .5 - margin, snap(world.z)));
+    const occupied = state.buildings.some((building) => {
+      if (building.landId !== land.id) return false;
+      const [otherWidth, otherDepth] = footprint(BUILDINGS[building.type], building.rotation);
+      return Math.abs(x - building.x) < (width + otherWidth) * .5 + .6 && Math.abs(z - building.z) < (depth + otherDepth) * .5 + .6;
+    });
+    return { landId: land.id, x, z, valid: !occupied };
   }
   function rotatePoint(point, center, angle) {
     const c = Math.cos(angle), s = Math.sin(angle), x = point.x - center.x, z = point.z - center.z;
@@ -201,7 +238,8 @@
     }
     const colors = ['#f1b36e', '#86c8d8', '#e8899b'];
     for (let i = 0; i < Math.min(item.people, 3); i++) {
-      const x = (i - 1) * 1.35, z = d*.58 + .9;
+      const phase = worldTime * .75 + i * 2.2 + (building.id ? building.id.charCodeAt(0) % 7 : 0);
+      const x = Math.cos(phase) * w * .34, z = Math.sin(phase) * d * .34;
       box(local(x, z, 1.7), [.5, 1.5, .5], colors[i], r);
       box(local(x, z, 2.6), [.62, .42, .62], '#f4c7a0', r);
     }
@@ -225,10 +263,9 @@
     faceLayer = 0; LANDS.forEach(drawLand);
     faceLayer = 1; drawWorldArt(); LANDS.forEach(drawLandBorder);
     faceLayer = 2; state.buildings.forEach(drawBuilding);
-    const previewLand = selectedBuilding && hoveredLand && LANDS.find((land) => land.id === hoveredLand);
-    if (previewLand && owned(previewLand)) {
-      const slot = slotsFor(previewLand)[buildingCount(previewLand.id)];
-      if (slot) { faceLayer = 3; drawBuilding({ type: selectedBuilding, x: slot.x, z: slot.z, rotation: state.rotation }, true); }
+    if (hoveredPlacement && hoveredPlacement.valid && selectedBuilding) {
+      faceLayer = 3;
+      drawBuilding({ type: selectedBuilding, x: hoveredPlacement.x, z: hoveredPlacement.z, rotation: state.rotation }, true);
     }
     faces.sort((a,b) => a.layer - b.layer || b.depth - a.depth);
     for (const face of faces) {
@@ -242,15 +279,16 @@
   function slotsFor(land) {
     return [[-13,-13],[1,-13],[13,-13],[-13,3],[1,3],[13,3],[-7,14],[8,14]].map(([x,z]) => ({x:land.x+x,z:land.z+z}));
   }
-  function buildOn(landId) {
-    if (!selectedBuilding) { selectedLand = landId; updateUI(); return; }
-    const land = LANDS.find((entry) => entry.id === landId), item = BUILDINGS[selectedBuilding];
+  function buildOn(placement) {
+    if (!selectedBuilding) return;
+    const land = placement && LANDS.find((entry) => entry.id === placement.landId), item = BUILDINGS[selectedBuilding];
+    if (!placement || !land || !placement.valid) return toast('소유한 토지의 빈 위치를 선택하세요.');
     if (!owned(land)) return toast('먼저 이 영토를 구매해야 합니다.');
     if (state.cash < item.price) return toast('골드가 부족합니다.');
-    const slot = slotsFor(land)[buildingCount(landId)];
+    const slot = placement && placement.valid ? placement : null;
     if (!slot) return toast('이 영토는 이미 가득 찼습니다.');
-    state.cash -= item.price; state.buildings.push({ id: crypto.randomUUID(), type: selectedBuilding, landId, x: slot.x, z: slot.z, rotation: state.rotation, tax: 0 });
-    selectedBuilding = null; hoveredLand = null;
+    state.cash -= item.price; state.buildings.push({ id: crypto.randomUUID(), type: selectedBuilding, landId: land.id, x: slot.x, z: slot.z, rotation: state.rotation, tax: 0 });
+    selectedBuilding = null; hoveredLand = null; hoveredPlacement = null;
     toast(`${item.name}이(가) 실루엣 위치에 설치되었습니다.`); save(true); updateUI();
   }
   function deleteOn(landId) {
@@ -342,7 +380,9 @@
   }
   canvas.addEventListener('click', (event) => {
     const tile = tileAtPoint(event.clientX, event.clientY);
-    if (tile) (deleteMode ? deleteOn : buildOn)(tile.id);
+    if (deleteMode) { if (tile) deleteOn(tile.id); return; }
+    if (selectedBuilding) { buildOn(placementFromScreen(event.clientX, event.clientY)); return; }
+    if (tile) { selectedLand = tile.id; updateUI(); }
   });
   canvas.addEventListener('contextmenu', (event) => event.preventDefault());
   canvas.addEventListener('pointerdown', (event) => {
@@ -353,9 +393,9 @@
   });
   canvas.addEventListener('pointermove', (event) => {
     if (!cameraDrag || event.pointerId !== cameraDrag.pointerId) {
-      const tile = tileAtPoint(event.clientX, event.clientY);
-      hoveredLand = selectedBuilding && tile ? tile.id : null;
-      canvas.style.cursor = selectedBuilding && tile ? 'crosshair' : 'default';
+      hoveredPlacement = placementFromScreen(event.clientX, event.clientY);
+      hoveredLand = hoveredPlacement ? hoveredPlacement.landId : null;
+      canvas.style.cursor = selectedBuilding ? (hoveredPlacement && hoveredPlacement.valid ? 'crosshair' : 'not-allowed') : 'default';
       return;
     }
     const dx = event.clientX - cameraDrag.x, dy = event.clientY - cameraDrag.y;
@@ -369,7 +409,7 @@
     if (!cameraDrag || event.pointerId !== cameraDrag.pointerId) return;
     canvas.releasePointerCapture(event.pointerId); cameraDrag = null;
   });
-  canvas.addEventListener('pointerleave', () => { if (!cameraDrag) hoveredLand = null; });
+  canvas.addEventListener('pointerleave', () => { if (!cameraDrag) { hoveredLand = null; hoveredPlacement = null; } });
   canvas.addEventListener('wheel', (event) => { event.preventDefault(); camera.zoom = Math.max(700, Math.min(1900, camera.zoom - event.deltaY * .55)); }, { passive: false });
   window.addEventListener('keydown', (event) => {
     const key = event.key.toLowerCase();
@@ -382,6 +422,7 @@
 
   function tick(now) {
     const dt = Math.min(.25,(now-lastTime)/1000); lastTime=now;
+    worldTime += dt;
     const multiplier = workerIncomeMultiplier();
     for (const building of state.buildings) { const item=BUILDINGS[building.type]; building.tax = Math.min(item.income * 20 * multiplier, building.tax + item.income * multiplier * dt / 10); }
     autoTimer += dt;
