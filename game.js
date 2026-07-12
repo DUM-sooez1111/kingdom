@@ -5,7 +5,7 @@
   const ctx = canvas.getContext('2d');
   const $ = (selector) => document.querySelector(selector);
   const els = {
-    cash: $('#cash'), population: $('#population'), rebirths: $('#rebirths'), categoryList: $('#categoryList'), buildingList: $('#buildingList'), landList: $('#landList'),
+    cash: $('#cash'), population: $('#population'), rebirths: $('#rebirths'), year: $('#year'), categoryList: $('#categoryList'), buildingList: $('#buildingList'), landList: $('#landList'),
     selectionName: $('#selectionName'), selectionMeta: $('#selectionMeta'), workerInfo: $('#workerInfo'),
     storedTax: $('#storedTax'), missionTitle: $('#missionTitle'), missionText: $('#missionText'),
     missionProgress: $('#missionProgress'), claimMission: $('#claimMission'), toast: $('#toast'),
@@ -58,7 +58,7 @@
     { id: 'south4', name: '바람개비 언덕', x: 48, z: 72, price: 1250, owned: false },
     { id: 'south5', name: '황혼의 벌판', x: 96, z: 72, price: 1400, owned: false },
   ];
-  const START = { cash: 1000, owned: ['core1', 'core2', 'core3'], buildings: [], workers: 0, autoCollect: false, rotation: 0, rotationStep: 45, missionIndex: 0, rebirths: 0 };
+  const START = { cash: 1000, owned: ['core1', 'core2', 'core3'], buildings: [], workers: 0, autoCollect: false, rotation: 0, rotationStep: 45, missionIndex: 0, rebirths: 0, year: 1 };
   const storageKey = 'crownvale-browser-v1';
   let state = load();
   let selectedBuilding = null;
@@ -374,9 +374,9 @@
     if (state.cash < requiredCash || population() < requiredPopulation || state.owned.length < requiredLands) return toast(`환생에는 ${format(requiredCash)} 골드 · 주민 ${requiredPopulation}명 · 영토 ${requiredLands}곳이 필요합니다.`);
     if (!window.confirm('환생하면 왕국의 건물과 영토가 초기화됩니다. 대신 모든 골드 수입이 영구적으로 10% 증가하고 건물이 발전합니다. 계속할까요?')) return;
     const rebirths = (state.rebirths || 0) + 1;
-    state = { ...structuredClone(START), rebirths };
+    state = { ...structuredClone(START), rebirths, year: (state.year || 1) + 1 };
     selectedBuilding = null; selectedLand = 'core1'; deleteMode = false;
-    toast(`환생 완료! 수입 +${rebirths * 10}% · 건물 발전 단계 ${Math.min(3, rebirths)}단계`); save(true); updateUI();
+    toast(`환생 완료! 왕국력 ${state.year}년 · 수입 +${rebirths * 10}% · 건물 발전 ${Math.min(3, rebirths)}단계`); save(true); updateUI();
   }
   function purchaseLand(id) {
     const land = LANDS.find((entry) => entry.id === id); if (owned(land)) return;
@@ -401,7 +401,7 @@
   }
 
   function updateUI() {
-    els.cash.textContent = format(state.cash); els.population.textContent = format(population()); els.rebirths.textContent = format(state.rebirths || 0); els.storedTax.textContent = formatTax(storedTax());
+    els.cash.textContent = format(state.cash); els.population.textContent = format(population()); els.rebirths.textContent = format(state.rebirths || 0); els.year.textContent = `${state.year || 1}년`; els.storedTax.textContent = formatTax(storedTax());
     const rebirthNeed = rebirthRequirements(), rebirthButton = $('#rebirthButton');
     rebirthButton.textContent = `♛ ${format(rebirthNeed.cash)}G · ${rebirthNeed.lands}땅`;
     rebirthButton.title = `다음 환생: ${format(rebirthNeed.cash)} 골드 · 주민 ${rebirthNeed.population}명 · 영토 ${rebirthNeed.lands}곳`;
