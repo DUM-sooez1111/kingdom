@@ -17,6 +17,7 @@
           <div class="resource"><span>⌂</span><strong id="population">0</strong><small>주민</small></div>
           <div class="resource"><span>♛</span><strong id="rebirths">0</strong><small>환생</small></div>
           <div class="resource"><span>⌛</span><strong id="year">1년</strong><small>왕국력</small></div>
+          <div class="resource"><span>🧪</span><strong id="researchTokens">0</strong><small>연구 토큰</small></div>
           <button id="saveButton" class="icon-button" title="저장">▣</button>
         </div>
       </header>
@@ -29,10 +30,11 @@
         <section class="hint-card glass"><b>카메라 조작</b><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 이동 · <kbd>Q</kbd> <kbd>E</kbd> 회전 · 휠 확대/축소</span><span>좌클릭은 건설/선택 전용 · 우클릭 드래그도 이동</span></section>
       </aside>
       <aside class="right-column glass">
-        <div class="panel-tabs" role="tablist"><button class="tab active" data-tab="build">건설</button><button class="tab" data-tab="land">영토</button><button class="tab" data-tab="workers">노동자</button></div>
+        <div class="panel-tabs" role="tablist"><button class="tab active" data-tab="build">건설</button><button class="tab" data-tab="land">영토</button><button class="tab" data-tab="workers">노동자</button><button class="tab" data-tab="research">연구</button></div>
         <div id="buildPanel" class="panel active"><p class="panel-note">건물을 선택한 뒤 소유 토지의 원하는 위치를 클릭하세요.</p><p id="unlockInfo" class="panel-note unlock-note"></p><div id="categoryList" class="category-list"></div><div id="buildingList" class="building-list"></div></div>
         <div id="landPanel" class="panel"><p class="panel-note">어두운 영토를 선택해 왕국을 확장하세요.</p><div id="landList" class="land-list"></div></div>
         <div id="workersPanel" class="panel"><div class="worker-art">♜</div><h3>세금 수집대</h3><p id="workerInfo">수집자 0명 · 매 10초 건물 0채를 수금합니다.</p><button id="hireWorker" class="primary">수집자 고용 <span>600 골드</span></button><button id="unlockAuto" class="secondary">왕실 자동 수금 <span>1,200 골드</span></button><button id="collectTax" class="collect">쌓인 세금 수금 <b id="storedTax">0</b></button></div>
+        <div id="researchPanel" class="panel"><div class="research-art">🔬</div><h3>왕실 연구소</h3><p id="researchInfo">연구를 수행해 연구 토큰을 획득하세요.</p><button id="conductResearch" class="primary">연구 수행 <span>450 골드</span></button><p class="panel-note">최신식 건물일수록 더 많은 연구 토큰이 필요하지만 세금 수입도 크게 증가합니다.</p></div>
       </aside>
       <section class="bottom-bar glass"><div class="selection"><span class="selection-label">선택</span><strong id="selectionName">건물을 선택하세요</strong><span id="selectionMeta">토지를 클릭해 배치</span></div><select id="rotationStep" class="rotation-select" title="회전 각도"><option value="15">15°</option><option value="30">30°</option><option value="45" selected>45°</option><option value="90">90°</option></select><button id="rotateButton" class="secondary compact">↻ 회전</button><button id="deleteButton" class="danger compact">삭제</button><button id="rebirthButton" class="secondary compact">♛ 환생</button><button id="cancelButton" class="secondary compact">취소</button></section>
       <div id="toast" role="status"></div>

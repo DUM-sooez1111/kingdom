@@ -5,9 +5,9 @@
   const ctx = canvas.getContext('2d');
   const $ = (selector) => document.querySelector(selector);
   const els = {
-    cash: $('#cash'), population: $('#population'), rebirths: $('#rebirths'), year: $('#year'), categoryList: $('#categoryList'), buildingList: $('#buildingList'), landList: $('#landList'),
+    cash: $('#cash'), population: $('#population'), rebirths: $('#rebirths'), year: $('#year'), researchTokens: $('#researchTokens'), categoryList: $('#categoryList'), buildingList: $('#buildingList'), landList: $('#landList'),
     selectionName: $('#selectionName'), selectionMeta: $('#selectionMeta'), workerInfo: $('#workerInfo'),
-    storedTax: $('#storedTax'), missionTitle: $('#missionTitle'), missionText: $('#missionText'), unlockInfo: $('#unlockInfo'),
+    storedTax: $('#storedTax'), missionTitle: $('#missionTitle'), missionText: $('#missionText'), unlockInfo: $('#unlockInfo'), researchInfo: $('#researchInfo'),
     missionProgress: $('#missionProgress'), claimMission: $('#claimMission'), toast: $('#toast'),
   };
 
@@ -57,8 +57,9 @@
       const tier = index + 1;
       BUILDINGS[`era_${series.id}_${tier}`] = {
         name: `${era.label} ${series.name}`, icon: series.icon, category: series.category, model: series.model, catalog: true,
-        unlockYear: era.year, tier, price: Math.round((series.price + tier * 120 + tier * tier * 25) / 10) * 10,
-        income: series.income + tier * (series.category === 'residential' ? 7 : 9), people: series.people + Math.floor(tier / 2),
+        unlockYear: era.year, tier, researchCost: Math.max(0, Math.round((tier - 1) * (tier - 1) * .65)),
+        price: Math.round((series.price + tier * 140 + tier * tier * 80) / 10) * 10,
+        income: series.income + tier * 10 + tier * tier * 4, people: series.people + Math.floor(tier / 2),
         body: series.body, roof: era.roof, trim: era.trim, glow: era.glow,
         size: [Math.min(18, series.size[0] + Math.floor(index / 3) * 2), Math.min(13, series.size[1] + Math.floor(index / 2)), Math.min(18, series.size[2] + Math.floor(index / 4) * 2)],
       };
@@ -96,7 +97,17 @@
     { id: 'south4', name: '바람개비 언덕', x: 48, z: 72, price: 1250, owned: false },
     { id: 'south5', name: '황혼의 벌판', x: 96, z: 72, price: 1400, owned: false },
   ];
-  const START = { cash: 1000, owned: ['core1', 'core2', 'core3'], buildings: [], workers: 0, autoCollect: false, rotation: 0, rotationStep: 45, missionIndex: 0, rebirths: 0, year: 1 };
+  const MAP_GRID = { columns: 20, rows: 10, minX: -432, minZ: -216, tile: 48 };
+  const occupiedLandCoordinates = new Set(LANDS.map((land) => `${land.x},${land.z}`));
+  for (let row = 0; row < MAP_GRID.rows; row++) {
+    for (let column = 0; column < MAP_GRID.columns; column++) {
+      const x = MAP_GRID.minX + column * MAP_GRID.tile, z = MAP_GRID.minZ + row * MAP_GRID.tile;
+      if (occupiedLandCoordinates.has(`${x},${z}`)) continue;
+      const distance = Math.abs(x) / MAP_GRID.tile + Math.abs(z) / MAP_GRID.tile;
+      LANDS.push({ id: `realm_${column + 1}_${row + 1}`, name: `확장 영토 ${column + 1}-${row + 1}`, x, z, price: 700 + Math.floor(distance * 140), owned: false });
+    }
+  }
+  const START = { cash: 1000, owned: ['core1', 'core2', 'core3'], buildings: [], workers: 0, autoCollect: false, rotation: 0, rotationStep: 45, missionIndex: 0, rebirths: 0, year: 1, researchTokens: 0, researchCount: 0 };
   const storageKey = 'crownvale-browser-v1';
   let state = load();
   let selectedBuilding = null;
@@ -142,6 +153,14 @@
   function storedTax() { return state.buildings.reduce((total, building) => total + building.tax, 0); }
   function workerIncomeMultiplier() { return (1 + (state.workers || 0) * 0.005) * (1 + (state.rebirths || 0) * 0.1); }
   function workerCost() { return 600 + (state.workers || 0) * 150; }
+  function researchPrice() { return 300 + kingdomYear() * 150 + (state.researchCount || 0) * 50; }
+  function researchReward() { return 1 + Math.floor((kingdomYear() - 1) / 2); }
+  function conductResearch() {
+    const price = researchPrice(), reward = researchReward();
+    if (state.cash < price) return toast('연구에 필요한 골드가 부족합니다.');
+    state.cash -= price; state.researchTokens = (state.researchTokens || 0) + reward; state.researchCount = (state.researchCount || 0) + 1;
+    toast(`연구 완료! 연구 토큰 ${reward}개를 획득했습니다.`); save(true); updateUI();
+  }
   function countCategory(category) { return state.buildings.filter((building) => BUILDINGS[building.type].category === category).length; }
   function incomePerTick() { return state.buildings.reduce((total, building) => total + BUILDINGS[building.type].income, 0) * workerIncomeMultiplier(); }
   function missionProgress(mission) {
@@ -375,8 +394,16 @@
     }
   }
   function drawWorldArt() {
-    for (const z of [-48, 0, 48]) box({x:0,y:.65,z}, [242,.18,4], '#b7986f');
-    for (const x of [-72,-24,24,72]) box({x,y:.65,z:0}, [4,.18,194], '#ad8e68');
+    const centerX = MAP_GRID.minX + (MAP_GRID.columns - 1) * MAP_GRID.tile / 2;
+    const centerZ = MAP_GRID.minZ + (MAP_GRID.rows - 1) * MAP_GRID.tile / 2;
+    for (let row = 1; row < MAP_GRID.rows; row++) {
+      const z = MAP_GRID.minZ + (row - .5) * MAP_GRID.tile;
+      box({x:centerX,y:.65,z}, [MAP_GRID.columns * MAP_GRID.tile,.18,4], '#b7986f');
+    }
+    for (let column = 1; column < MAP_GRID.columns; column++) {
+      const x = MAP_GRID.minX + (column - .5) * MAP_GRID.tile;
+      box({x,y:.65,z:centerZ}, [4,.18,MAP_GRID.rows * MAP_GRID.tile], '#ad8e68');
+    }
     box({x:153,y:8,z:0}, [62,16,14], '#535e70');
     for (const x of [123,183]) { box({x,y:11,z:-8}, [12,22,12], '#657183'); prism({x,y:0,z:-8}, 16,16,22,29,'#693f56'); }
     box({x:153,y:5.5,z:-7.3}, [10,11,.5], '#513322');
@@ -435,9 +462,10 @@
     if (!placement || !land || !placement.valid) return toast('소유한 토지의 빈 위치를 선택하세요.');
     if (!owned(land)) return toast('먼저 이 영토를 구매해야 합니다.');
     if (state.cash < item.price) return toast('골드가 부족합니다.');
+    if ((state.researchTokens || 0) < (item.researchCost || 0)) return toast(`연구 토큰 ${item.researchCost}개가 필요합니다.`);
     const slot = placement && placement.valid ? placement : null;
     if (!slot) return toast('이 영토는 이미 가득 찼습니다.');
-    state.cash -= item.price; state.buildings.push({ id: crypto.randomUUID(), type: selectedBuilding, landId: land.id, x: slot.x, z: slot.z, rotation: state.rotation, tax: 0 });
+    state.cash -= item.price; state.researchTokens -= item.researchCost || 0; state.buildings.push({ id: crypto.randomUUID(), type: selectedBuilding, landId: land.id, x: slot.x, z: slot.z, rotation: state.rotation, tax: 0 });
     selectedBuilding = null; hoveredLand = null; hoveredPlacement = null;
     toast(`${item.name}이(가) 실루엣 위치에 설치되었습니다.`); save(true); updateUI();
   }
@@ -457,7 +485,7 @@
     if (state.cash < requiredCash || population() < requiredPopulation || state.owned.length < requiredLands) return toast(`환생에는 ${format(requiredCash)} 골드 · 주민 ${requiredPopulation}명 · 영토 ${requiredLands}곳이 필요합니다.`);
     if (!window.confirm('환생하면 왕국의 건물과 영토가 초기화됩니다. 대신 모든 골드 수입이 영구적으로 10% 증가하고 건물이 발전합니다. 계속할까요?')) return;
     const rebirths = (state.rebirths || 0) + 1;
-    state = { ...structuredClone(START), rebirths, year: (state.year || 1) + 1 };
+    state = { ...structuredClone(START), rebirths, year: (state.year || 1) + 1, researchTokens: state.researchTokens || 0 };
     selectedBuilding = null; selectedLand = 'core1'; deleteMode = false;
     toast(`환생 완료! 왕국력 ${state.year}년 · 수입 +${rebirths * 10}% · 건물 발전 ${Math.min(3, rebirths)}단계`); save(true); updateUI();
   }
@@ -485,7 +513,7 @@
 
   function updateUI() {
     if (selectedBuilding && !isBuildingUnlocked(BUILDINGS[selectedBuilding])) selectedBuilding = null;
-    els.cash.textContent = format(state.cash); els.population.textContent = format(population()); els.rebirths.textContent = format(state.rebirths || 0); els.year.textContent = `${kingdomYear()}년`; els.storedTax.textContent = formatTax(storedTax());
+    els.cash.textContent = format(state.cash); els.population.textContent = format(population()); els.rebirths.textContent = format(state.rebirths || 0); els.year.textContent = `${kingdomYear()}년`; els.researchTokens.textContent = format(state.researchTokens || 0); els.storedTax.textContent = formatTax(storedTax());
     const rebirthNeed = rebirthRequirements(), rebirthButton = $('#rebirthButton');
     rebirthButton.textContent = `♛ ${format(rebirthNeed.cash)}G · ${rebirthNeed.lands}땅`;
     rebirthButton.title = `다음 환생: ${format(rebirthNeed.cash)} 골드 · 주민 ${rebirthNeed.population}명 · 영토 ${rebirthNeed.lands}곳`;
@@ -497,10 +525,11 @@
       .filter(([, item]) => selectedCategory === 'all' || item.category === selectedCategory)
       .sort(([, a], [, b]) => Number(isBuildingUnlocked(b)) - Number(isBuildingUnlocked(a)) || unlockYear(a) - unlockYear(b) || a.price - b.price);
     els.buildingList.innerHTML = ''; buildingEntries.forEach(([id,item]) => {
-      const unlocked = isBuildingUnlocked(item), requiredYear = unlockYear(item);
+      const unlocked = isBuildingUnlocked(item), requiredYear = unlockYear(item), tokenCost = item.researchCost || 0;
       const button = document.createElement('button'); button.className = `building-card ${selectedBuilding === id ? 'selected':''} ${unlocked ? '' : 'locked'}`; button.disabled = !unlocked;
-      const detail = unlocked ? `+${item.income} / 10초 · 주민 ${item.people}` : `🔒 왕국력 ${requiredYear}년 해금`;
-      button.innerHTML = `<span class="card-icon">${item.icon}</span><span><span class="card-title">${item.name}</span><span class="card-detail">${detail}</span></span><b class="card-price">${unlocked ? `${format(item.price)} ✦` : `${requiredYear}년`}</b>`;
+      const detail = unlocked ? `세금 +${item.income} / 10초 · 주민 ${item.people}` : `🔒 왕국력 ${requiredYear}년 해금`;
+      const price = unlocked ? `${format(item.price)} ✦${tokenCost ? `<small>🧪 ${tokenCost}</small>` : ''}` : `${requiredYear}년${tokenCost ? `<small>🧪 ${tokenCost}</small>` : ''}`;
+      button.innerHTML = `<span class="card-icon">${item.icon}</span><span><span class="card-title">${item.name}</span><span class="card-detail">${detail}</span></span><b class="card-price">${price}</b>`;
       button.onclick = () => { selectedBuilding = selectedBuilding === id ? null : id; state.rotation = 0; updateUI(); }; els.buildingList.append(button);
     });
     const nextBuilding = Object.values(BUILDINGS).filter((item) => unlockYear(item) > kingdomYear()).sort((a, b) => unlockYear(a) - unlockYear(b))[0];
@@ -528,8 +557,10 @@
     const hireButton = $('#hireWorker');
     hireButton.disabled = state.workers >= 20;
     hireButton.innerHTML = state.workers >= 20 ? '수집자 최대 고용 완료' : `수집자 고용 <span>${format(workerCost())} 골드</span>`;
+    els.researchInfo.textContent = `보유 연구 토큰 ${format(state.researchTokens || 0)}개 · 왕국력 ${kingdomYear()}년 연구 보상 ${researchReward()}개`;
+    $('#conductResearch').innerHTML = `연구 수행 <span>${format(researchPrice())} 골드</span>`;
     $('#rotationStep').value = String(state.rotationStep || 45);
-    const item = selectedBuilding && BUILDINGS[selectedBuilding]; els.selectionName.textContent = deleteMode ? '삭제 모드' : (item ? item.name : '건물을 선택하세요'); els.selectionMeta.textContent = deleteMode ? '토지를 클릭하면 마지막 건물을 50% 환불로 철거합니다.' : (item ? `${format(item.price)} 골드 · 현재 회전 ${state.rotation}° · ${state.rotationStep || 45}°씩 회전` : `건설 메뉴에서 건물을 선택 · 환생 발전 ${Math.min(3, state.rebirths || 0)}단계`);
+    const item = selectedBuilding && BUILDINGS[selectedBuilding]; els.selectionName.textContent = deleteMode ? '삭제 모드' : (item ? item.name : '건물을 선택하세요'); els.selectionMeta.textContent = deleteMode ? '토지를 클릭하면 마지막 건물을 50% 환불로 철거합니다.' : (item ? `${format(item.price)} 골드 · 연구 ${item.researchCost || 0} · 세금 ${item.income}/10초 · 회전 ${state.rotation}°` : `건설 메뉴에서 건물을 선택 · 환생 발전 ${Math.min(3, state.rebirths || 0)}단계`);
     $('#deleteButton').classList.toggle('active', deleteMode);
   }
 
@@ -541,6 +572,7 @@
   $('#cancelButton').onclick = () => { selectedBuilding = null; deleteMode = false; updateUI(); };
   $('#saveButton').onclick = () => save();
   $('#collectTax').onclick = () => collectTax();
+  $('#conductResearch').onclick = conductResearch;
   $('#hireWorker').onclick = () => { const cost = workerCost(); if (state.workers >= 20) return toast('수집자는 최대 20명입니다.'); if (state.cash < cost) return toast('골드가 부족합니다.'); state.cash -= cost; state.workers++; toast(`새 세금 수집자가 도착했습니다. 세금 수입 +0.5%`); save(true); updateUI(); };
   $('#unlockAuto').onclick = () => { if (state.autoCollect) return toast('이미 왕실 자동 수금이 활성화되어 있습니다.'); if (state.cash < 1200) return toast('골드가 부족합니다.'); state.cash -= 1200; state.autoCollect = true; toast('왕실 자동 수금이 시작되었습니다.'); save(true); updateUI(); };
   els.claimMission.onclick = () => {
