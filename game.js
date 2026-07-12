@@ -163,6 +163,14 @@
     const top = [{x:land.x-23.7,y:.58,z:land.z-23.7},{x:land.x+23.7,y:.58,z:land.z-23.7},{x:land.x+23.7,y:.58,z:land.z+23.7},{x:land.x-23.7,y:.58,z:land.z+23.7}].map(project);
     hitTiles.push({ id: land.id, points: top, depth: top.reduce((sum,p)=>sum+p.depth,0)/4 });
   }
+  function drawLandBorder(land) {
+    const color = selectedLand === land.id ? '#f0cb70' : '#354a57';
+    const y = .68, width = 48.35, depth = 48.35;
+    box({ x: land.x, y, z: land.z - depth/2 }, [width, .18, .42], color);
+    box({ x: land.x, y, z: land.z + depth/2 }, [width, .18, .42], color);
+    box({ x: land.x - width/2, y, z: land.z }, [.42, .18, depth], color);
+    box({ x: land.x + width/2, y, z: land.z }, [.42, .18, depth], color);
+  }
   function drawBuilding(building, isGhost = false) {
     const item = BUILDINGS[building.type]; const [w,h,d] = item.size; const position = { x: building.x, y: 1, z: building.z };
     const alpha = isGhost ? .42 : 1;
@@ -212,12 +220,13 @@
     water.addColorStop(0, '#3b89ae'); water.addColorStop(1, '#236783');
     ctx.fillStyle = water; ctx.fillRect(0, 0, viewW, viewH);
     faces.length = 0; hitTiles.length = 0;
-    faceLayer = 0; drawWorldArt(); LANDS.forEach(drawLand);
-    faceLayer = 1; state.buildings.forEach(drawBuilding);
+    faceLayer = 0; LANDS.forEach(drawLand);
+    faceLayer = 1; drawWorldArt(); LANDS.forEach(drawLandBorder);
+    faceLayer = 2; state.buildings.forEach(drawBuilding);
     const previewLand = selectedBuilding && hoveredLand && LANDS.find((land) => land.id === hoveredLand);
     if (previewLand && owned(previewLand)) {
       const slot = slotsFor(previewLand)[buildingCount(previewLand.id)];
-      if (slot) { faceLayer = 2; drawBuilding({ type: selectedBuilding, x: slot.x, z: slot.z, rotation: state.rotation }, true); }
+      if (slot) { faceLayer = 3; drawBuilding({ type: selectedBuilding, x: slot.x, z: slot.z, rotation: state.rotation }, true); }
     }
     faces.sort((a,b) => a.layer - b.layer || b.depth - a.depth);
     for (const face of faces) {
