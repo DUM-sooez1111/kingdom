@@ -248,8 +248,12 @@
     state.buildings.splice(index.i, 1); state.cash += refund;
     toast(`${item.name}을(를) 철거하고 ${format(refund)} 골드를 돌려받았습니다.`); save(true); updateUI();
   }
+  function rebirthRequirements() {
+    const level = state.rebirths || 0;
+    return { cash: Math.floor(5000 * Math.pow(1.6, level)), population: 30 + level * 15 };
+  }
   function rebirth() {
-    const requiredCash = 5000, requiredPopulation = 30;
+    const { cash: requiredCash, population: requiredPopulation } = rebirthRequirements();
     if (state.cash < requiredCash || population() < requiredPopulation) return toast(`환생에는 ${format(requiredCash)} 골드와 주민 ${requiredPopulation}명이 필요합니다.`);
     if (!window.confirm('환생하면 왕국의 건물과 영토가 초기화됩니다. 대신 모든 골드 수입이 영구적으로 10% 증가합니다. 계속할까요?')) return;
     const rebirths = (state.rebirths || 0) + 1;
@@ -269,6 +273,9 @@
 
   function updateUI() {
     els.cash.textContent = format(state.cash); els.population.textContent = format(population()); els.rebirths.textContent = format(state.rebirths || 0); els.storedTax.textContent = format(storedTax());
+    const rebirthNeed = rebirthRequirements(), rebirthButton = $('#rebirthButton');
+    rebirthButton.textContent = `♛ ${format(rebirthNeed.cash)}G`;
+    rebirthButton.title = `다음 환생: ${format(rebirthNeed.cash)} 골드 · 주민 ${rebirthNeed.population}명`;
     els.categoryList.innerHTML = ''; CATEGORIES.forEach((category) => {
       const button = document.createElement('button'); button.className = `category-chip ${selectedCategory === category.id ? 'active' : ''}`; button.textContent = category.name;
       button.onclick = () => { selectedCategory = category.id; updateUI(); }; els.categoryList.append(button);
