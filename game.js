@@ -22,6 +22,8 @@
     homestead: { name: '영주의 영지', icon: '🏛️', category: 'landmark', price: 650, income: 50, people: 8, body: '#c99459', roof: '#473e61', size: [16, 8, 12] },
     watchtower: { name: '수호자 탑', icon: '🗼', category: 'landmark', price: 820, income: 68, people: 2, body: '#9ea5ab', roof: '#535a70', size: [9, 11, 9] },
     royalGarden: { name: '왕실 정원', icon: '🌳', category: 'landmark', price: 1080, income: 90, people: 5, body: '#83ad78', roof: '#3d7559', size: [16, 7, 14] },
+    harbor: { name: '왕국 항구', icon: '⚓', category: 'production', price: 880, income: 82, people: 5, body: '#a87851', roof: '#3d6579', size: [18, 6, 14] },
+    mine: { name: '철광산', icon: '⛏️', category: 'production', price: 740, income: 74, people: 3, body: '#73777d', roof: '#4a4549', size: [14, 8, 12] },
   };
   const CATEGORIES = [{ id: 'all', name: '전체' }, { id: 'residential', name: '주거' }, { id: 'production', name: '생산' }, { id: 'landmark', name: '랜드마크' }];
   const MISSIONS = [
@@ -239,9 +241,24 @@
     } else if (building.type === 'market') {
       box(local(0, -d*.52, h + 2.3), [w + .9, .45, 1.1], '#d35b5b', r);
       box(local(0, -d*.56, h + 1.1), [w*.75, .3, .18], '#ffe5a3', r);
+    } else if (building.type === 'harbor') {
+      box(local(0, d*.7, 1.2), [w + 7, .45, 5.5], '#9b714b', r);
+      for (const x of [-w*.46, 0, w*.46]) box(local(x, d*.7, 2.2), [.42, 2.3, .42], '#5a3c29', r);
+      box(local(-w*.62, d*.85, 1.2), [7, .36, 4.1], '#4ca1be', r);
+      box(local(-w*.62, d*.85, 1.7), [4.8, .75, 2.6], '#d1a45a', r);
+      prism(local(-w*.62, d*.85, 2.05), 4.5, 2.3, 2.1, 3.7, '#f1e3bd', r);
+      box(local(-w*.62, d*.85, 5.6), [.22, 7, .22], '#70442f', r);
     } else if (building.type === 'watchtower') {
       box(local(0, 0, h + 4.8), [.2, 6, .2], '#d9b45f', r);
       box(local(1.6, 0, h + 6.8), [3.2, 1.2, .12], '#cf5861', r);
+    } else if (building.type === 'mine') {
+      box(local(0, -d*.53, 2.6), [w*.66, 4.2, .5], '#36363b', r);
+      box(local(-w*.27, -d*.58, 3.4), [.55, 5.7, .55], '#b38a54', r);
+      box(local(w*.27, -d*.58, 3.4), [.55, 5.7, .55], '#b38a54', r);
+      box(local(0, -d*.58, 5.55), [w*.68, .55, .55], '#b38a54', r);
+      box(local(w*.46, d*.16, h + 3.2), [.85, 5.2, .85], '#4d5259', r);
+      box(local(w*.46, d*.16, h + 6.05), [1.4, .32, 1.4], '#9ba1a7', r);
+      box(local(-w*.52, d*.52, 1.35), [2.4, .5, 1.6], '#c9a64e', r);
     } else if (building.type === 'royalGarden') {
       box(local(0, 0, 1.5), [w - 1, .35, d - 1], '#578e5c', r);
       for (const [x, z] of [[-w*.28,-d*.22],[w*.28,-d*.22],[-w*.28,d*.22],[w*.28,d*.22]]) pyramid(local(x, z, 1.8), 2.2, '#3d8a5a');
