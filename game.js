@@ -239,7 +239,8 @@
     const slot = slotsFor(land)[buildingCount(landId)];
     if (!slot) return toast('이 영토는 이미 가득 찼습니다.');
     state.cash -= item.price; state.buildings.push({ id: crypto.randomUUID(), type: selectedBuilding, landId, x: slot.x, z: slot.z, rotation: state.rotation, tax: 0 });
-    toast(`${item.name}을(를) 건설했습니다.`); save(true); updateUI();
+    selectedBuilding = null; hoveredLand = null;
+    toast(`${item.name}이(가) 실루엣 위치에 설치되었습니다.`); save(true); updateUI();
   }
   function deleteOn(landId) {
     const index = state.buildings.map((building, i) => ({ building, i })).filter((entry) => entry.building.landId === landId).at(-1);
