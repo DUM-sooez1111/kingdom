@@ -352,7 +352,13 @@
   });
   canvas.addEventListener('pointerleave', () => { if (!cameraDrag) hoveredLand = null; });
   canvas.addEventListener('wheel', (event) => { event.preventDefault(); camera.zoom = Math.max(700, Math.min(1900, camera.zoom - event.deltaY * .55)); }, { passive: false });
-  window.addEventListener('keydown', (event) => { if (event.key.toLowerCase() === 'q') camera.yaw -= .08; if (event.key.toLowerCase() === 'e') camera.yaw += .08; if (event.key === 'Escape') { selectedBuilding = null; updateUI(); } });
+  window.addEventListener('keydown', (event) => {
+    const key = event.key.toLowerCase();
+    if (key === 'q') camera.yaw -= .08;
+    if (key === 'e') camera.yaw += .08;
+    if (key === 'r' && selectedBuilding) { state.rotation = (state.rotation + 90) % 360; updateUI(); }
+    if (event.key === 'Escape') { selectedBuilding = null; deleteMode = false; updateUI(); }
+  });
   function pointInPolygon(x,y,points) { let inside=false; for(let i=0,j=points.length-1;i<points.length;j=i++) { const a=points[i],b=points[j]; if (((a.y>y)!==(b.y>y)) && (x < (b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x)) inside=!inside; } return inside; }
 
   function tick(now) {
