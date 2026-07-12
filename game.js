@@ -5,7 +5,7 @@
   const ctx = canvas.getContext('2d');
   const $ = (selector) => document.querySelector(selector);
   const els = {
-    cash: $('#cash'), population: $('#population'), categoryList: $('#categoryList'), buildingList: $('#buildingList'), landList: $('#landList'),
+    cash: $('#cash'), population: $('#population'), rebirths: $('#rebirths'), categoryList: $('#categoryList'), buildingList: $('#buildingList'), landList: $('#landList'),
     selectionName: $('#selectionName'), selectionMeta: $('#selectionMeta'), workerInfo: $('#workerInfo'),
     storedTax: $('#storedTax'), missionTitle: $('#missionTitle'), missionText: $('#missionText'),
     missionProgress: $('#missionProgress'), claimMission: $('#claimMission'), toast: $('#toast'),
@@ -44,12 +44,13 @@
     { id: 'pass3', name: '수호자의 언덕', x: 48, z: 24, price: 900, owned: false },
     { id: 'pass4', name: '황금 항구', x: 96, z: 24, price: 900, owned: false },
   ];
-  const START = { cash: 1000, owned: ['core1', 'core2', 'core3'], buildings: [], workers: 0, autoCollect: false, rotation: 0, missionIndex: 0 };
+  const START = { cash: 1000, owned: ['core1', 'core2', 'core3'], buildings: [], workers: 0, autoCollect: false, rotation: 0, missionIndex: 0, rebirths: 0 };
   const storageKey = 'crownvale-browser-v1';
   let state = load();
   let selectedBuilding = null;
   let selectedCategory = 'all';
   let hoveredLand = null;
+  let deleteMode = false;
   let selectedLand = 'core1';
   let activeTab = 'build';
   let toastTimer = 0;
@@ -79,7 +80,7 @@
   function buildingCount(landId) { return state.buildings.filter((building) => building.landId === landId).length; }
   function population() { return state.buildings.reduce((total, building) => total + BUILDINGS[building.type].people, 0); }
   function storedTax() { return state.buildings.reduce((total, building) => total + building.tax, 0); }
-  function workerIncomeMultiplier() { return 1 + (state.workers || 0) * 0.001; }
+  function workerIncomeMultiplier() { return (1 + (state.workers || 0) * 0.001) * (1 + (state.rebirths || 0) * 0.1); }
   function countCategory(category) { return state.buildings.filter((building) => BUILDINGS[building.type].category === category).length; }
   function incomePerTick() { return state.buildings.reduce((total, building) => total + BUILDINGS[building.type].income, 0) * workerIncomeMultiplier(); }
   function missionProgress(mission) {
@@ -125,9 +126,10 @@
   }
 
   const faces = [];
+  let faceLayer = 0;
   function addFace(vertices, color, outline = 'rgba(17,31,42,.33)', alpha = 1) {
     const points = vertices.map(project);
-    faces.push({ points, depth: points.reduce((sum, point) => sum + point.depth, 0) / points.length, color, outline, alpha });
+    faces.push({ points, depth: points.reduce((sum, point) => sum + point.depth, 0) / points.length, color, outline, alpha, layer: faceLayer });
   }
   function box(center, size, color, rotation = 0, alpha = 1) {
     const [sx, sy, sz] = size; const x = sx / 2, y = sy / 2, z = sz / 2;
@@ -172,6 +174,27 @@
     for (const x of [-w*.37,w*.37]) for (const z of [-d*.37,d*.37]) box(local(x,z,h/2+1.8), [.3,h+1.1,.3], isGhost ? '#d4fff0' : '#5c392a', r, alpha);
     const door = local(0,-d/2-.04,3); box(door, [1.8,3.3,.18], isGhost ? '#d4fff0' : '#513322', r, alpha);
     for (const x of [-w*.25,w*.25]) box(local(x,-d/2-.12,h*.68+1), [1.25,1.3,.13], isGhost ? '#e8fff7' : '#ffd16e', r, alpha);
+    if (isGhost) return;
+    if (building.type === 'farm') {
+      box(local(0, .2, h + 3.2), [.55, 5.4, .55], '#8c6544', r);
+      box(local(0, -.1, h + 4.7), [5.2, .28, .28], '#e7dfbf', r);
+      box(local(0, -.1, h + 4.7), [.28, .28, 5.2], '#e7dfbf', r + Math.PI / 2);
+    } else if (building.type === 'market') {
+      box(local(0, -d*.52, h + 2.3), [w + .9, .45, 1.1], '#d35b5b', r);
+      box(local(0, -d*.56, h + 1.1), [w*.75, .3, .18], '#ffe5a3', r);
+    } else if (building.type === 'watchtower') {
+      box(local(0, 0, h + 4.8), [.2, 6, .2], '#d9b45f', r);
+      box(local(1.6, 0, h + 6.8), [3.2, 1.2, .12], '#cf5861', r);
+    } else if (building.type === 'royalGarden') {
+      box(local(0, 0, 1.5), [w - 1, .35, d - 1], '#578e5c', r);
+      for (const [x, z] of [[-w*.28,-d*.22],[w*.28,-d*.22],[-w*.28,d*.22],[w*.28,d*.22]]) pyramid(local(x, z, 1.8), 2.2, '#3d8a5a');
+    }
+    const colors = ['#f1b36e', '#86c8d8', '#e8899b'];
+    for (let i = 0; i < Math.min(item.people, 3); i++) {
+      const x = (i - 1) * 1.35, z = d*.58 + .9;
+      box(local(x, z, 1.7), [.5, 1.5, .5], colors[i], r);
+      box(local(x, z, 2.6), [.62, .42, .62], '#f4c7a0', r);
+    }
   }
   function drawWorldArt() {
     box({x:0,y:.65,z:0}, [242,.18,5], '#b7986f');
@@ -189,13 +212,14 @@
     water.addColorStop(0, '#3b89ae'); water.addColorStop(1, '#236783');
     ctx.fillStyle = water; ctx.fillRect(0, 0, viewW, viewH);
     faces.length = 0; hitTiles.length = 0;
-    drawWorldArt(); LANDS.forEach(drawLand); state.buildings.forEach(drawBuilding);
+    faceLayer = 0; drawWorldArt(); LANDS.forEach(drawLand);
+    faceLayer = 1; state.buildings.forEach(drawBuilding);
     const previewLand = selectedBuilding && hoveredLand && LANDS.find((land) => land.id === hoveredLand);
     if (previewLand && owned(previewLand)) {
       const slot = slotsFor(previewLand)[buildingCount(previewLand.id)];
-      if (slot) drawBuilding({ type: selectedBuilding, x: slot.x, z: slot.z, rotation: state.rotation }, true);
+      if (slot) { faceLayer = 2; drawBuilding({ type: selectedBuilding, x: slot.x, z: slot.z, rotation: state.rotation }, true); }
     }
-    faces.sort((a,b) => b.depth-a.depth);
+    faces.sort((a,b) => a.layer - b.layer || b.depth - a.depth);
     for (const face of faces) {
       ctx.beginPath(); face.points.forEach((point,index) => index ? ctx.lineTo(point.x,point.y) : ctx.moveTo(point.x,point.y)); ctx.closePath();
       ctx.globalAlpha = face.alpha; ctx.fillStyle = face.color; ctx.fill(); ctx.strokeStyle = face.outline; ctx.lineWidth = 1; ctx.stroke();
@@ -217,6 +241,22 @@
     state.cash -= item.price; state.buildings.push({ id: crypto.randomUUID(), type: selectedBuilding, landId, x: slot.x, z: slot.z, rotation: state.rotation, tax: 0 });
     toast(`${item.name}을(를) 건설했습니다.`); save(true); updateUI();
   }
+  function deleteOn(landId) {
+    const index = state.buildings.map((building, i) => ({ building, i })).filter((entry) => entry.building.landId === landId).at(-1);
+    if (!index) return toast('이 토지에는 삭제할 건물이 없습니다.');
+    const item = BUILDINGS[index.building.type]; const refund = Math.floor(item.price * .5);
+    state.buildings.splice(index.i, 1); state.cash += refund;
+    toast(`${item.name}을(를) 철거하고 ${format(refund)} 골드를 돌려받았습니다.`); save(true); updateUI();
+  }
+  function rebirth() {
+    const requiredCash = 5000, requiredPopulation = 30;
+    if (state.cash < requiredCash || population() < requiredPopulation) return toast(`환생에는 ${format(requiredCash)} 골드와 주민 ${requiredPopulation}명이 필요합니다.`);
+    if (!window.confirm('환생하면 왕국의 건물과 영토가 초기화됩니다. 대신 모든 골드 수입이 영구적으로 10% 증가합니다. 계속할까요?')) return;
+    const rebirths = (state.rebirths || 0) + 1;
+    state = { ...structuredClone(START), rebirths };
+    selectedBuilding = null; selectedLand = 'core1'; deleteMode = false;
+    toast(`환생 완료! 영구 골드 수입 보너스 +${rebirths * 10}%`); save(true); updateUI();
+  }
   function purchaseLand(id) {
     const land = LANDS.find((entry) => entry.id === id); if (owned(land)) return;
     if (state.cash < land.price) return toast('골드가 부족합니다.');
@@ -228,7 +268,7 @@
   }
 
   function updateUI() {
-    els.cash.textContent = format(state.cash); els.population.textContent = format(population()); els.storedTax.textContent = format(storedTax());
+    els.cash.textContent = format(state.cash); els.population.textContent = format(population()); els.rebirths.textContent = format(state.rebirths || 0); els.storedTax.textContent = format(storedTax());
     els.categoryList.innerHTML = ''; CATEGORIES.forEach((category) => {
       const button = document.createElement('button'); button.className = `category-chip ${selectedCategory === category.id ? 'active' : ''}`; button.textContent = category.name;
       button.onclick = () => { selectedCategory = category.id; updateUI(); }; els.categoryList.append(button);
@@ -256,14 +296,17 @@
       els.missionText.textContent = 'Crownvale의 전설이 시작됩니다.';
       els.missionProgress.style.width = '100%'; els.claimMission.disabled = true; els.claimMission.textContent = '완료';
     }
-    const bonus = ((workerIncomeMultiplier() - 1) * 100).toFixed(1);
-    els.workerInfo.textContent = state.autoCollect ? `왕실 자동 수금 · 골드 수입 +${bonus}%` : `수집자 ${state.workers}명 · 골드 수입 +${bonus}% · 매 10초 건물 ${Math.min(state.workers, state.buildings.length)}채를 수금합니다.`;
-    const item = selectedBuilding && BUILDINGS[selectedBuilding]; els.selectionName.textContent = item ? item.name : '건물을 선택하세요'; els.selectionMeta.textContent = item ? `${format(item.price)} 골드 · 현재 회전 ${state.rotation}°` : '건설 메뉴에서 건물을 선택';
+    const bonus = ((workerIncomeMultiplier() - 1) * 100).toFixed(1), rebirthBonus = (state.rebirths || 0) * 10;
+    els.workerInfo.textContent = state.autoCollect ? `왕실 자동 수금 · 골드 수입 +${bonus}%` : `수집자 ${state.workers}명 · 골드 수입 +${bonus}% · 환생 +${rebirthBonus}%`;
+    const item = selectedBuilding && BUILDINGS[selectedBuilding]; els.selectionName.textContent = deleteMode ? '삭제 모드' : (item ? item.name : '건물을 선택하세요'); els.selectionMeta.textContent = deleteMode ? '토지를 클릭하면 마지막 건물을 50% 환불로 철거합니다.' : (item ? `${format(item.price)} 골드 · 현재 회전 ${state.rotation}°` : '건설 메뉴에서 건물을 선택');
+    $('#deleteButton').classList.toggle('active', deleteMode);
   }
 
   document.querySelectorAll('.tab').forEach((tab) => tab.onclick = () => { activeTab = tab.dataset.tab; document.querySelectorAll('.tab').forEach((button)=>button.classList.toggle('active',button===tab)); document.querySelectorAll('.panel').forEach((panel)=>panel.classList.toggle('active',panel.id===`${activeTab}Panel`)); });
   $('#rotateButton').onclick = () => { if (!selectedBuilding) return toast('먼저 건물을 선택하세요.'); state.rotation = (state.rotation + 90) % 360; updateUI(); };
-  $('#cancelButton').onclick = () => { selectedBuilding = null; updateUI(); };
+  $('#deleteButton').onclick = () => { deleteMode = !deleteMode; if (deleteMode) selectedBuilding = null; updateUI(); };
+  $('#rebirthButton').onclick = rebirth;
+  $('#cancelButton').onclick = () => { selectedBuilding = null; deleteMode = false; updateUI(); };
   $('#saveButton').onclick = () => save();
   $('#collectTax').onclick = () => collectTax();
   $('#hireWorker').onclick = () => { if (state.workers >= 5) return toast('수집자는 최대 5명입니다.'); if (state.cash < 600) return toast('골드가 부족합니다.'); state.cash -= 600; state.workers++; toast('새 세금 수집자가 도착했습니다.'); save(true); updateUI(); };
@@ -280,7 +323,7 @@
   }
   canvas.addEventListener('click', (event) => {
     const tile = tileAtPoint(event.clientX, event.clientY);
-    if (tile) buildOn(tile.id);
+    if (tile) (deleteMode ? deleteOn : buildOn)(tile.id);
   });
   canvas.addEventListener('contextmenu', (event) => event.preventDefault());
   canvas.addEventListener('pointerdown', (event) => {

@@ -15,6 +15,7 @@
         <div class="resources">
           <div class="resource"><span>✦</span><strong id="cash">1,000</strong><small>골드</small></div>
           <div class="resource"><span>⌂</span><strong id="population">0</strong><small>주민</small></div>
+          <div class="resource"><span>♛</span><strong id="rebirths">0</strong><small>환생</small></div>
           <button id="saveButton" class="icon-button" title="저장">▣</button>
         </div>
       </header>
@@ -32,7 +33,7 @@
         <div id="landPanel" class="panel"><p class="panel-note">어두운 영토를 선택해 왕국을 확장하세요.</p><div id="landList" class="land-list"></div></div>
         <div id="workersPanel" class="panel"><div class="worker-art">♜</div><h3>세금 수집대</h3><p id="workerInfo">수집자 0명 · 매 10초 건물 0채를 수금합니다.</p><button id="hireWorker" class="primary">수집자 고용 <span>600 골드</span></button><button id="unlockAuto" class="secondary">왕실 자동 수금 <span>1,200 골드</span></button><button id="collectTax" class="collect">쌓인 세금 수금 <b id="storedTax">0</b></button></div>
       </aside>
-      <section class="bottom-bar glass"><div class="selection"><span class="selection-label">선택</span><strong id="selectionName">건물을 선택하세요</strong><span id="selectionMeta">토지를 클릭해 배치</span></div><button id="rotateButton" class="secondary compact">↻ 회전</button><button id="cancelButton" class="secondary compact">취소</button></section>
+      <section class="bottom-bar glass"><div class="selection"><span class="selection-label">선택</span><strong id="selectionName">건물을 선택하세요</strong><span id="selectionMeta">토지를 클릭해 배치</span></div><button id="rotateButton" class="secondary compact">↻ 회전</button><button id="deleteButton" class="danger compact">삭제</button><button id="rebirthButton" class="secondary compact">♛ 환생</button><button id="cancelButton" class="secondary compact">취소</button></section>
       <div id="toast" role="status"></div>
     </main>
     <script src="game.js"></script>
