@@ -7,7 +7,7 @@
   const els = {
     cash: $('#cash'), population: $('#population'), rebirths: $('#rebirths'), year: $('#year'), categoryList: $('#categoryList'), buildingList: $('#buildingList'), landList: $('#landList'),
     selectionName: $('#selectionName'), selectionMeta: $('#selectionMeta'), workerInfo: $('#workerInfo'),
-    storedTax: $('#storedTax'), missionTitle: $('#missionTitle'), missionText: $('#missionText'),
+    storedTax: $('#storedTax'), missionTitle: $('#missionTitle'), missionText: $('#missionText'), unlockInfo: $('#unlockInfo'),
     missionProgress: $('#missionProgress'), claimMission: $('#claimMission'), toast: $('#toast'),
   };
 
@@ -27,7 +27,45 @@
     forge: { name: '왕실 대장간', icon: '⚒️', category: 'production', price: 660, income: 64, people: 4, body: '#8f5d43', roof: '#3e424d', size: [14, 7, 12] },
     ranch: { name: '목축 농장', icon: '🐄', category: 'production', price: 430, income: 42, people: 4, body: '#c59b62', roof: '#8a5b3d', size: [14, 6, 14] },
   };
-  const CATEGORIES = [{ id: 'all', name: '전체' }, { id: 'residential', name: '주거' }, { id: 'production', name: '생산' }, { id: 'landmark', name: '랜드마크' }];
+  // Each of the ten series has one building for every kingdom year: 10 × 10 = 100 new buildings.
+  const ERA_STAGES = [
+    { year: 1, label: '개척', roof: '#774a37', trim: '#9a7045', glow: '#f0c36c' },
+    { year: 2, label: '목조', roof: '#874d38', trim: '#b78355', glow: '#f2ce7a' },
+    { year: 3, label: '석조', roof: '#72565a', trim: '#a8a39a', glow: '#ffe08a' },
+    { year: 4, label: '도시', roof: '#984f42', trim: '#c98b66', glow: '#ffd589' },
+    { year: 5, label: '산업', roof: '#454a55', trim: '#88919b', glow: '#ffb75b' },
+    { year: 6, label: '전기', roof: '#3e5169', trim: '#6f9fc1', glow: '#ffe47a' },
+    { year: 7, label: '현대', roof: '#4d6273', trim: '#b7d2da', glow: '#8ee8ff' },
+    { year: 8, label: '친환경', roof: '#315d52', trim: '#70ad75', glow: '#b8f58d' },
+    { year: 9, label: '스마트', roof: '#303b66', trim: '#658ed0', glow: '#8fc8ff' },
+    { year: 10, label: '미래', roof: '#42345f', trim: '#b188d4', glow: '#85ffff' },
+  ];
+  const ERA_BUILDING_SERIES = [
+    { id: 'home', name: '주택', category: 'residential', icon: '🏠', model: 'home', size: [9, 5, 9], price: 110, income: 9, people: 2, body: '#d6bb82' },
+    { id: 'apartment', name: '공동 주택', category: 'residential', icon: '🏢', model: 'apartment', size: [12, 9, 10], price: 230, income: 18, people: 5, body: '#c6b7a1' },
+    { id: 'forge', name: '단조 공방', category: 'production', icon: '⚒️', model: 'forge', size: [14, 7, 12], price: 310, income: 29, people: 4, body: '#995f41' },
+    { id: 'farm', name: '농장', category: 'production', icon: '🌾', model: 'farm', size: [14, 6, 14], price: 270, income: 27, people: 3, body: '#d5b86d' },
+    { id: 'market', name: '상업 시장', category: 'production', icon: '🏪', model: 'market', size: [14, 7, 12], price: 370, income: 37, people: 4, body: '#cf9160' },
+    { id: 'harbor', name: '무역 항구', category: 'production', icon: '⚓', model: 'harbor', size: [18, 6, 14], price: 470, income: 45, people: 5, body: '#a87851' },
+    { id: 'mine', name: '채굴소', category: 'production', icon: '⛏️', model: 'mine', size: [14, 8, 12], price: 430, income: 42, people: 4, body: '#73777d' },
+    { id: 'hall', name: '행정관', category: 'landmark', icon: '🏛️', model: 'hall', size: [16, 9, 14], price: 530, income: 43, people: 6, body: '#d6c8aa' },
+    { id: 'tower', name: '감시탑', category: 'landmark', icon: '🗼', model: 'tower', size: [10, 12, 10], price: 510, income: 39, people: 2, body: '#9ea5ab' },
+    { id: 'park', name: '시민 공원', category: 'decoration', icon: '🌳', model: 'park', size: [16, 4, 14], price: 190, income: 11, people: 1, body: '#6ea96c' },
+  ];
+  for (const series of ERA_BUILDING_SERIES) {
+    ERA_STAGES.forEach((era, index) => {
+      const tier = index + 1;
+      BUILDINGS[`era_${series.id}_${tier}`] = {
+        name: `${era.label} ${series.name}`, icon: series.icon, category: series.category, model: series.model, catalog: true,
+        unlockYear: era.year, tier, price: Math.round((series.price + tier * 120 + tier * tier * 25) / 10) * 10,
+        income: series.income + tier * (series.category === 'residential' ? 7 : 9), people: series.people + Math.floor(tier / 2),
+        body: series.body, roof: era.roof, trim: era.trim, glow: era.glow,
+        size: [Math.min(18, series.size[0] + Math.floor(index / 3) * 2), Math.min(13, series.size[1] + Math.floor(index / 2)), Math.min(18, series.size[2] + Math.floor(index / 4) * 2)],
+      };
+    });
+  }
+  const CATALOG_BUILDING_COUNT = Object.values(BUILDINGS).filter((item) => item.catalog).length;
+  const CATEGORIES = [{ id: 'all', name: '전체' }, { id: 'residential', name: '주거' }, { id: 'production', name: '생산' }, { id: 'landmark', name: '랜드마크' }, { id: 'decoration', name: '장식' }];
   const MISSIONS = [
     { id: 'homes', title: '주거 건물 3채를 건설하세요', goal: 3, reward: 450 },
     { id: 'lands', title: '새 영토 2곳을 확보하세요', goal: 5, reward: 700 },
@@ -85,6 +123,7 @@
       if (saved && Array.isArray(saved.owned) && Array.isArray(saved.buildings)) {
         const profile = { ...START, ...saved };
         if (!Number.isInteger(saved.missionIndex)) profile.missionIndex = saved.missionClaimed ? 1 : 0;
+        if (!Number.isFinite(saved.year) || saved.year < 1) profile.year = Math.max(1, (saved.rebirths || 0) + 1);
         return profile;
       }
     } catch (_) { /* start a new kingdom */ }
@@ -93,6 +132,9 @@
   function save(silent = false) { localStorage.setItem(storageKey, JSON.stringify(state)); if (!silent) toast('왕국 기록을 저장했습니다.'); }
   function format(value) { return Math.floor(value).toLocaleString('ko-KR'); }
   function formatTax(value) { return value.toLocaleString('ko-KR', { maximumFractionDigits: 1 }); }
+  function kingdomYear() { return Math.max(1, Math.floor(state.year || 1)); }
+  function unlockYear(item) { return item && item.unlockYear ? item.unlockYear : 1; }
+  function isBuildingUnlocked(item) { return !!item && kingdomYear() >= unlockYear(item); }
   function toast(message) { clearTimeout(toastTimer); els.toast.textContent = message; els.toast.classList.add('show'); toastTimer = setTimeout(() => els.toast.classList.remove('show'), 2600); }
   function owned(land) { return state.owned.includes(land.id); }
   function buildingCount(landId) { return state.buildings.filter((building) => building.landId === landId).length; }
@@ -156,6 +198,7 @@
   function placementFromScreen(screenX, screenY) {
     if (!selectedBuilding) return null;
     const world = screenToGround(screenX, screenY), item = BUILDINGS[selectedBuilding];
+    if (!isBuildingUnlocked(item)) return null;
     const land = world && landAtWorld(world);
     if (!land || !owned(land)) return null;
     const [width, depth] = footprint(item, state.rotation);
@@ -226,19 +269,58 @@
     box({ x: land.x - width/2, y, z: land.z }, [.42, .18, depth], color);
     box({ x: land.x + width/2, y, z: land.z }, [.42, .18, depth], color);
   }
+  function drawCatalogDetail(item, local, r, w, h, d) {
+    if (!item.catalog) return;
+    const trim = item.trim || '#c9d3dd', glow = item.glow || '#ffe08a';
+    if (item.model === 'home') {
+      box(local(0, d*.48, h + 2.2), [w*.64, .28, .34], trim, r);
+    } else if (item.model === 'apartment') {
+      for (const x of [-w*.27, 0, w*.27]) box(local(x, -d*.51, h*.72 + 1.2), [1.15, h*.6, .16], glow, r);
+    } else if (item.model === 'forge') {
+      box(local(w*.4, d*.18, h + 3.2), [.85, 5, .85], '#454b55', r);
+      box(local(-w*.34, -d*.55, 2), [3.6, 1.2, .7], '#34353b', r);
+    } else if (item.model === 'farm') {
+      for (const x of [-w*.35, 0, w*.35]) box(local(x, d*.58, 1.25), [1.25, .22, 4.5], '#d3b956', r);
+    } else if (item.model === 'market') {
+      box(local(0, -d*.55, h + 1.6), [w + .7, .42, .9], trim, r);
+    } else if (item.model === 'harbor') {
+      box(local(0, d*.67, 1.1), [w + 5, .34, 4.2], '#9b714b', r);
+      box(local(-w*.45, d*.77, 1.25), [5.5, .28, 3.2], '#4ca1be', r);
+    } else if (item.model === 'mine') {
+      box(local(0, -d*.53, 2.4), [w*.62, 3.8, .45], '#35363a', r);
+    } else if (item.model === 'hall') {
+      for (const x of [-w*.3, 0, w*.3]) box(local(x, -d*.54, h*.55 + 1.4), [.65, h*.8, .65], trim, r);
+    } else if (item.model === 'tower') {
+      box(local(0, 0, h + 4.2), [.6, 6, .6], trim, r);
+      box(local(1.2, 0, h + 6.5), [2.6, .8, .1], glow, r);
+    } else if (item.model === 'park') {
+      for (const [x, z] of [[-w*.28,-d*.26],[w*.28,-d*.26],[-w*.28,d*.26],[w*.28,d*.26]]) pyramid(local(x, z, 1.2), 2.4, '#3e8653');
+      box(local(0, 0, 1.05), [3.6, .35, 3.6], trim, r);
+      box(local(0, 0, 1.55), [1.3, 1.1, 1.3], '#6abdd3', r);
+    }
+    if (item.tier >= 6) box(local(0, d*.44, h + 2.7), [w*.58, .18, .9], glow, r);
+    if (item.tier >= 8) box(local(w*.34, d*.28, h + 4.1), [.24, 5.2, .24], glow, r);
+  }
   function drawBuilding(building, isGhost = false) {
     const item = BUILDINGS[building.type]; const [w,h,d] = item.size; const position = { x: building.x, y: 1, z: building.z };
     // The placement preview uses the same solid model as the finished building
     // so overlapping translucent roof faces never make it look broken.
-    const alpha = 1;
-    box({ x: position.x, y: 1.45, z: position.z }, [w, .8, d], '#68717c', building.rotation, alpha);
-    box({ x: position.x, y: 1.8 + h/2, z: position.z }, [w-.55,h,d-.55], item.body, building.rotation, alpha);
-    prism(position, w+1, d+1, h+1.55, h+4, item.roof, building.rotation, alpha);
-    const r = building.rotation, c = Math.cos(r), s = Math.sin(r);
+    const alpha = 1, r = (building.rotation || 0) * Math.PI / 180, isPark = item.model === 'park';
+    box({ x: position.x, y: 1.45, z: position.z }, [w, .8, d], '#68717c', r, alpha);
+    if (isPark) {
+      box({ x: position.x, y: 1.8, z: position.z }, [w-.55,.55,d-.55], item.body, r, alpha);
+    } else {
+      box({ x: position.x, y: 1.8 + h/2, z: position.z }, [w-.55,h,d-.55], item.body, r, alpha);
+      prism(position, w+1, d+1, h+1.55, h+4, item.roof, r, alpha);
+    }
+    const c = Math.cos(r), s = Math.sin(r);
     const local = (x,z,y) => ({ x:position.x+x*c-z*s, y, z:position.z+x*s+z*c });
-    for (const x of [-w*.37,w*.37]) for (const z of [-d*.37,d*.37]) box(local(x,z,h/2+1.8), [.3,h+1.1,.3], '#5c392a', r, alpha);
-    const door = local(0,-d/2-.04,3); box(door, [1.8,3.3,.18], '#513322', r, alpha);
-    for (const x of [-w*.25,w*.25]) box(local(x,-d/2-.12,h*.68+1), [1.25,1.3,.13], '#ffd16e', r, alpha);
+    if (!isPark) {
+      for (const x of [-w*.37,w*.37]) for (const z of [-d*.37,d*.37]) box(local(x,z,h/2+1.8), [.3,h+1.1,.3], '#5c392a', r, alpha);
+      const door = local(0,-d/2-.04,3); box(door, [1.8,3.3,.18], '#513322', r, alpha);
+      for (const x of [-w*.25,w*.25]) box(local(x,-d/2-.12,h*.68+1), [1.25,1.3,.13], '#ffd16e', r, alpha);
+    }
+    drawCatalogDetail(item, local, r, w, h, d);
     if (isGhost) return;
     if (building.type === 'farm') {
       box(local(0, .2, h + 3.2), [.55, 5.4, .55], '#8c6544', r);
@@ -329,7 +411,7 @@
     faceLayer = 0; LANDS.forEach(drawLand);
     faceLayer = 1; drawWorldArt(); drawDecorations(); LANDS.forEach(drawLandBorder);
     faceLayer = 2; state.buildings.forEach(drawBuilding);
-    if (hoveredPlacement && hoveredPlacement.valid && selectedBuilding) {
+    if (hoveredPlacement && hoveredPlacement.valid && selectedBuilding && isBuildingUnlocked(BUILDINGS[selectedBuilding])) {
       faceLayer = 3;
       drawBuilding({ type: selectedBuilding, x: hoveredPlacement.x, z: hoveredPlacement.z, rotation: state.rotation }, true);
     }
@@ -349,6 +431,7 @@
   function buildOn(placement) {
     if (!selectedBuilding) return;
     const land = placement && LANDS.find((entry) => entry.id === placement.landId), item = BUILDINGS[selectedBuilding];
+    if (!isBuildingUnlocked(item)) { selectedBuilding = null; updateUI(); return toast(`이 건물은 왕국력 ${unlockYear(item)}년에 해금됩니다.`); }
     if (!placement || !land || !placement.valid) return toast('소유한 토지의 빈 위치를 선택하세요.');
     if (!owned(land)) return toast('먼저 이 영토를 구매해야 합니다.');
     if (state.cash < item.price) return toast('골드가 부족합니다.');
@@ -401,7 +484,8 @@
   }
 
   function updateUI() {
-    els.cash.textContent = format(state.cash); els.population.textContent = format(population()); els.rebirths.textContent = format(state.rebirths || 0); els.year.textContent = `${state.year || 1}년`; els.storedTax.textContent = formatTax(storedTax());
+    if (selectedBuilding && !isBuildingUnlocked(BUILDINGS[selectedBuilding])) selectedBuilding = null;
+    els.cash.textContent = format(state.cash); els.population.textContent = format(population()); els.rebirths.textContent = format(state.rebirths || 0); els.year.textContent = `${kingdomYear()}년`; els.storedTax.textContent = formatTax(storedTax());
     const rebirthNeed = rebirthRequirements(), rebirthButton = $('#rebirthButton');
     rebirthButton.textContent = `♛ ${format(rebirthNeed.cash)}G · ${rebirthNeed.lands}땅`;
     rebirthButton.title = `다음 환생: ${format(rebirthNeed.cash)} 골드 · 주민 ${rebirthNeed.population}명 · 영토 ${rebirthNeed.lands}곳`;
@@ -409,11 +493,18 @@
       const button = document.createElement('button'); button.className = `category-chip ${selectedCategory === category.id ? 'active' : ''}`; button.textContent = category.name;
       button.onclick = () => { selectedCategory = category.id; updateUI(); }; els.categoryList.append(button);
     });
-    els.buildingList.innerHTML = ''; Object.entries(BUILDINGS).filter(([, item]) => selectedCategory === 'all' || item.category === selectedCategory).forEach(([id,item]) => {
-      const button = document.createElement('button'); button.className = `building-card ${selectedBuilding === id ? 'selected':''}`;
-      button.innerHTML = `<span class="card-icon">${item.icon}</span><span><span class="card-title">${item.name}</span><span class="card-detail">+${item.income} / 10초 · 주민 ${item.people}</span></span><b class="card-price">${format(item.price)} ✦</b>`;
+    const buildingEntries = Object.entries(BUILDINGS)
+      .filter(([, item]) => selectedCategory === 'all' || item.category === selectedCategory)
+      .sort(([, a], [, b]) => Number(isBuildingUnlocked(b)) - Number(isBuildingUnlocked(a)) || unlockYear(a) - unlockYear(b) || a.price - b.price);
+    els.buildingList.innerHTML = ''; buildingEntries.forEach(([id,item]) => {
+      const unlocked = isBuildingUnlocked(item), requiredYear = unlockYear(item);
+      const button = document.createElement('button'); button.className = `building-card ${selectedBuilding === id ? 'selected':''} ${unlocked ? '' : 'locked'}`; button.disabled = !unlocked;
+      const detail = unlocked ? `+${item.income} / 10초 · 주민 ${item.people}` : `🔒 왕국력 ${requiredYear}년 해금`;
+      button.innerHTML = `<span class="card-icon">${item.icon}</span><span><span class="card-title">${item.name}</span><span class="card-detail">${detail}</span></span><b class="card-price">${unlocked ? `${format(item.price)} ✦` : `${requiredYear}년`}</b>`;
       button.onclick = () => { selectedBuilding = selectedBuilding === id ? null : id; state.rotation = 0; updateUI(); }; els.buildingList.append(button);
     });
+    const nextBuilding = Object.values(BUILDINGS).filter((item) => unlockYear(item) > kingdomYear()).sort((a, b) => unlockYear(a) - unlockYear(b))[0];
+    els.unlockInfo.textContent = nextBuilding ? `왕국력 ${kingdomYear()}년 · 총 ${CATALOG_BUILDING_COUNT}개 시대 건물 · 다음 해금: ${unlockYear(nextBuilding)}년 ${nextBuilding.name}` : `왕국력 ${kingdomYear()}년 · 시대 건물 ${CATALOG_BUILDING_COUNT}개를 모두 해금했습니다.`;
     els.landList.innerHTML = ''; LANDS.forEach((land) => {
       const button = document.createElement('button'); const active = owned(land); button.className = `land-card ${selectedLand===land.id?'selected':''}`;
       button.innerHTML = `<span class="card-icon">${active?'🌿':'🔒'}</span><span><span class="card-title">${land.name}</span><span class="card-detail">${active ? `${buildingCount(land.id)}채 건물` : '새로운 건설 부지'}</span></span><b class="card-price">${active?'보유':`${format(land.price)} ✦`}</b>`;
