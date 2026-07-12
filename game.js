@@ -97,7 +97,8 @@
   function buildingCount(landId) { return state.buildings.filter((building) => building.landId === landId).length; }
   function population() { return state.buildings.reduce((total, building) => total + BUILDINGS[building.type].people, 0); }
   function storedTax() { return state.buildings.reduce((total, building) => total + building.tax, 0); }
-  function workerIncomeMultiplier() { return (1 + (state.workers || 0) * 0.001) * (1 + (state.rebirths || 0) * 0.1); }
+  function workerIncomeMultiplier() { return (1 + (state.workers || 0) * 0.005) * (1 + (state.rebirths || 0) * 0.1); }
+  function workerCost() { return 600 + (state.workers || 0) * 150; }
   function countCategory(category) { return state.buildings.filter((building) => BUILDINGS[building.type].category === category).length; }
   function incomePerTick() { return state.buildings.reduce((total, building) => total + BUILDINGS[building.type].income, 0) * workerIncomeMultiplier(); }
   function missionProgress(mission) {
@@ -431,7 +432,10 @@
       els.missionProgress.style.width = '100%'; els.claimMission.disabled = true; els.claimMission.textContent = '완료';
     }
     const bonus = ((workerIncomeMultiplier() - 1) * 100).toFixed(1), rebirthBonus = (state.rebirths || 0) * 10;
-    els.workerInfo.textContent = state.autoCollect ? `왕실 자동 수금 · 골드 수입 +${bonus}%` : `수집자 ${state.workers}명 · 골드 수입 +${bonus}% · 환생 +${rebirthBonus}%`;
+    els.workerInfo.textContent = state.autoCollect ? `수집자 ${state.workers}/20명 · 자동 수금 · 세금 수입 +${bonus}%` : `수집자 ${state.workers}/20명 · 세금 수입 +${bonus}% · 환생 +${rebirthBonus}%`;
+    const hireButton = $('#hireWorker');
+    hireButton.disabled = state.workers >= 20;
+    hireButton.innerHTML = state.workers >= 20 ? '수집자 최대 고용 완료' : `수집자 고용 <span>${format(workerCost())} 골드</span>`;
     $('#rotationStep').value = String(state.rotationStep || 45);
     const item = selectedBuilding && BUILDINGS[selectedBuilding]; els.selectionName.textContent = deleteMode ? '삭제 모드' : (item ? item.name : '건물을 선택하세요'); els.selectionMeta.textContent = deleteMode ? '토지를 클릭하면 마지막 건물을 50% 환불로 철거합니다.' : (item ? `${format(item.price)} 골드 · 현재 회전 ${state.rotation}° · ${state.rotationStep || 45}°씩 회전` : `건설 메뉴에서 건물을 선택 · 환생 발전 ${Math.min(3, state.rebirths || 0)}단계`);
     $('#deleteButton').classList.toggle('active', deleteMode);
@@ -445,7 +449,7 @@
   $('#cancelButton').onclick = () => { selectedBuilding = null; deleteMode = false; updateUI(); };
   $('#saveButton').onclick = () => save();
   $('#collectTax').onclick = () => collectTax();
-  $('#hireWorker').onclick = () => { if (state.workers >= 5) return toast('수집자는 최대 5명입니다.'); if (state.cash < 600) return toast('골드가 부족합니다.'); state.cash -= 600; state.workers++; toast('새 세금 수집자가 도착했습니다.'); save(true); updateUI(); };
+  $('#hireWorker').onclick = () => { const cost = workerCost(); if (state.workers >= 20) return toast('수집자는 최대 20명입니다.'); if (state.cash < cost) return toast('골드가 부족합니다.'); state.cash -= cost; state.workers++; toast(`새 세금 수집자가 도착했습니다. 세금 수입 +0.5%`); save(true); updateUI(); };
   $('#unlockAuto').onclick = () => { if (state.autoCollect) return toast('이미 왕실 자동 수금이 활성화되어 있습니다.'); if (state.cash < 1200) return toast('골드가 부족합니다.'); state.cash -= 1200; state.autoCollect = true; toast('왕실 자동 수금이 시작되었습니다.'); save(true); updateUI(); };
   els.claimMission.onclick = () => {
     const mission = MISSIONS[state.missionIndex];
