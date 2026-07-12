@@ -43,6 +43,16 @@
     { id: 'pass2', name: '은빛 평원', x: 0, z: 24, price: 900, owned: false },
     { id: 'pass3', name: '수호자의 언덕', x: 48, z: 24, price: 900, owned: false },
     { id: 'pass4', name: '황금 항구', x: 96, z: 24, price: 900, owned: false },
+    { id: 'north1', name: '서리 들판', x: -96, z: -72, price: 1100, owned: false },
+    { id: 'north2', name: '은빛 초원', x: -48, z: -72, price: 1100, owned: false },
+    { id: 'north3', name: '왕도의 북문', x: 0, z: -72, price: 1250, owned: false },
+    { id: 'north4', name: '솔바람 능선', x: 48, z: -72, price: 1250, owned: false },
+    { id: 'north5', name: '새벽 평원', x: 96, z: -72, price: 1400, owned: false },
+    { id: 'south1', name: '호수 들녘', x: -96, z: 72, price: 1100, owned: false },
+    { id: 'south2', name: '곡식 벌판', x: -48, z: 72, price: 1100, owned: false },
+    { id: 'south3', name: '왕실 과수원', x: 0, z: 72, price: 1250, owned: false },
+    { id: 'south4', name: '바람개비 언덕', x: 48, z: 72, price: 1250, owned: false },
+    { id: 'south5', name: '황혼의 벌판', x: 96, z: 72, price: 1400, owned: false },
   ];
   const START = { cash: 1000, owned: ['core1', 'core2', 'core3'], buildings: [], workers: 0, autoCollect: false, rotation: 0, missionIndex: 0, rebirths: 0 };
   const storageKey = 'crownvale-browser-v1';
@@ -245,8 +255,8 @@
     }
   }
   function drawWorldArt() {
-    box({x:0,y:.65,z:0}, [242,.18,5], '#b7986f');
-    for (const x of [-72,-24,24,72]) box({x,y:.65,z:0}, [4,.18,98], '#ad8e68');
+    for (const z of [-48, 0, 48]) box({x:0,y:.65,z}, [242,.18,4], '#b7986f');
+    for (const x of [-72,-24,24,72]) box({x,y:.65,z:0}, [4,.18,194], '#ad8e68');
     box({x:153,y:8,z:0}, [62,16,14], '#535e70');
     for (const x of [123,183]) { box({x,y:11,z:-8}, [12,22,12], '#657183'); prism({x,y:0,z:-8}, 16,16,22,29,'#693f56'); }
     box({x:153,y:5.5,z:-7.3}, [10,11,.5], '#513322');
@@ -337,7 +347,7 @@
     });
     els.landList.innerHTML = ''; LANDS.forEach((land) => {
       const button = document.createElement('button'); const active = owned(land); button.className = `land-card ${selectedLand===land.id?'selected':''}`;
-      button.innerHTML = `<span class="card-icon">${active?'🌿':'🔒'}</span><span><span class="card-title">${land.name}</span><span class="card-detail">${active ? `${buildingCount(land.id)} / 8 건물` : '새로운 건설 부지'}</span></span><b class="card-price">${active?'보유':`${format(land.price)} ✦`}</b>`;
+      button.innerHTML = `<span class="card-icon">${active?'🌿':'🔒'}</span><span><span class="card-title">${land.name}</span><span class="card-detail">${active ? `${buildingCount(land.id)}채 건물` : '새로운 건설 부지'}</span></span><b class="card-price">${active?'보유':`${format(land.price)} ✦`}</b>`;
       button.onclick = () => active ? (selectedLand=land.id, updateUI()) : purchaseLand(land.id); els.landList.append(button);
     });
     const mission = MISSIONS[state.missionIndex];
