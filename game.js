@@ -5,7 +5,7 @@
   const ctx = canvas.getContext('2d');
   const $ = (selector) => document.querySelector(selector);
   const els = {
-    cash: $('#cash'), population: $('#population'), rebirths: $('#rebirths'), year: $('#year'), researchTokens: $('#researchTokens'), categoryList: $('#categoryList'), buildingList: $('#buildingList'), landList: $('#landList'),
+    cash: $('#cash'), population: $('#population'), rebirths: $('#rebirths'), year: $('#year'), researchTokens: $('#researchTokens'), dayIcon: $('#dayIcon'), dayClock: $('#dayClock'), productionStatus: $('#productionStatus'), categoryList: $('#categoryList'), buildingList: $('#buildingList'), landList: $('#landList'),
     selectionName: $('#selectionName'), selectionMeta: $('#selectionMeta'), workerInfo: $('#workerInfo'),
     storedTax: $('#storedTax'), missionTitle: $('#missionTitle'), missionText: $('#missionText'), unlockInfo: $('#unlockInfo'), researchInfo: $('#researchInfo'),
     missionProgress: $('#missionProgress'), claimMission: $('#claimMission'), toast: $('#toast'),
@@ -138,8 +138,28 @@
   const CAMERA_MIN_ZOOM = 180;
   const CAMERA_MAX_ZOOM = 3600;
   const CAMERA_ZOOM_STEP = 1.2;
+  const DAY_CYCLE_SECONDS = 96;
+  const MAX_VISIBLE_RESIDENTS = 120;
   const camera = { x: 24, z: 0, yaw: -0.76, pitch: 1.12, zoom: 500 };
   const hitTiles = [];
+
+  function clockHour() { return (8 + worldTime * 24 / DAY_CYCLE_SECONDS) % 24; }
+  function isDaytime() { const hour = clockHour(); return hour >= 6 && hour < 18; }
+  function nightStrength() {
+    const hour = clockHour();
+    if (hour >= 7 && hour < 17) return 0;
+    if (hour >= 5 && hour < 7) return 1 - (hour - 5) / 2;
+    if (hour >= 17 && hour < 19) return (hour - 17) / 2;
+    return 1;
+  }
+  function updateClockUI() {
+    const hour = clockHour(), hours = Math.floor(hour), minutes = Math.floor((hour - hours) * 60);
+    const daytime = isDaytime();
+    els.dayIcon.textContent = daytime ? '☀' : '☾';
+    els.dayClock.textContent = `${daytime ? '낮' : '밤'} ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    els.productionStatus.textContent = daytime ? '생산 가동' : '생산 휴식';
+    els.dayClock.closest('.resource').classList.toggle('night', !daytime);
+  }
 
   function cameraMovementScale() {
     // Keep the normal view responsive, then increase screen-space movement
@@ -421,13 +441,6 @@
     if (upgrade >= 1) box(local(w*.36, d*.28, h + 3.2), [.65, 4.5, .65], '#5d626a', r);
     if (upgrade >= 2) { box(local(-w*.42, 0, h + 3.2), [.18, 4.2, .18], '#d9b45f', r); box(local(-w*.42, 0, h + 4.55), [2.2, 1.1, .12], '#cf5861', r); }
     if (upgrade >= 3) { box(local(0, 0, h + 4.3), [2.2, 3.2, 2.2], '#c9b077', r); prism(local(0, 0, 0), 3.2, 3.2, h + 5.7, h + 7.3, '#79534e', r); }
-    const colors = ['#f1b36e', '#86c8d8', '#e8899b'];
-    for (let i = 0; i < Math.min(item.people, 3); i++) {
-      const phase = worldTime * .75 + i * 2.2 + (building.id ? building.id.charCodeAt(0) % 7 : 0);
-      const x = Math.cos(phase) * w * .66, z = Math.sin(phase) * d * .66, bob = Math.sin(phase * 2) * .12;
-      box(local(x, z, 1.85 + bob), [.8, 1.9, .8], colors[i], r);
-      box(local(x, z, 3.1 + bob), [.95, .72, .95], '#f8d0a7', r);
-    }
   }
   function drawWorldArt() {
     const centerX = MAP_GRID.minX + (MAP_GRID.columns - 1) * MAP_GRID.tile / 2;
@@ -464,6 +477,34 @@
       }
     });
   }
+  function drawResidents() {
+    const total = Math.min(population(), MAX_VISIBLE_RESIDENTS);
+    if (!total) return;
+    const ownedLands = LANDS.filter(owned);
+    if (!ownedLands.length) return;
+    const workplaces = state.buildings.filter((building) => BUILDINGS[building.type].category === 'production');
+    const daytime = isDaytime();
+    const colors = ['#f1b36e', '#86c8d8', '#e8899b', '#8ed08d', '#c7a5e8'];
+    for (let i = 0; i < total; i++) {
+      const phase = worldTime * (daytime ? 1.35 : .72) + i * 1.73;
+      let x, z, working = false;
+      if (daytime && workplaces.length) {
+        const workplace = workplaces[i % workplaces.length], item = BUILDINGS[workplace.type];
+        const ring = Math.floor(i / workplaces.length) % 4;
+        x = workplace.x + Math.cos(phase) * (item.size[0] * .62 + 2 + ring * 1.7);
+        z = workplace.z + Math.sin(phase * .83) * (item.size[2] * .62 + 2 + ring * 1.5);
+        working = true;
+      } else {
+        const land = ownedLands[i % ownedLands.length];
+        x = land.x + Math.sin(phase * .63 + i) * 17;
+        z = land.z + Math.sin(phase * .47 + i * 2.1) * 17;
+      }
+      const bob = Math.sin(phase * 2.4) * .12;
+      box({x, y:2.15 + bob, z}, [1.15, 2.35, 1.15], working ? '#d5a43c' : colors[i % colors.length]);
+      box({x, y:3.75 + bob, z}, [1.25, .85, 1.25], '#f5cba6');
+      if (working) box({x:x + .9, y:2.25 + bob, z}, [.65, .75, .65], '#5c6670');
+    }
+  }
   function render() {
     // The sea is intentionally a screen-space background. A giant 3D water
     // plane cannot be depth-sorted correctly against every individual tile.
@@ -474,7 +515,7 @@
     faceLayer = 0; LANDS.forEach(drawLand);
     faceLayer = 1; drawWorldArt(); drawDecorations();
     faceLayer = 2; LANDS.forEach(drawLandBorder);
-    faceLayer = 3; state.buildings.forEach(drawBuilding);
+    faceLayer = 3; state.buildings.forEach(drawBuilding); drawResidents();
     if (hoveredPlacement && hoveredPlacement.valid && selectedBuilding && isBuildingUnlocked(BUILDINGS[selectedBuilding])) {
       faceLayer = 4;
       drawBuilding({ type: selectedBuilding, x: hoveredPlacement.x, z: hoveredPlacement.z, rotation: state.rotation }, true);
@@ -486,6 +527,11 @@
       if (face.outline) { ctx.strokeStyle = face.outline; ctx.lineWidth = 1; ctx.stroke(); }
     }
     ctx.globalAlpha = 1;
+    const darkness = nightStrength();
+    if (darkness > 0) {
+      ctx.fillStyle = `rgba(7, 16, 46, ${(.56 * darkness).toFixed(3)})`;
+      ctx.fillRect(0, 0, viewW, viewH);
+    }
     requestAnimationFrame(render);
   }
 
@@ -564,7 +610,8 @@
     els.buildingList.innerHTML = ''; buildingEntries.forEach(([id,item]) => {
       const unlocked = isBuildingUnlocked(item), requiredYear = unlockYear(item), tokenCost = item.researchCost || 0;
       const button = document.createElement('button'); button.className = `building-card ${selectedBuilding === id ? 'selected':''} ${unlocked ? '' : 'locked'}`; button.disabled = !unlocked;
-      const detail = unlocked ? `세금 +${item.income} / 10초 · 주민 ${item.people}` : `🔒 왕국력 ${requiredYear}년 해금`;
+      const productionNote = item.category === 'production' ? ' · 낮에만 생산' : '';
+      const detail = unlocked ? `세금 +${item.income} / 10초 · 주민 ${item.people}${productionNote}` : `🔒 왕국력 ${requiredYear}년 해금`;
       const price = unlocked ? `${format(item.price)} ✦${tokenCost ? `<small>🧪 ${tokenCost}</small>` : ''}` : `${requiredYear}년${tokenCost ? `<small>🧪 ${tokenCost}</small>` : ''}`;
       button.innerHTML = `<span class="card-icon">${item.icon}</span><span><span class="card-title">${item.name}</span><span class="card-detail">${detail}</span></span><b class="card-price">${price}</b>`;
       button.onclick = () => { selectedBuilding = selectedBuilding === id ? null : id; state.rotation = 0; updateUI(); }; els.buildingList.append(button);
@@ -676,8 +723,13 @@
   function tick(now) {
     const dt = Math.min(.25,(now-lastTime)/1000); lastTime=now;
     worldTime += dt;
+    updateClockUI();
     const multiplier = totalIncomeMultiplier();
-    for (const building of state.buildings) { const item=BUILDINGS[building.type]; building.tax = Math.min(item.income * 20 * multiplier, building.tax + item.income * multiplier * dt / 10); }
+    for (const building of state.buildings) {
+      const item = BUILDINGS[building.type];
+      if (item.category === 'production' && !isDaytime()) continue;
+      building.tax = Math.min(item.income * 20 * multiplier, building.tax + item.income * multiplier * dt / 10);
+    }
     els.storedTax.textContent = formatTax(storedTax());
     autoTimer += dt;
     const move = CAMERA_KEYBOARD_SPEED * dt * cameraMovementScale(), c = Math.cos(camera.yaw), s = Math.sin(camera.yaw);
@@ -689,5 +741,5 @@
     if (autoTimer >= 10) { autoTimer = 0; if (state.autoCollect) collectTax(false); else if (state.workers > 0) { const targets=state.buildings.slice(0,state.workers); const amount=takeTax(targets); if (amount) state.cash += amount; } save(true); updateUI(); }
     requestAnimationFrame(tick);
   }
-  updateUI(); render(); requestAnimationFrame(tick);
+  updateUI(); updateClockUI(); render(); requestAnimationFrame(tick);
 })();
