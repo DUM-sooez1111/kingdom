@@ -125,7 +125,8 @@
   const pressedKeys = new Set();
   let viewW = 0, viewH = 0, dpr = 1;
   // High bird's-eye view keeps every buildable tile visible at the start.
-  const camera = { x: 24, z: 0, yaw: -0.76, pitch: 1.12, zoom: 430 };
+  const CAMERA_SCREEN_Y = .45;
+  const camera = { x: 24, z: 0, yaw: -0.76, pitch: 1.12, zoom: 500 };
   const hitTiles = [];
 
   function load() {
@@ -194,12 +195,12 @@
     const py = point.y * cp + rz * sp;
     const depth = -point.y * sp + rz * cp + 185;
     const scale = camera.zoom / Math.max(50, depth);
-    return { x: viewW * .5 + rx * scale, y: viewH * .57 - py * scale, depth };
+    return { x: viewW * .5 + rx * scale, y: viewH * CAMERA_SCREEN_Y - py * scale, depth };
   }
   function screenToGround(screenX, screenY, groundY = .7) {
     const cy = Math.cos(camera.yaw), sy = Math.sin(camera.yaw);
     const cp = Math.cos(camera.pitch), sp = Math.sin(camera.pitch);
-    const q = (viewH * .57 - screenY) / camera.zoom;
+    const q = (viewH * CAMERA_SCREEN_Y - screenY) / camera.zoom;
     const denominator = q * cp - sp;
     if (Math.abs(denominator) < .0001) return null;
     const rz = (groundY * cp + q * groundY * sp - q * 185) / denominator;
