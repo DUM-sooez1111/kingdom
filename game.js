@@ -281,12 +281,12 @@
   }
   function drawLandBorder(land) {
     if (selectedLand !== land.id) return;
-    const color = selectedLand === land.id ? '#f0cb70' : '#354a57';
-    const y = .68, width = 48.35, depth = 48.35;
-    box({ x: land.x, y, z: land.z - depth/2 }, [width, .18, .42], color);
-    box({ x: land.x, y, z: land.z + depth/2 }, [width, .18, .42], color);
-    box({ x: land.x - width/2, y, z: land.z }, [.42, .18, depth], color);
-    box({ x: land.x + width/2, y, z: land.z }, [.42, .18, depth], color);
+    const color = '#f0cb70';
+    const y = .86, width = 46.8, depth = 46.8, thickness = .34;
+    box({ x: land.x, y, z: land.z - depth/2 }, [width, .2, thickness], color);
+    box({ x: land.x, y, z: land.z + depth/2 }, [width, .2, thickness], color);
+    box({ x: land.x - width/2, y, z: land.z }, [thickness, .2, depth], color);
+    box({ x: land.x + width/2, y, z: land.z }, [thickness, .2, depth], color);
   }
   function drawCatalogDetail(item, local, r, w, h, d) {
     if (!item.catalog) return;
@@ -436,10 +436,11 @@
     ctx.fillStyle = water; ctx.fillRect(0, 0, viewW, viewH);
     faces.length = 0; hitTiles.length = 0;
     faceLayer = 0; LANDS.forEach(drawLand);
-    faceLayer = 1; drawWorldArt(); drawDecorations(); LANDS.forEach(drawLandBorder);
-    faceLayer = 2; state.buildings.forEach(drawBuilding);
+    faceLayer = 1; drawWorldArt(); drawDecorations();
+    faceLayer = 2; LANDS.forEach(drawLandBorder);
+    faceLayer = 3; state.buildings.forEach(drawBuilding);
     if (hoveredPlacement && hoveredPlacement.valid && selectedBuilding && isBuildingUnlocked(BUILDINGS[selectedBuilding])) {
-      faceLayer = 3;
+      faceLayer = 4;
       drawBuilding({ type: selectedBuilding, x: hoveredPlacement.x, z: hoveredPlacement.z, rotation: state.rotation }, true);
     }
     faces.sort((a,b) => a.layer - b.layer || b.depth - a.depth);
