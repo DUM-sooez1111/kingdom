@@ -274,9 +274,13 @@
   function drawLand(land) {
     const active = owned(land); const selected = selectedLand === land.id;
     const color = active ? (selected ? '#71b869' : '#5b9856') : '#365c4a';
-    box({ x: land.x, y: 0, z: land.z }, [48, 1, 48], color);
+    const surface = [
+      {x:land.x-24,y:.5,z:land.z-24}, {x:land.x+24,y:.5,z:land.z-24},
+      {x:land.x+24,y:.5,z:land.z+24}, {x:land.x-24,y:.5,z:land.z+24},
+    ];
+    addFace(surface, shade(color, 22));
     if (!active) { box({ x: land.x, y: 1.2, z: land.z }, [9, .35, 2], '#596a78'); box({ x: land.x, y: 3.2, z: land.z }, [.55, 4, .55], '#8091a0'); }
-    const top = [{x:land.x-23.7,y:.58,z:land.z-23.7},{x:land.x+23.7,y:.58,z:land.z-23.7},{x:land.x+23.7,y:.58,z:land.z+23.7},{x:land.x-23.7,y:.58,z:land.z+23.7}].map(project);
+    const top = surface.map(project);
     hitTiles.push({ id: land.id, points: top, depth: top.reduce((sum,p)=>sum+p.depth,0)/4 });
   }
   function drawLandBorder(land) {
