@@ -129,6 +129,15 @@
   const camera = { x: 24, z: 0, yaw: -0.76, pitch: 1.12, zoom: 500 };
   const hitTiles = [];
 
+  function clampCamera() {
+    const minX = MAP_GRID.minX - MAP_GRID.tile / 2;
+    const maxX = MAP_GRID.minX + (MAP_GRID.columns - 1) * MAP_GRID.tile + MAP_GRID.tile / 2;
+    const minZ = MAP_GRID.minZ - MAP_GRID.tile / 2;
+    const maxZ = MAP_GRID.minZ + (MAP_GRID.rows - 1) * MAP_GRID.tile + MAP_GRID.tile / 2;
+    camera.x = Math.max(minX, Math.min(maxX, camera.x));
+    camera.z = Math.max(minZ, Math.min(maxZ, camera.z));
+  }
+
   function load() {
     try {
       const saved = JSON.parse(localStorage.getItem(storageKey));
@@ -190,22 +199,22 @@
     const cp = Math.cos(camera.pitch), sp = Math.sin(camera.pitch);
     const rx = dx * cy - dz * sy;
     const rz = dx * sy + dz * cy;
-    // Rotate the world away from a camera above it: taller objects become
-    // closer and appear above their bases, rather than looking up from below.
+    // An orthographic bird's-eye camera keeps buildings the same size while
+    // panning. Perspective scaling made nearby buildings stretch into long
+    // bars and eventually disappear when the camera crossed them.
     const py = point.y * cp + rz * sp;
-    const depth = -point.y * sp + rz * cp + 185;
-    const scale = camera.zoom / Math.max(50, depth);
+    const depth = -point.y * sp + rz * cp;
+    const scale = camera.zoom / 1000;
     return { x: viewW * .5 + rx * scale, y: viewH * CAMERA_SCREEN_Y - py * scale, depth };
   }
   function screenToGround(screenX, screenY, groundY = .7) {
     const cy = Math.cos(camera.yaw), sy = Math.sin(camera.yaw);
     const cp = Math.cos(camera.pitch), sp = Math.sin(camera.pitch);
-    const q = (viewH * CAMERA_SCREEN_Y - screenY) / camera.zoom;
-    const denominator = q * cp - sp;
-    if (Math.abs(denominator) < .0001) return null;
-    const rz = (groundY * cp + q * groundY * sp - q * 185) / denominator;
-    const depth = -groundY * sp + rz * cp + 185;
-    const rx = (screenX - viewW * .5) * depth / camera.zoom;
+    const scale = camera.zoom / 1000;
+    if (scale <= 0 || Math.abs(sp) < .0001) return null;
+    const py = (viewH * CAMERA_SCREEN_Y - screenY) / scale;
+    const rz = (py - groundY * cp) / sp;
+    const rx = (screenX - viewW * .5) / scale;
     return { x: camera.x + rx * cy + rz * sy, z: camera.z - rx * sy + rz * cy };
   }
   function landAtWorld(position) {
@@ -616,6 +625,7 @@
     const c = Math.cos(camera.yaw), s = Math.sin(camera.yaw);
     camera.x += (-dx * c + dy * s) * speed;
     camera.z += (dx * s + dy * c) * speed;
+    clampCamera();
     cameraDrag.x = event.clientX; cameraDrag.y = event.clientY;
   });
   canvas.addEventListener('pointerup', (event) => {
@@ -633,6 +643,8 @@
     if (event.key === 'Escape') { selectedBuilding = null; deleteMode = false; updateUI(); }
   });
   window.addEventListener('keyup', (event) => pressedKeys.delete(event.key.toLowerCase()));
+  window.addEventListener('blur', () => pressedKeys.clear());
+  document.addEventListener('visibilitychange', () => { if (document.hidden) pressedKeys.clear(); });
   function pointInPolygon(x,y,points) { let inside=false; for(let i=0,j=points.length-1;i<points.length;j=i++) { const a=points[i],b=points[j]; if (((a.y>y)!==(b.y>y)) && (x < (b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x)) inside=!inside; } return inside; }
 
   function tick(now) {
@@ -647,6 +659,7 @@
     if (pressedKeys.has('s')) { camera.x -= s * move; camera.z -= c * move; }
     if (pressedKeys.has('a')) { camera.x -= c * move; camera.z += s * move; }
     if (pressedKeys.has('d')) { camera.x += c * move; camera.z -= s * move; }
+    if (pressedKeys.size) clampCamera();
     if (autoTimer >= 10) { autoTimer = 0; if (state.autoCollect) collectTax(false); else if (state.workers > 0) { const targets=state.buildings.slice(0,state.workers); const amount=takeTax(targets); if (amount) state.cash += amount; } save(true); updateUI(); }
     requestAnimationFrame(tick);
   }
