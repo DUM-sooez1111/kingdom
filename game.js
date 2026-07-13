@@ -125,7 +125,7 @@
   const pressedKeys = new Set();
   let viewW = 0, viewH = 0, dpr = 1;
   // High bird's-eye view keeps every buildable tile visible at the start.
-  const camera = { x: 0, z: 0, yaw: -0.76, pitch: 1.12, zoom: 1050 };
+  const camera = { x: 24, z: 0, yaw: -0.76, pitch: 1.12, zoom: 430 };
   const hitTiles = [];
 
   function load() {
@@ -618,7 +618,7 @@
     canvas.releasePointerCapture(event.pointerId); cameraDrag = null;
   });
   canvas.addEventListener('pointerleave', () => { if (!cameraDrag) { hoveredLand = null; hoveredPlacement = null; } });
-  canvas.addEventListener('wheel', (event) => { event.preventDefault(); camera.zoom = Math.max(700, Math.min(1900, camera.zoom - event.deltaY * .55)); }, { passive: false });
+  canvas.addEventListener('wheel', (event) => { event.preventDefault(); camera.zoom = Math.max(180, Math.min(1900, camera.zoom - event.deltaY * .7)); }, { passive: false });
   window.addEventListener('keydown', (event) => {
     const key = event.key.toLowerCase();
     if (key === 'q') camera.yaw -= .08;
