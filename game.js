@@ -6,7 +6,7 @@
   const $ = (selector) => document.querySelector(selector);
   const els = {
     cash: $('#cash'), population: $('#population'), rebirths: $('#rebirths'), year: $('#year'), researchTokens: $('#researchTokens'), dayIcon: $('#dayIcon'), dayClock: $('#dayClock'), productionStatus: $('#productionStatus'), categoryList: $('#categoryList'), buildingList: $('#buildingList'), landList: $('#landList'),
-    selectionName: $('#selectionName'), selectionMeta: $('#selectionMeta'), workerInfo: $('#workerInfo'),
+    selectionName: $('#selectionName'), selectionMeta: $('#selectionMeta'), workerInfo: $('#workerInfo'), employmentInfo: $('#employmentInfo'), jobList: $('#jobList'),
     storedTax: $('#storedTax'), missionTitle: $('#missionTitle'), missionText: $('#missionText'), unlockInfo: $('#unlockInfo'), researchInfo: $('#researchInfo'),
     missionProgress: $('#missionProgress'), claimMission: $('#claimMission'), toast: $('#toast'),
   };
@@ -140,6 +140,16 @@
   const CAMERA_ZOOM_STEP = 1.2;
   const DAY_CYCLE_SECONDS = 96;
   const MAX_VISIBLE_RESIDENTS = 120;
+  const JOB_PROFILES = {
+    farm: { name: '농부', icon: '🌾', outdoor: true, color: '#d7b34f' },
+    ranch: { name: '목동', icon: '🐑', outdoor: true, color: '#a9c66d' },
+    harbor: { name: '항구 노동자', icon: '⚓', outdoor: true, color: '#5aa9c4' },
+    market: { name: '상인', icon: '🪙', outdoor: true, color: '#d98755' },
+    mine: { name: '광부', icon: '⛏', outdoor: false, color: '#7f8791' },
+    forge: { name: '대장장이', icon: '⚒', outdoor: false, color: '#b76b46' },
+    warehouse: { name: '창고 노동자', icon: '📦', outdoor: false, color: '#9b7658' },
+    default: { name: '생산 노동자', icon: '⚙', outdoor: false, color: '#7797a4' },
+  };
   const camera = { x: 24, z: 0, yaw: -0.76, pitch: 1.12, zoom: 500 };
   const hitTiles = [];
 
@@ -199,6 +209,30 @@
   function owned(land) { return state.owned.includes(land.id); }
   function buildingCount(landId) { return state.buildings.filter((building) => building.landId === landId).length; }
   function population() { return state.buildings.reduce((total, building) => total + BUILDINGS[building.type].people, 0); }
+  function jobProfile(building) {
+    const item = BUILDINGS[building.type], key = item.model || building.type;
+    return JOB_PROFILES[key] || JOB_PROFILES.default;
+  }
+  function workplaceEntries() {
+    return state.buildings
+      .filter((building) => BUILDINGS[building.type].category === 'production')
+      .map((building) => ({ building, profile: jobProfile(building), capacity: Math.max(1, BUILDINGS[building.type].people || 1) }));
+  }
+  function employmentSummary() {
+    const total = population(), workplaces = workplaceEntries();
+    const capacity = workplaces.reduce((sum, workplace) => sum + workplace.capacity, 0);
+    const employed = Math.min(total, capacity), jobs = new Map();
+    let remaining = employed;
+    for (const workplace of workplaces) {
+      if (remaining <= 0) break;
+      const assigned = Math.min(workplace.capacity, remaining), key = workplace.profile.name;
+      if (assigned > 0) {
+        const current = jobs.get(key) || { ...workplace.profile, count: 0 };
+        current.count += assigned; jobs.set(key, current); remaining -= assigned;
+      }
+    }
+    return { total, employed, unemployed: total - employed, capacity, workplaces, jobs: [...jobs.values()] };
+  }
   function storedTax() { return state.buildings.reduce((total, building) => total + building.tax, 0); }
   function researchIncomeMultiplier() { return 1 + (state.researchTokens || 0) * .5; }
   function totalIncomeMultiplier() {
@@ -478,31 +512,33 @@
     });
   }
   function drawResidents() {
-    const total = Math.min(population(), MAX_VISIBLE_RESIDENTS);
-    if (!total) return;
+    const employment = employmentSummary();
+    const visibleTotal = Math.min(employment.total, MAX_VISIBLE_RESIDENTS);
+    if (!visibleTotal) return;
     const ownedLands = LANDS.filter(owned);
     if (!ownedLands.length) return;
-    const workplaces = state.buildings.filter((building) => BUILDINGS[building.type].category === 'production');
     const daytime = isDaytime();
-    const colors = ['#f1b36e', '#86c8d8', '#e8899b', '#8ed08d', '#c7a5e8'];
-    for (let i = 0; i < total; i++) {
+    const visibleEmployed = employment.total ? Math.min(employment.employed, Math.round(visibleTotal * employment.employed / employment.total)) : 0;
+    for (let i = 0; i < visibleTotal; i++) {
+      const employed = i < visibleEmployed;
       const phase = worldTime * (daytime ? 1.35 : .72) + i * 1.73;
-      let x, z, working = false;
-      if (daytime && workplaces.length) {
-        const workplace = workplaces[i % workplaces.length], item = BUILDINGS[workplace.type];
-        const ring = Math.floor(i / workplaces.length) % 4;
-        x = workplace.x + Math.cos(phase) * (item.size[0] * .62 + 2 + ring * 1.7);
-        z = workplace.z + Math.sin(phase * .83) * (item.size[2] * .62 + 2 + ring * 1.5);
-        working = true;
+      let x, z, workingOutside = false, bodyColor = employed ? '#6e9dbc' : '#81888d';
+      if (daytime && employed && employment.workplaces.length) {
+        const workplace = employment.workplaces[i % employment.workplaces.length];
+        if (!workplace.profile.outdoor) continue;
+        const item = BUILDINGS[workplace.building.type], ring = Math.floor(i / employment.workplaces.length) % 4;
+        x = workplace.building.x + Math.cos(phase) * (item.size[0] * .62 + 2 + ring * 1.7);
+        z = workplace.building.z + Math.sin(phase * .83) * (item.size[2] * .62 + 2 + ring * 1.5);
+        bodyColor = workplace.profile.color; workingOutside = true;
       } else {
         const land = ownedLands[i % ownedLands.length];
         x = land.x + Math.sin(phase * .63 + i) * 17;
         z = land.z + Math.sin(phase * .47 + i * 2.1) * 17;
       }
       const bob = Math.sin(phase * 2.4) * .12;
-      box({x, y:2.15 + bob, z}, [1.15, 2.35, 1.15], working ? '#d5a43c' : colors[i % colors.length]);
+      box({x, y:2.15 + bob, z}, [1.15, 2.35, 1.15], bodyColor);
       box({x, y:3.75 + bob, z}, [1.25, .85, 1.25], '#f5cba6');
-      if (working) box({x:x + .9, y:2.25 + bob, z}, [.65, .75, .65], '#5c6670');
+      if (workingOutside) box({x:x + .9, y:2.25 + bob, z}, [.65, .75, .65], '#5c6670');
     }
   }
   function render() {
@@ -638,6 +674,18 @@
     }
     const bonus = ((totalIncomeMultiplier() - 1) * 100).toFixed(1), rebirthBonus = (state.rebirths || 0) * 10;
     els.workerInfo.textContent = state.autoCollect ? `수집자 ${state.workers}/20명 · 자동 수금 · 세금 수입 +${bonus}%` : `수집자 ${state.workers}/20명 · 세금 수입 +${bonus}% · 환생 +${rebirthBonus}%`;
+    const employment = employmentSummary();
+    els.employmentInfo.textContent = `취업자 ${format(employment.employed)}명 · 백수 ${format(employment.unemployed)}명 · 일자리 ${format(employment.capacity)}개`;
+    els.jobList.innerHTML = '';
+    if (!employment.jobs.length) {
+      const empty = document.createElement('span'); empty.className = 'job-empty'; empty.textContent = '생산 건물을 지으면 직업이 생깁니다.'; els.jobList.append(empty);
+    } else {
+      employment.jobs.forEach((job) => {
+        const row = document.createElement('div'); row.className = 'job-row';
+        row.innerHTML = `<span>${job.icon} ${job.name}</span><b>${format(job.count)}명</b><small>${job.outdoor ? '낮에는 건물 밖에서 근무' : '낮에는 건물 안에서 근무'}</small>`;
+        els.jobList.append(row);
+      });
+    }
     const hireButton = $('#hireWorker');
     hireButton.disabled = state.workers >= 20;
     hireButton.innerHTML = state.workers >= 20 ? '수집자 최대 고용 완료' : `수집자 고용 <span>${format(workerCost())} 골드</span>`;
