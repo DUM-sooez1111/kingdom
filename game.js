@@ -65,6 +65,13 @@
       };
     });
   }
+  // Buildings return 10% of their purchase price every ten seconds. This
+  // makes every more expensive building an unambiguous income upgrade while
+  // keeping the catalogue display and the actual tax calculation identical.
+  const BUILDING_INCOME_RATE = .1;
+  Object.values(BUILDINGS).forEach((item) => {
+    item.income = Math.max(1, Math.round(item.price * BUILDING_INCOME_RATE));
+  });
   const CATALOG_BUILDING_COUNT = Object.values(BUILDINGS).filter((item) => item.catalog).length;
   const CATEGORIES = [{ id: 'all', name: '전체' }, { id: 'residential', name: '주거' }, { id: 'production', name: '생산' }, { id: 'landmark', name: '랜드마크' }, { id: 'decoration', name: '장식' }];
   const MISSIONS = [
