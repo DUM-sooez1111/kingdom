@@ -40,9 +40,9 @@
       <section class="bottom-bar glass"><div class="selection"><span class="selection-label">선택</span><strong id="selectionName">건물을 선택하세요</strong><span id="selectionMeta">토지를 클릭해 배치</span></div><select id="rotationStep" class="rotation-select" title="회전 각도"><option value="15">15°</option><option value="30">30°</option><option value="45" selected>45°</option><option value="90">90°</option></select><button id="rotateButton" class="secondary compact">↻ 회전</button><button id="interiorButton" class="secondary compact" hidden>내부 보기</button><button id="deleteButton" class="danger compact">삭제</button><button id="rebirthButton" class="secondary compact">♛ 환생</button><button id="cancelButton" class="secondary compact">취소</button></section>
       <section id="interiorModal" class="interior-modal" hidden aria-label="건물 내부 보기">
         <div class="interior-window glass">
-          <header><div><span class="eyebrow">건물 내부</span><h2 id="interiorTitle">건물</h2><p id="interiorMeta"></p></div><button id="closeInterior" class="icon-button" aria-label="내부 보기 닫기">✕</button></header>
+          <header><div><span class="eyebrow">건물 내부</span><h2 id="interiorTitle">건물</h2><p id="interiorMeta"></p></div><div class="interior-actions"><button id="resetInteriorView" class="secondary compact">◎ 시점 초기화</button><button id="closeInterior" class="icon-button" aria-label="내부 보기 닫기">✕</button></div></header>
           <canvas id="interiorCanvas" width="900" height="520"></canvas>
-          <p class="interior-help">건물 종류와 시대에 따라 가구·설비·색상이 달라집니다.</p>
+          <p class="interior-help">마우스 드래그: 좌우·상하 둘러보기 · 휠: 확대/축소 · Q/E: 회전 · W/S: 줌 · R: 초기화 · Esc: 닫기</p>
         </div>
       </section>
       <div id="toast" role="status"></div>

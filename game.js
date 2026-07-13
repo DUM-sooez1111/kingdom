@@ -122,6 +122,7 @@
   let selectedBuilding = null;
   let selectedPlacedBuilding = null;
   let interiorBuilding = null;
+  const interiorView = { yaw:Math.PI/4, tilt:.68, zoom:1, drag:null };
   let selectedCategory = 'all';
   let hoveredLand = null;
   let hoveredPlacement = null;
@@ -621,9 +622,14 @@
     }
   }
   function interiorIso(x, z, y, width, height) {
-    const unit = Math.min(width / 24, height / 12.5);
-    return { x:width*.5 + (x-z)*unit, y:height*.13 + (x+z)*unit*.48 - y*unit };
+    const unit = Math.min(width / 24, height / 12.5) * interiorView.zoom, dx=x-5, dz=z-3.5, c=Math.cos(interiorView.yaw), s=Math.sin(interiorView.yaw);
+    const rx=dx*c-dz*s, rz=dx*s+dz*c;
+    const baseUnit=Math.min(width / 24, height / 12.5), baseX=width*.5+1.5*baseUnit, baseY=height*.13+8.5*baseUnit*.48;
+    return { x:baseX + rx*unit*Math.SQRT2, y:baseY + rz*unit*interiorView.tilt - y*unit };
   }
+  function interiorDepth(x,z) { const dx=x-5,dz=z-3.5; return dx*Math.sin(interiorView.yaw)+dz*Math.cos(interiorView.yaw); }
+  function clampInteriorView() { interiorView.yaw=Math.max(.12,Math.min(1.45,interiorView.yaw)); interiorView.tilt=Math.max(.45,Math.min(.92,interiorView.tilt)); interiorView.zoom=Math.max(.65,Math.min(1.6,interiorView.zoom)); }
+  function resetInteriorView() { interiorView.yaw=Math.PI/4; interiorView.tilt=.68; interiorView.zoom=1; interiorView.drag=null; interiorCanvas.classList.remove('dragging'); }
   function interiorPaint(points, color) {
     interiorCtx.beginPath(); points.forEach((point,index) => index ? interiorCtx.lineTo(point.x,point.y) : interiorCtx.moveTo(point.x,point.y)); interiorCtx.closePath();
     interiorCtx.fillStyle = color; interiorCtx.fill(); interiorCtx.strokeStyle = 'rgba(12,23,29,.28)'; interiorCtx.lineWidth = 1; interiorCtx.stroke();
@@ -678,7 +684,8 @@
     const stripeCount=1+(seed%3); for(let i=0;i<stripeCount;i++) interiorBox(.3,6.68,1.1+i*.85,9.4,.09,.12,accent,width,height);
     const kinds=[...interiorKinds(item,interiorBuilding.type)]; if(era>=7) kinds.push('console','lamp'); if(era>=9) kinds.push('holo');
     const slots=[[1.5,1.4],[4.2,1.35],[7.5,1.5],[1.6,4.4],[4.7,4.5],[7.7,4.25]], count=4+(seed%3), offset=seed%slots.length;
-    for(let i=0;i<count;i++) { const slot=slots[(i+offset)%slots.length]; drawInteriorFurniture(kinds[(i+seed)%kinds.length],slot[0],slot[1],accent,width,height); }
+    const furniture=[]; for(let i=0;i<count;i++) { const slot=slots[(i+offset)%slots.length]; furniture.push({kind:kinds[(i+seed)%kinds.length],x:slot[0],z:slot[1]}); }
+    furniture.sort((a,b)=>interiorDepth(a.x,a.z)-interiorDepth(b.x,b.z)); furniture.forEach((entry)=>drawInteriorFurniture(entry.kind,entry.x,entry.z,accent,width,height));
     const workProfile=item.category==='residential'?homeJobProfile(item):jobProfile(interiorBuilding);
     let insideWorkers=0;
     if(isDaytime()&&item.category==='production'&&!workProfile.outdoor) insideWorkers=Math.min(3,item.people);
@@ -863,7 +870,13 @@
   $('#saveButton').onclick = () => save();
   els.interiorButton.onclick = () => openInterior(state.buildings.find((building)=>building.id===selectedPlacedBuilding));
   $('#closeInterior').onclick = closeInterior;
+  $('#resetInteriorView').onclick = resetInteriorView;
   els.interiorModal.addEventListener('click',(event)=>{ if(event.target===els.interiorModal) closeInterior(); });
+  interiorCanvas.addEventListener('pointerdown',(event)=>{ if(event.button!==0)return; interiorView.drag={pointerId:event.pointerId,x:event.clientX,y:event.clientY}; interiorCanvas.setPointerCapture(event.pointerId); interiorCanvas.classList.add('dragging'); });
+  interiorCanvas.addEventListener('pointermove',(event)=>{ if(!interiorView.drag||event.pointerId!==interiorView.drag.pointerId)return; const dx=event.clientX-interiorView.drag.x,dy=event.clientY-interiorView.drag.y; interiorView.yaw-=dx*.006; interiorView.tilt+=dy*.004; clampInteriorView(); interiorView.drag.x=event.clientX; interiorView.drag.y=event.clientY; });
+  const finishInteriorDrag=(event)=>{ if(!interiorView.drag||event.pointerId!==interiorView.drag.pointerId)return; interiorCanvas.releasePointerCapture(event.pointerId); interiorView.drag=null; interiorCanvas.classList.remove('dragging'); };
+  interiorCanvas.addEventListener('pointerup',finishInteriorDrag); interiorCanvas.addEventListener('pointercancel',finishInteriorDrag);
+  interiorCanvas.addEventListener('wheel',(event)=>{ event.preventDefault(); interiorView.zoom*=Math.exp(-event.deltaY*.001); clampInteriorView(); },{passive:false});
   $('#collectTax').onclick = () => collectTax();
   $('#conductResearch').onclick = conductResearch;
   $('#hireWorker').onclick = () => { const cost = workerCost(); if (state.workers >= 20) return toast('수집자는 최대 20명입니다.'); if (state.cash < cost) return toast('골드가 부족합니다.'); state.cash -= cost; state.workers++; toast(`새 세금 수집자가 도착했습니다. 세금 수입 +0.5%`); save(true); updateUI(); };
@@ -888,13 +901,13 @@
   }
   function openInterior(building) {
     if (!building) return;
-    interiorBuilding=building; pressedKeys.clear(); const item=BUILDINGS[building.type], profile=item.category==='residential'?homeJobProfile(item):jobProfile(building), seed=designSeed(building.type), era=interiorEra(item), eraStyle=INTERIOR_ERAS[Math.min(INTERIOR_ERAS.length-1,Math.floor((era-1)/2))];
+    interiorBuilding=building; pressedKeys.clear(); resetInteriorView(); const item=BUILDINGS[building.type], profile=item.category==='residential'?homeJobProfile(item):jobProfile(building), seed=designSeed(building.type), era=interiorEra(item), eraStyle=INTERIOR_ERAS[Math.min(INTERIOR_ERAS.length-1,Math.floor((era-1)/2))];
     els.interiorTitle.textContent=`${item.icon} ${item.name}`;
     const homeResidents=item.category==='residential'?(residentHomeCounts().get(building.id)||0):0;
     els.interiorMeta.textContent=`${era}년식 ${eraStyle.label} · ${item.category==='production'||item.category==='residential'?profile.name:'생활 공간'} · ${item.category==='residential'?`귀가 주민 ${homeResidents}명`:`주민 ${item.people}명`}`;
     els.interiorModal.hidden=false; drawInteriorScene();
   }
-  function closeInterior() { interiorBuilding=null; els.interiorModal.hidden=true; }
+  function closeInterior() { interiorBuilding=null; resetInteriorView(); els.interiorModal.hidden=true; }
 
   function tileAtPoint(x, y) {
     return [...hitTiles].sort((a,b)=>a.depth-b.depth).find((entry) => pointInPolygon(x, y, entry.points));
@@ -943,7 +956,14 @@
   window.addEventListener('keydown', (event) => {
     const key = event.key.toLowerCase();
     if (event.key === 'Escape' && interiorBuilding) { closeInterior(); return; }
-    if (interiorBuilding) return;
+    if (interiorBuilding) {
+      if(key==='q') interiorView.yaw-=.1;
+      if(key==='e') interiorView.yaw+=.1;
+      if(key==='w') interiorView.zoom+=.08;
+      if(key==='s') interiorView.zoom-=.08;
+      if(key==='r') resetInteriorView();
+      clampInteriorView(); if(['q','e','w','s','r'].includes(key)) event.preventDefault(); return;
+    }
     if (key === 'q') camera.yaw -= .08;
     if (key === 'e') camera.yaw += .08;
     if (key === 'r' && selectedBuilding) { state.rotation = (state.rotation + (state.rotationStep || 45)) % 360; updateUI(); }
