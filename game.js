@@ -128,8 +128,18 @@
   const CAMERA_SCREEN_Y = .45;
   const CAMERA_DRAG_SPEED = .21;
   const CAMERA_KEYBOARD_SPEED = 36;
+  const CAMERA_MIN_ZOOM = 180;
+  const CAMERA_MAX_ZOOM = 3600;
+  const CAMERA_ZOOM_STEP = 1.2;
   const camera = { x: 24, z: 0, yaw: -0.76, pitch: 1.12, zoom: 500 };
   const hitTiles = [];
+
+  function cameraMovementScale() {
+    // Keep the normal view responsive, then increase screen-space movement
+    // progressively while zoomed in so close inspection never feels sluggish.
+    const zoomBoost = Math.max(1, Math.sqrt(camera.zoom / 500));
+    return (1400 / camera.zoom) * zoomBoost;
+  }
 
   function clampCamera() {
     const minX = MAP_GRID.minX - MAP_GRID.tile / 2;
@@ -623,7 +633,7 @@
       return;
     }
     const dx = event.clientX - cameraDrag.x, dy = event.clientY - cameraDrag.y;
-    const speed = CAMERA_DRAG_SPEED * (1400 / camera.zoom);
+    const speed = CAMERA_DRAG_SPEED * cameraMovementScale();
     const c = Math.cos(camera.yaw), s = Math.sin(camera.yaw);
     camera.x += (-dx * c + dy * s) * speed;
     camera.z += (dx * s + dy * c) * speed;
@@ -635,7 +645,10 @@
     canvas.releasePointerCapture(event.pointerId); cameraDrag = null;
   });
   canvas.addEventListener('pointerleave', () => { if (!cameraDrag) { hoveredLand = null; hoveredPlacement = null; } });
-  canvas.addEventListener('wheel', (event) => { event.preventDefault(); camera.zoom = Math.max(180, Math.min(1900, camera.zoom - event.deltaY * .7)); }, { passive: false });
+  canvas.addEventListener('wheel', (event) => {
+    event.preventDefault();
+    camera.zoom = Math.max(CAMERA_MIN_ZOOM, Math.min(CAMERA_MAX_ZOOM, camera.zoom - event.deltaY * CAMERA_ZOOM_STEP));
+  }, { passive: false });
   window.addEventListener('keydown', (event) => {
     const key = event.key.toLowerCase();
     if (key === 'q') camera.yaw -= .08;
@@ -656,7 +669,7 @@
     for (const building of state.buildings) { const item=BUILDINGS[building.type]; building.tax = Math.min(item.income * 20 * multiplier, building.tax + item.income * multiplier * dt / 10); }
     els.storedTax.textContent = formatTax(storedTax());
     autoTimer += dt;
-    const move = CAMERA_KEYBOARD_SPEED * dt * (1400 / camera.zoom), c = Math.cos(camera.yaw), s = Math.sin(camera.yaw);
+    const move = CAMERA_KEYBOARD_SPEED * dt * cameraMovementScale(), c = Math.cos(camera.yaw), s = Math.sin(camera.yaw);
     if (pressedKeys.has('w')) { camera.x += s * move; camera.z += c * move; }
     if (pressedKeys.has('s')) { camera.x -= s * move; camera.z -= c * move; }
     if (pressedKeys.has('a')) { camera.x -= c * move; camera.z += s * move; }
