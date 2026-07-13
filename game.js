@@ -126,6 +126,8 @@
   let viewW = 0, viewH = 0, dpr = 1;
   // High bird's-eye view keeps every buildable tile visible at the start.
   const CAMERA_SCREEN_Y = .45;
+  const CAMERA_DRAG_SPEED = .21;
+  const CAMERA_KEYBOARD_SPEED = 36;
   const camera = { x: 24, z: 0, yaw: -0.76, pitch: 1.12, zoom: 500 };
   const hitTiles = [];
 
@@ -621,7 +623,7 @@
       return;
     }
     const dx = event.clientX - cameraDrag.x, dy = event.clientY - cameraDrag.y;
-    const speed = 0.07 * (1400 / camera.zoom);
+    const speed = CAMERA_DRAG_SPEED * (1400 / camera.zoom);
     const c = Math.cos(camera.yaw), s = Math.sin(camera.yaw);
     camera.x += (-dx * c + dy * s) * speed;
     camera.z += (dx * s + dy * c) * speed;
@@ -654,7 +656,7 @@
     for (const building of state.buildings) { const item=BUILDINGS[building.type]; building.tax = Math.min(item.income * 20 * multiplier, building.tax + item.income * multiplier * dt / 10); }
     els.storedTax.textContent = formatTax(storedTax());
     autoTimer += dt;
-    const move = 18 * dt * (1400 / camera.zoom), c = Math.cos(camera.yaw), s = Math.sin(camera.yaw);
+    const move = CAMERA_KEYBOARD_SPEED * dt * (1400 / camera.zoom), c = Math.cos(camera.yaw), s = Math.sin(camera.yaw);
     if (pressedKeys.has('w')) { camera.x += s * move; camera.z += c * move; }
     if (pressedKeys.has('s')) { camera.x -= s * move; camera.z -= c * move; }
     if (pressedKeys.has('a')) { camera.x -= c * move; camera.z += s * move; }
