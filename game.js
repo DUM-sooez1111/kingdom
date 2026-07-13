@@ -3,12 +3,14 @@
 
   const canvas = document.querySelector('#world');
   const ctx = canvas.getContext('2d');
+  const interiorCanvas = document.querySelector('#interiorCanvas');
+  const interiorCtx = interiorCanvas.getContext('2d');
   const $ = (selector) => document.querySelector(selector);
   const els = {
     cash: $('#cash'), population: $('#population'), rebirths: $('#rebirths'), year: $('#year'), researchTokens: $('#researchTokens'), dayIcon: $('#dayIcon'), dayClock: $('#dayClock'), productionStatus: $('#productionStatus'), categoryList: $('#categoryList'), buildingList: $('#buildingList'), landList: $('#landList'),
     selectionName: $('#selectionName'), selectionMeta: $('#selectionMeta'), workerInfo: $('#workerInfo'), employmentInfo: $('#employmentInfo'), jobList: $('#jobList'),
     storedTax: $('#storedTax'), missionTitle: $('#missionTitle'), missionText: $('#missionText'), unlockInfo: $('#unlockInfo'), researchInfo: $('#researchInfo'),
-    missionProgress: $('#missionProgress'), claimMission: $('#claimMission'), toast: $('#toast'),
+    missionProgress: $('#missionProgress'), claimMission: $('#claimMission'), toast: $('#toast'), interiorModal: $('#interiorModal'), interiorTitle: $('#interiorTitle'), interiorMeta: $('#interiorMeta'), interiorButton: $('#interiorButton'),
   };
 
   const BUILDINGS = {
@@ -118,6 +120,8 @@
   const storageKey = 'crownvale-browser-v1';
   let state = load();
   let selectedBuilding = null;
+  let selectedPlacedBuilding = null;
+  let interiorBuilding = null;
   let selectedCategory = 'all';
   let hoveredLand = null;
   let hoveredPlacement = null;
@@ -148,8 +152,19 @@
     mine: { name: '광부', icon: '⛏', outdoor: false, color: '#7f8791' },
     forge: { name: '대장장이', icon: '⚒', outdoor: false, color: '#b76b46' },
     warehouse: { name: '창고 노동자', icon: '📦', outdoor: false, color: '#9b7658' },
+    homecraft: { name: '재택 장인', icon: '🧵', outdoor: false, home: true, color: '#b98267' },
+    homeoffice: { name: '재택 서기관', icon: '📜', outdoor: false, home: true, color: '#7c93bd' },
+    hometech: { name: '재택 기술자', icon: '🛠', outdoor: false, home: true, color: '#69a7a0' },
+    homeremote: { name: '원격 연구원', icon: '💻', outdoor: false, home: true, color: '#8a9ee6' },
     default: { name: '생산 노동자', icon: '⚙', outdoor: false, color: '#7797a4' },
   };
+  const INTERIOR_ERAS = [
+    { label:'초기 목재식', floor:'#8b6846', wall:'#a77f55', accent:'#e1bb6b' },
+    { label:'석조 왕국식', floor:'#77746d', wall:'#99978d', accent:'#d4ba7d' },
+    { label:'산업 기계식', floor:'#5d6268', wall:'#737a80', accent:'#d38a4d' },
+    { label:'현대 도시식', floor:'#506f73', wall:'#71949a', accent:'#77d3cf' },
+    { label:'미래 왕국식', floor:'#3b456d', wall:'#596b95', accent:'#8be9ff' },
+  ];
   const camera = { x: 24, z: 0, yaw: -0.76, pitch: 1.12, zoom: 500 };
   const hitTiles = [];
 
@@ -213,10 +228,22 @@
     const item = BUILDINGS[building.type], key = item.model || building.type;
     return JOB_PROFILES[key] || JOB_PROFILES.default;
   }
+  function homeJobProfile(item) {
+    const era = interiorEra(item);
+    if (era >= 9) return JOB_PROFILES.homeremote;
+    if (era >= 7) return JOB_PROFILES.hometech;
+    if (era >= 4) return JOB_PROFILES.homeoffice;
+    return JOB_PROFILES.homecraft;
+  }
+  function homeJobCapacity(item) { return Math.max(1, Math.ceil((item.people || 1) * .35)); }
   function workplaceEntries() {
-    return state.buildings
-      .filter((building) => BUILDINGS[building.type].category === 'production')
-      .map((building) => ({ building, profile: jobProfile(building), capacity: Math.max(1, BUILDINGS[building.type].people || 1) }));
+    const workplaces=[];
+    for (const building of state.buildings) {
+      const item=BUILDINGS[building.type];
+      if (item.category === 'production') workplaces.push({building,profile:jobProfile(building),capacity:Math.max(1,item.people||1)});
+      else if (item.category === 'residential') workplaces.push({building,profile:homeJobProfile(item),capacity:homeJobCapacity(item)});
+    }
+    return workplaces;
   }
   function employmentSummary() {
     const total = population(), workplaces = workplaceEntries();
@@ -224,8 +251,8 @@
     const employed = Math.min(total, capacity), jobs = new Map();
     let remaining = employed;
     for (const workplace of workplaces) {
-      if (remaining <= 0) break;
       const assigned = Math.min(workplace.capacity, remaining), key = workplace.profile.name;
+      workplace.assigned=assigned;
       if (assigned > 0) {
         const current = jobs.get(key) || { ...workplace.profile, count: 0 };
         current.count += assigned; jobs.set(key, current); remaining -= assigned;
@@ -233,6 +260,18 @@
     }
     return { total, employed, unemployed: total - employed, capacity, workplaces, jobs: [...jobs.values()] };
   }
+  function residentHomeCounts() {
+    const homes=state.buildings.filter((building)=>BUILDINGS[building.type].category==='residential'), counts=new Map();
+    if(!homes.length) return counts;
+    const total=population(), totalWeight=homes.reduce((sum,home)=>sum+Math.max(1,BUILDINGS[home.type].people),0);
+    let assigned=0;
+    homes.forEach((home,index)=>{
+      const count=index===homes.length-1?total-assigned:Math.floor(total*Math.max(1,BUILDINGS[home.type].people)/totalWeight);
+      counts.set(home.id,count); assigned+=count;
+    });
+    return counts;
+  }
+  function interiorEra(item) { return Math.min(10,Math.max(unlockYear(item),kingdomYear())); }
   function storedTax() { return state.buildings.reduce((total, building) => total + building.tax, 0); }
   function researchIncomeMultiplier() { return 1 + (state.researchTokens || 0) * .5; }
   function totalIncomeMultiplier() {
@@ -410,6 +449,39 @@
     if (item.tier >= 6) box(local(0, d*.44, h + 2.7), [w*.58, .18, .9], glow, r);
     if (item.tier >= 8) box(local(w*.34, d*.28, h + 4.1), [.24, 5.2, .24], glow, r);
   }
+  function designSeed(text) {
+    let hash = 2166136261;
+    for (let i = 0; i < text.length; i++) { hash ^= text.charCodeAt(i); hash = Math.imul(hash, 16777619); }
+    return hash >>> 0;
+  }
+  function drawUniqueExterior(item, type, local, r, w, h, d) {
+    const seed = designSeed(type), accentPalette = ['#e8c46c','#7fc1d4','#d77b68','#9bc77c','#c49ad8','#e59f55'];
+    const accent = item.trim || accentPalette[seed % accentPalette.length];
+    const bands = 1 + (seed % 3), markerX = (((seed >>> 5) % 101) / 100 - .5) * w * .55;
+    for (let i = 0; i < bands; i++) {
+      box(local(markerX * (i ? -.55 : 1), -d*.505, 2.1 + (i + 1) * h / (bands + 2)), [Math.max(2.2,w*(.2 + ((seed >>> (i+2)) % 20)/100)), .24, .2], accent, r);
+    }
+    switch ((seed >>> 9) % 5) {
+      case 0:
+        box(local(markerX, d*.18, h + 4.6), [.75, 3.2 + (seed % 18)/10, .75], '#555c64', r);
+        box(local(markerX, d*.18, h + 6.35), [1.15,.24,1.15], accent, r);
+        break;
+      case 1:
+        box(local(markerX, 0, h + 5), [.35, 3.5, .35], accent, r);
+        box(local(markerX + 1.1, 0, h + 6.1), [2.2,.7,.18], item.roof, r);
+        break;
+      case 2:
+        for (const x of [-w*.25,w*.25]) box(local(x, d*.12, h + 4.2), [.55,2.1,.55], accent, r);
+        break;
+      case 3:
+        box(local(markerX, -d*.56, h*.55 + 1.6), [Math.max(3,w*.35),.32,1.2], accent, r);
+        break;
+      default:
+        box(local(markerX, 0, h + 4.25), [2.1 + (seed%14)/10,1.1,2.1 + ((seed>>>3)%14)/10], accent, r);
+        break;
+    }
+    box(local(markerX, d*.47, h + 2.05), [.32, .32, Math.max(1.8,d*.22)], accent, r);
+  }
   function drawBuilding(building, isGhost = false) {
     const item = BUILDINGS[building.type]; const [w,h,d] = item.size; const position = { x: building.x, y: 1, z: building.z };
     // The placement preview uses the same solid model as the finished building
@@ -430,6 +502,7 @@
       for (const x of [-w*.25,w*.25]) box(local(x,-d/2-.12,h*.68+1), [1.25,1.3,.13], '#ffd16e', r, alpha);
     }
     drawCatalogDetail(item, local, r, w, h, d);
+    drawUniqueExterior(item, building.type, local, r, w, h, d);
     if (isGhost) return;
     if (building.type === 'farm') {
       box(local(0, .2, h + 3.2), [.55, 5.4, .55], '#8c6544', r);
@@ -518,13 +591,19 @@
     const ownedLands = LANDS.filter(owned);
     if (!ownedLands.length) return;
     const daytime = isDaytime();
+    // At night every resident is inside a home, so nobody is rendered on the streets.
+    if (!daytime) return;
     const visibleEmployed = employment.total ? Math.min(employment.employed, Math.round(visibleTotal * employment.employed / employment.total)) : 0;
+    const staffedWorkplaces=employment.workplaces.filter((workplace)=>workplace.assigned>0);
+    let workplaceIndex=0,workplaceEnd=staffedWorkplaces[0]?.assigned||0;
     for (let i = 0; i < visibleTotal; i++) {
       const employed = i < visibleEmployed;
       const phase = worldTime * (daytime ? 1.35 : .72) + i * 1.73;
       let x, z, workingOutside = false, bodyColor = employed ? '#6e9dbc' : '#81888d';
-      if (daytime && employed && employment.workplaces.length) {
-        const workplace = employment.workplaces[i % employment.workplaces.length];
+      if (daytime && employed && staffedWorkplaces.length) {
+        const ordinal=Math.min(employment.employed-1,Math.floor(i*employment.employed/Math.max(1,visibleEmployed)));
+        while(workplaceIndex<staffedWorkplaces.length-1&&ordinal>=workplaceEnd) { workplaceIndex++; workplaceEnd+=staffedWorkplaces[workplaceIndex].assigned; }
+        const workplace = staffedWorkplaces[workplaceIndex];
         if (!workplace.profile.outdoor) continue;
         const item = BUILDINGS[workplace.building.type], ring = Math.floor(i / employment.workplaces.length) % 4;
         x = workplace.building.x + Math.cos(phase) * (item.size[0] * .62 + 2 + ring * 1.7);
@@ -540,6 +619,73 @@
       box({x, y:3.75 + bob, z}, [1.25, .85, 1.25], '#f5cba6');
       if (workingOutside) box({x:x + .9, y:2.25 + bob, z}, [.65, .75, .65], '#5c6670');
     }
+  }
+  function interiorIso(x, z, y, width, height) {
+    const unit = Math.min(width / 24, height / 12.5);
+    return { x:width*.5 + (x-z)*unit, y:height*.13 + (x+z)*unit*.48 - y*unit };
+  }
+  function interiorPaint(points, color) {
+    interiorCtx.beginPath(); points.forEach((point,index) => index ? interiorCtx.lineTo(point.x,point.y) : interiorCtx.moveTo(point.x,point.y)); interiorCtx.closePath();
+    interiorCtx.fillStyle = color; interiorCtx.fill(); interiorCtx.strokeStyle = 'rgba(12,23,29,.28)'; interiorCtx.lineWidth = 1; interiorCtx.stroke();
+  }
+  function interiorBox(x,z,y,sx,sz,sy,color,width,height) {
+    const p000=interiorIso(x,z,y,width,height), p100=interiorIso(x+sx,z,y,width,height), p110=interiorIso(x+sx,z+sz,y,width,height), p010=interiorIso(x,z+sz,y,width,height);
+    const p001=interiorIso(x,z,y+sy,width,height), p101=interiorIso(x+sx,z,y+sy,width,height), p111=interiorIso(x+sx,z+sz,y+sy,width,height), p011=interiorIso(x,z+sz,y+sy,width,height);
+    interiorPaint([p010,p110,p111,p011],shade(color,-16)); interiorPaint([p100,p110,p111,p101],shade(color,2)); interiorPaint([p001,p101,p111,p011],shade(color,22));
+  }
+  function interiorKinds(item, type) {
+    const key = item.model || type;
+    const groups = {
+      home:['bed','table','chest','hearth','shelf'], apartment:['bed','table','shelf','plant','chest'], hut:['bed','table','hearth','chest'], woodhouse:['bed','table','shelf','hearth'], village:['bed','table','plant','chest','shelf'], manor:['bed','table','throne','shelf','plant'], homestead:['bed','table','chest','plant','hearth'],
+      farm:['crop','crate','table','sack','shelf'], ranch:['sack','crate','table','bench','crop'], harbor:['crate','counter','table','sack','shelf'], market:['counter','crate','table','shelf','plant'], mine:['ore','cart','table','crate','shelf'], forge:['forge','anvil','table','crate','shelf'], warehouse:['crate','crate','shelf','table','sack'],
+      hall:['throne','table','shelf','plant','chest'], tower:['table','shelf','chest','map','bench'], park:['plant','bench','plant','table','fountain'], royalGarden:['plant','bench','fountain','plant','table'], watchtower:['map','table','shelf','bench','chest'],
+    };
+    if (groups[key]) return groups[key];
+    if (item.category === 'residential') return groups.home;
+    if (item.category === 'production') return ['table','crate','shelf','counter','sack'];
+    if (item.category === 'decoration') return groups.park;
+    return groups.hall;
+  }
+  function drawInteriorFurniture(kind,x,z,accent,width,height) {
+    const b = (dx,dz,y,sx,sz,sy,color) => interiorBox(x+dx,z+dz,y,sx,sz,sy,color,width,height);
+    if (kind === 'bed') { b(-.8,-.4,0,1.9,1,.45,'#80584a'); b(-.72,-.32,.45,1.72,.84,.25,accent); b(-.62,-.24,.7,.55,.68,.18,'#ead9b5'); }
+    else if (kind === 'table' || kind === 'map') { b(-.65,-.45,.8,1.4,.95,.18,kind==='map'?'#5f8fa5':'#805d42'); for(const [dx,dz] of [[-.55,-.35],[.45,-.35],[-.55,.3],[.45,.3]]) b(dx,dz,0,.14,.14,.82,'#60422f'); if(kind==='map') b(-.45,-.25,.99,1,.55,.05,'#e4d19b'); }
+    else if (kind === 'chest' || kind === 'crate' || kind === 'sack') { b(-.5,-.45,0,1, .9, kind==='sack'?.7:1, kind==='sack'?'#b99a67':'#8a613d'); if(kind!=='sack') b(-.48,-.43,.45,.96,.86,.12,accent); }
+    else if (kind === 'hearth' || kind === 'forge') { b(-.6,-.5,0,1.2,1,1.25,'#4b4a4c'); b(-.35,-.52,.35,.7,.12,.45,'#e77835'); b(.2,.1,1.1,.28,.28,1.8,'#565b61'); }
+    else if (kind === 'shelf') { b(-.65,-.24,0,1.3,.45,2,'#6c4d36'); for(const y of [.55,1.15,1.75]) b(-.58,-.29,y,1.16,.55,.12,accent); }
+    else if (kind === 'anvil') { b(-.45,-.35,0,.9,.7,.65,'#565c65'); b(-.7,-.48,.65,1.4,.95,.35,'#747c86'); }
+    else if (kind === 'crop') { for(let i=-1;i<=1;i++) { b(i*.35,-.4,0,.16,.16,.8,'#568948'); b(i*.35-.08,-.48,.8,.32,.32,.25,'#8ebc59'); } }
+    else if (kind === 'counter') { b(-.85,-.35,0,1.7,.7,1.05,'#855c3d'); b(-.95,-.43,1.05,1.9,.86,.18,accent); }
+    else if (kind === 'ore') { b(-.55,-.45,0,.7,.65,.55,'#6f7783'); b(.05,-.2,0,.55,.48,.75,accent); b(-.15,.18,0,.65,.5,.42,'#555d68'); }
+    else if (kind === 'cart') { b(-.75,-.4,.35,1.5,.8,.55,'#765038'); b(-.6,-.5,0,.3,.3,.4,'#3d4248'); b(.35,-.5,0,.3,.3,.4,'#3d4248'); }
+    else if (kind === 'bench') { b(-.75,-.28,.65,1.5,.55,.18,'#8b643e'); b(-.62,-.2,0,.18,.18,.68,'#65462f'); b(.42,-.2,0,.18,.18,.68,'#65462f'); }
+    else if (kind === 'throne') { b(-.5,-.45,0,1,.9,.65,accent); b(-.5,.2,.55,1,.25,1.55,'#7a546f'); b(-.68,-.32,.55,.18,.7,.6,'#e1b95e'); b(.5,-.32,.55,.18,.7,.6,'#e1b95e'); }
+    else if (kind === 'fountain') { b(-.65,-.55,0,1.3,1.1,.22,'#a9b7bd'); b(-.38,-.32,.22,.76,.66,.35,'#58a9c5'); b(-.12,-.08,.57,.24,.22,.75,'#d0d7d9'); }
+    else if (kind === 'console') { b(-.7,-.35,0,1.4,.7,.9,'#394b5d'); b(-.55,-.4,.92,1.1,.12,.72,'#67c9d8'); b(-.45,-.43,1.08,.9,.06,.35,accent); }
+    else if (kind === 'holo') { b(-.55,-.5,0,1.1,1,.22,'#4b5673'); b(-.32,-.28,.22,.64,.56,.18,accent); b(-.18,-.15,.4,.36,.3,1.25,'#79eaff'); }
+    else if (kind === 'lamp') { b(-.1,-.1,0,.2,.2,1.65,'#596573'); b(-.38,-.35,1.55,.76,.7,.35,accent); }
+    else { b(-.15,-.12,0,.3,.3,.75,'#6c4b32'); b(-.6,-.55,.75,1.2,1.1,.9,'#4e8b55'); }
+  }
+  function drawInteriorScene() {
+    if (!interiorBuilding || els.interiorModal.hidden) return;
+    const rect = interiorCanvas.getBoundingClientRect(), ratio = Math.min(window.devicePixelRatio || 1, 2), width = Math.max(1,rect.width), height = Math.max(1,rect.height);
+    if (interiorCanvas.width !== Math.floor(width*ratio) || interiorCanvas.height !== Math.floor(height*ratio)) { interiorCanvas.width=Math.floor(width*ratio); interiorCanvas.height=Math.floor(height*ratio); }
+    interiorCtx.setTransform(ratio,0,0,ratio,0,0);
+    const item = BUILDINGS[interiorBuilding.type], seed = designSeed(interiorBuilding.type), era = interiorEra(item), eraStyle = INTERIOR_ERAS[Math.min(INTERIOR_ERAS.length-1,Math.floor((era-1)/2))];
+    const accent = item.trim || eraStyle.accent, gradient=interiorCtx.createLinearGradient(0,0,0,height);
+    gradient.addColorStop(0,shade(item.roof,-18)); gradient.addColorStop(1,'#142735'); interiorCtx.fillStyle=gradient; interiorCtx.fillRect(0,0,width,height);
+    interiorBox(0,0,0,10,7,.18,eraStyle.floor,width,height); interiorBox(0,6.75,.18,10,.25,4,eraStyle.wall,width,height); interiorBox(0,0,.18,.25,7,4,eraStyle.wall,width,height);
+    const stripeCount=1+(seed%3); for(let i=0;i<stripeCount;i++) interiorBox(.3,6.68,1.1+i*.85,9.4,.09,.12,accent,width,height);
+    const kinds=[...interiorKinds(item,interiorBuilding.type)]; if(era>=7) kinds.push('console','lamp'); if(era>=9) kinds.push('holo');
+    const slots=[[1.5,1.4],[4.2,1.35],[7.5,1.5],[1.6,4.4],[4.7,4.5],[7.7,4.25]], count=4+(seed%3), offset=seed%slots.length;
+    for(let i=0;i<count;i++) { const slot=slots[(i+offset)%slots.length]; drawInteriorFurniture(kinds[(i+seed)%kinds.length],slot[0],slot[1],accent,width,height); }
+    const workProfile=item.category==='residential'?homeJobProfile(item):jobProfile(interiorBuilding);
+    let insideWorkers=0;
+    if(isDaytime()&&item.category==='production'&&!workProfile.outdoor) insideWorkers=Math.min(3,item.people);
+    else if(isDaytime()&&item.category==='residential') insideWorkers=Math.min(3,homeJobCapacity(item));
+    else if(!isDaytime()&&item.category==='residential') insideWorkers=Math.min(6,residentHomeCounts().get(interiorBuilding.id)||0);
+    for(let i=0;i<insideWorkers;i++) { const x=2.2+(i%4)*1.65,z=3+Math.floor(i/4)*1.25+Math.sin(worldTime+i)*.2,bob=Math.sin(worldTime*3+i)*.06; interiorBox(x,z,.18,.42,.42,1.1,workProfile.color||'#6e9dbc',width,height); interiorBox(x-.04,z-.04,1.28+bob,.5,.5,.42,'#f5cba6',width,height); }
+    interiorCtx.fillStyle='rgba(255,255,255,.08)'; interiorCtx.fillRect(0,height-34,width,34); interiorCtx.fillStyle='#d7e5e6'; interiorCtx.font='12px system-ui'; interiorCtx.fillText(`${era}년식 ${eraStyle.label} · 고유 디자인 ${seed.toString(16).toUpperCase().padStart(8,'0')} · ${isDaytime()?'낮':'밤'}`,18,height-13);
   }
   function render() {
     // The sea is intentionally a screen-space background. A giant 3D water
@@ -568,6 +714,7 @@
       ctx.fillStyle = `rgba(7, 16, 46, ${(.56 * darkness).toFixed(3)})`;
       ctx.fillRect(0, 0, viewW, viewH);
     }
+    drawInteriorScene();
     requestAnimationFrame(render);
   }
 
@@ -646,11 +793,12 @@
     els.buildingList.innerHTML = ''; buildingEntries.forEach(([id,item]) => {
       const unlocked = isBuildingUnlocked(item), requiredYear = unlockYear(item), tokenCost = item.researchCost || 0;
       const button = document.createElement('button'); button.className = `building-card ${selectedBuilding === id ? 'selected':''} ${unlocked ? '' : 'locked'}`; button.disabled = !unlocked;
+      button.dataset.buildingId=id;
       const productionNote = item.category === 'production' ? ' · 낮에만 생산' : '';
       const detail = unlocked ? `세금 +${item.income} / 10초 · 주민 ${item.people}${productionNote}` : `🔒 왕국력 ${requiredYear}년 해금`;
       const price = unlocked ? `${format(item.price)} ✦${tokenCost ? `<small>🧪 ${tokenCost}</small>` : ''}` : `${requiredYear}년${tokenCost ? `<small>🧪 ${tokenCost}</small>` : ''}`;
       button.innerHTML = `<span class="card-icon">${item.icon}</span><span><span class="card-title">${item.name}</span><span class="card-detail">${detail}</span></span><b class="card-price">${price}</b>`;
-      button.onclick = () => { selectedBuilding = selectedBuilding === id ? null : id; state.rotation = 0; updateUI(); }; els.buildingList.append(button);
+      button.onclick = () => { selectedPlacedBuilding=null; selectedBuilding = selectedBuilding === id ? null : id; state.rotation = 0; updateUI(); }; els.buildingList.append(button);
     });
     const nextBuilding = Object.values(BUILDINGS).filter((item) => unlockYear(item) > kingdomYear()).sort((a, b) => unlockYear(a) - unlockYear(b))[0];
     els.unlockInfo.textContent = nextBuilding ? `왕국력 ${kingdomYear()}년 · 총 ${CATALOG_BUILDING_COUNT}개 시대 건물 · 다음 해금: ${unlockYear(nextBuilding)}년 ${nextBuilding.name}` : `왕국력 ${kingdomYear()}년 · 시대 건물 ${CATALOG_BUILDING_COUNT}개를 모두 해금했습니다.`;
@@ -682,7 +830,8 @@
     } else {
       employment.jobs.forEach((job) => {
         const row = document.createElement('div'); row.className = 'job-row';
-        row.innerHTML = `<span>${job.icon} ${job.name}</span><b>${format(job.count)}명</b><small>${job.outdoor ? '낮에는 건물 밖에서 근무' : '낮에는 건물 안에서 근무'}</small>`;
+        const workplaceText = job.home ? '낮에는 자기 집 안에서만 근무' : (job.outdoor ? '낮에는 건물 밖에서 근무' : '낮에는 생산 건물 안에서 근무');
+        row.innerHTML = `<span>${job.icon} ${job.name}</span><b>${format(job.count)}명</b><small>${workplaceText}</small>`;
         els.jobList.append(row);
       });
     }
@@ -694,16 +843,27 @@
     $('#conductResearch').innerHTML = `연구 수행 <span>${format(researchPrice())} 골드</span>`;
     $('#rotationStep').value = String(state.rotationStep || 45);
     const item = selectedBuilding && BUILDINGS[selectedBuilding]; els.selectionName.textContent = deleteMode ? '삭제 모드' : (item ? item.name : '건물을 선택하세요'); els.selectionMeta.textContent = deleteMode ? '토지를 클릭하면 마지막 건물을 50% 환불로 철거합니다.' : (item ? `${format(item.price)} 골드 · 연구 ${item.researchCost || 0} · 세금 ${item.income}/10초 · 회전 ${state.rotation}°` : `건설 메뉴에서 건물을 선택 · 환생 발전 ${Math.min(3, state.rebirths || 0)}단계`);
+    let placedSelection=selectedPlacedBuilding&&state.buildings.find((building)=>building.id===selectedPlacedBuilding);
+    if(selectedPlacedBuilding&&!placedSelection) selectedPlacedBuilding=null;
+    if(placedSelection&&!deleteMode&&!item) {
+      const placedItem=BUILDINGS[placedSelection.type];
+      els.selectionName.textContent=placedItem.name;
+      els.selectionMeta.textContent=`설치된 건물 · ${interiorEra(placedItem)}년식 내부 · 내부를 볼 수 있습니다.`;
+    }
+    els.interiorButton.hidden=!placedSelection||deleteMode||!!item;
     $('#deleteButton').classList.toggle('active', deleteMode);
   }
 
   document.querySelectorAll('.tab').forEach((tab) => tab.onclick = () => { activeTab = tab.dataset.tab; document.querySelectorAll('.tab').forEach((button)=>button.classList.toggle('active',button===tab)); document.querySelectorAll('.panel').forEach((panel)=>panel.classList.toggle('active',panel.id===`${activeTab}Panel`)); });
   $('#rotateButton').onclick = () => { if (!selectedBuilding) return toast('먼저 건물을 선택하세요.'); state.rotation = (state.rotation + (state.rotationStep || 45)) % 360; updateUI(); };
   $('#rotationStep').onchange = (event) => { state.rotationStep = Number(event.target.value); save(true); updateUI(); };
-  $('#deleteButton').onclick = () => { deleteMode = !deleteMode; if (deleteMode) selectedBuilding = null; updateUI(); };
+  $('#deleteButton').onclick = () => { deleteMode = !deleteMode; if (deleteMode) { selectedBuilding = null; selectedPlacedBuilding=null; } updateUI(); };
   $('#rebirthButton').onclick = rebirth;
-  $('#cancelButton').onclick = () => { selectedBuilding = null; deleteMode = false; updateUI(); };
+  $('#cancelButton').onclick = () => { selectedBuilding = null; selectedPlacedBuilding=null; deleteMode = false; updateUI(); };
   $('#saveButton').onclick = () => save();
+  els.interiorButton.onclick = () => openInterior(state.buildings.find((building)=>building.id===selectedPlacedBuilding));
+  $('#closeInterior').onclick = closeInterior;
+  els.interiorModal.addEventListener('click',(event)=>{ if(event.target===els.interiorModal) closeInterior(); });
   $('#collectTax').onclick = () => collectTax();
   $('#conductResearch').onclick = conductResearch;
   $('#hireWorker').onclick = () => { const cost = workerCost(); if (state.workers >= 20) return toast('수집자는 최대 20명입니다.'); if (state.cash < cost) return toast('골드가 부족합니다.'); state.cash -= cost; state.workers++; toast(`새 세금 수집자가 도착했습니다. 세금 수입 +0.5%`); save(true); updateUI(); };
@@ -715,6 +875,27 @@
     toast(`왕실이 ${format(mission.reward)} 골드를 하사했습니다!`); save(true); updateUI();
   };
 
+  function placedBuildingAtPoint(screenX,screenY) {
+    const matches=[];
+    for (const building of state.buildings) {
+      const item=BUILDINGS[building.type], [w,h,d]=item.size, top=h+6;
+      const points=[];
+      for(const y of [1,top]) for(const dx of [-w/2,w/2]) for(const dz of [-d/2,d/2]) points.push(project({x:building.x+dx,y,z:building.z+dz}));
+      const minX=Math.min(...points.map(point=>point.x))-6,maxX=Math.max(...points.map(point=>point.x))+6,minY=Math.min(...points.map(point=>point.y))-6,maxY=Math.max(...points.map(point=>point.y))+6;
+      if(screenX>=minX&&screenX<=maxX&&screenY>=minY&&screenY<=maxY) matches.push({building,depth:project({x:building.x,y:top/2,z:building.z}).depth});
+    }
+    matches.sort((a,b)=>a.depth-b.depth); return matches[0]?.building || null;
+  }
+  function openInterior(building) {
+    if (!building) return;
+    interiorBuilding=building; pressedKeys.clear(); const item=BUILDINGS[building.type], profile=item.category==='residential'?homeJobProfile(item):jobProfile(building), seed=designSeed(building.type), era=interiorEra(item), eraStyle=INTERIOR_ERAS[Math.min(INTERIOR_ERAS.length-1,Math.floor((era-1)/2))];
+    els.interiorTitle.textContent=`${item.icon} ${item.name}`;
+    const homeResidents=item.category==='residential'?(residentHomeCounts().get(building.id)||0):0;
+    els.interiorMeta.textContent=`${era}년식 ${eraStyle.label} · ${item.category==='production'||item.category==='residential'?profile.name:'생활 공간'} · ${item.category==='residential'?`귀가 주민 ${homeResidents}명`:`주민 ${item.people}명`}`;
+    els.interiorModal.hidden=false; drawInteriorScene();
+  }
+  function closeInterior() { interiorBuilding=null; els.interiorModal.hidden=true; }
+
   function tileAtPoint(x, y) {
     return [...hitTiles].sort((a,b)=>a.depth-b.depth).find((entry) => pointInPolygon(x, y, entry.points));
   }
@@ -722,6 +903,9 @@
     const tile = tileAtPoint(event.clientX, event.clientY);
     if (deleteMode) { if (tile) deleteOn(tile.id); return; }
     if (selectedBuilding) { buildOn(placementFromScreen(event.clientX, event.clientY)); return; }
+    const placed=placedBuildingAtPoint(event.clientX,event.clientY);
+    if (placed) { selectedPlacedBuilding=placed.id; selectedLand=placed.landId; updateUI(); return; }
+    selectedPlacedBuilding=null;
     if (tile) { selectedLand = tile.id; updateUI(); }
   });
   canvas.addEventListener('contextmenu', (event) => event.preventDefault());
@@ -735,7 +919,8 @@
     if (!cameraDrag || event.pointerId !== cameraDrag.pointerId) {
       hoveredPlacement = placementFromScreen(event.clientX, event.clientY);
       hoveredLand = hoveredPlacement ? hoveredPlacement.landId : null;
-      canvas.style.cursor = selectedBuilding ? (hoveredPlacement && hoveredPlacement.valid ? 'crosshair' : 'not-allowed') : 'default';
+      const hoveredPlaced = selectedBuilding ? null : placedBuildingAtPoint(event.clientX,event.clientY);
+      canvas.style.cursor = selectedBuilding ? (hoveredPlacement && hoveredPlacement.valid ? 'crosshair' : 'not-allowed') : (hoveredPlaced ? 'pointer' : 'default');
       return;
     }
     const dx = event.clientX - cameraDrag.x, dy = event.clientY - cameraDrag.y;
@@ -757,6 +942,8 @@
   }, { passive: false });
   window.addEventListener('keydown', (event) => {
     const key = event.key.toLowerCase();
+    if (event.key === 'Escape' && interiorBuilding) { closeInterior(); return; }
+    if (interiorBuilding) return;
     if (key === 'q') camera.yaw -= .08;
     if (key === 'e') camera.yaw += .08;
     if (key === 'r' && selectedBuilding) { state.rotation = (state.rotation + (state.rotationStep || 45)) % 360; updateUI(); }
