@@ -1258,11 +1258,12 @@
     rebirthButton.title = `다음 환생: ${format(rebirthNeed.cash)} 골드 · 주민 ${rebirthNeed.population}명 · 영토 ${rebirthNeed.lands}곳`;
     els.categoryList.innerHTML = ''; CATEGORIES.forEach((category) => {
       const button = document.createElement('button'); button.className = `category-chip ${selectedCategory === category.id ? 'active' : ''}`; button.textContent = category.name;
-      button.onclick = () => { selectedCategory = category.id; updateUI(); }; els.categoryList.append(button);
+      button.onclick = () => { selectedCategory = category.id; els.buildingList.scrollTop=0; updateUI(); }; els.categoryList.append(button);
     });
     const buildingEntries = Object.entries(BUILDINGS)
       .filter(([, item]) => selectedCategory === 'all' || (selectedCategory==='terrain'?!!item.requiredTerrain:item.category === selectedCategory))
       .sort(([, a], [, b]) => Number(isBuildingUnlocked(b)) - Number(isBuildingUnlocked(a)) || unlockYear(a) - unlockYear(b) || a.price - b.price);
+    const previousBuildingScroll=els.buildingList.scrollTop;
     els.buildingList.innerHTML = ''; buildingEntries.forEach(([id,item]) => {
       const unlocked = isBuildingUnlocked(item), requiredYear = unlockYear(item), tokenCost = item.researchCost || 0;
       const landmarkPlaced=item.category==='landmark'&&state.buildings.some((building)=>building.type===id);
@@ -1284,6 +1285,7 @@
       button.innerHTML = `<span class="card-icon">${item.icon}</span><span><span class="card-title">${item.name}</span><span class="card-detail">${detail}</span></span><b class="card-price">${price}</b>`;
       button.onclick = () => { selectedPlacedBuilding=null; selectedBuilding = selectedBuilding === id ? null : id; state.rotation = 0; updateUI(); }; els.buildingList.append(button);
     });
+    els.buildingList.scrollTop=Math.min(previousBuildingScroll,Math.max(0,els.buildingList.scrollHeight-els.buildingList.clientHeight));
     const nextBuilding = Object.values(BUILDINGS).filter((item) => unlockYear(item) > kingdomYear()).sort((a, b) => unlockYear(a) - unlockYear(b))[0];
     els.unlockInfo.textContent = nextBuilding ? `왕국력 ${kingdomYear()}년 · 총 ${CATALOG_BUILDING_COUNT}개 시대 건물 · 다음 해금: ${unlockYear(nextBuilding)}년 ${nextBuilding.name}` : `왕국력 ${kingdomYear()}년 · 시대 건물 ${CATALOG_BUILDING_COUNT}개를 모두 해금했습니다.`;
     els.landList.innerHTML = ''; LANDS.forEach((land) => {
@@ -1343,6 +1345,10 @@
   const rightMenu=$('.right-column'), openMenuButton=$('#openMenu');
   function setMenuOpen(open) { rightMenu.classList.toggle('menu-hidden',!open); openMenuButton.hidden=open; }
   $('#closeMenu').onclick=()=>setMenuOpen(false); openMenuButton.onclick=()=>setMenuOpen(true);
+  els.buildingList.addEventListener('wheel',(event)=>{
+    event.preventDefault(); event.stopPropagation();
+    els.buildingList.scrollTop+=event.deltaY;
+  },{passive:false});
   document.querySelectorAll('.tab').forEach((tab) => tab.onclick = () => { activeTab = tab.dataset.tab; document.querySelectorAll('.tab').forEach((button)=>button.classList.toggle('active',button===tab)); document.querySelectorAll('.panel').forEach((panel)=>panel.classList.toggle('active',panel.id===`${activeTab}Panel`)); });
   $('#rotateButton').onclick = () => { if (!selectedBuilding) return toast('먼저 건물을 선택하세요.'); state.rotation = (state.rotation + (state.rotationStep || 45)) % 360; updateUI(); };
   $('#rotationStep').onchange = (event) => { state.rotationStep = Number(event.target.value); save(true); updateUI(); };
