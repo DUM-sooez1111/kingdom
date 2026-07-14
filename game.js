@@ -275,7 +275,7 @@
     const daytime = isDaytime();
     els.dayIcon.textContent = daytime ? '☀' : '☾';
     els.dayClock.textContent = `${daytime ? '낮' : '밤'} ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-    els.productionStatus.textContent = daytime ? '생산 가동' : '생산 휴식';
+    els.productionStatus.textContent = daytime ? '세금 100%' : '야간 세금 50%';
     els.dayClock.closest('.resource').classList.toggle('night', !daytime);
   }
 
@@ -371,6 +371,7 @@
   function totalIncomeMultiplier() {
     return (1 + (state.workers || 0) * .005) * (1 + (state.rebirths || 0) * .1) * researchIncomeMultiplier() * landmarkIncomeMultiplier();
   }
+  function timeIncomeRate() { return isDaytime() ? 1 : .5; }
   function workerCost() { return 600 + (state.workers || 0) * 150; }
   function researchPrice() { return 300 + kingdomYear() * 150 + (state.researchCount || 0) * 50; }
   function researchReward() { return 1 + Math.floor((kingdomYear() - 1) / 2); }
@@ -418,7 +419,7 @@
     toast(`연구를 시작했습니다. ${formatDuration(duration)} 뒤 연구 토큰 ${reward}개를 획득합니다.`); save(true); updateUI();
   }
   function countCategory(category) { return state.buildings.filter((building) => BUILDINGS[building.type].category === category).length; }
-  function incomePerTick() { return state.buildings.reduce((total, building) => total + BUILDINGS[building.type].income, 0) * totalIncomeMultiplier(); }
+  function incomePerTick() { return state.buildings.reduce((total, building) => total + BUILDINGS[building.type].income, 0) * timeIncomeRate() * totalIncomeMultiplier(); }
   function missionProgress(mission) {
     if (!mission) return 0;
     if (mission.id === 'homes') return countCategory('residential');
@@ -1364,10 +1365,10 @@
     finishResearchIfReady(wallClock);
     updateResearchTimerUI(wallClock);
     const multiplier = totalIncomeMultiplier();
+    const timeRate = timeIncomeRate();
     for (const building of state.buildings) {
       const item = BUILDINGS[building.type];
-      if (item.category === 'production' && !isDaytime()) continue;
-      building.tax = Math.min(item.income * 20 * multiplier, building.tax + item.income * multiplier * dt / 10);
+      building.tax = Math.min(item.income * 20 * multiplier, building.tax + item.income * timeRate * multiplier * dt / 10);
     }
     els.storedTax.textContent = formatTax(storedTax());
     autoTimer += dt;
