@@ -218,6 +218,8 @@
   let lastTime = performance.now();
   let autoTimer = 0;
   let worldTime = 0;
+  let roadNetworkCache = { signature:'', nodes:[] };
+  const residentWalkers = new Map();
   let cameraDrag = null;
   const pressedKeys = new Set();
   let viewW = 0, viewH = 0, dpr = 1;
@@ -728,7 +730,6 @@
   }
   function roadCenterlineIntersection(first,second) {
     const firstItem=BUILDINGS[first.type], secondItem=BUILDINGS[second.type];
-    if(!firstItem.roadStyle||!secondItem.roadStyle) return null;
     const firstAngle=(first.rotation||0)*Math.PI/180, secondAngle=(second.rotation||0)*Math.PI/180;
     const firstDirection={x:Math.cos(firstAngle),z:Math.sin(firstAngle)}, secondDirection={x:Math.cos(secondAngle),z:Math.sin(secondAngle)};
     const firstStart={x:first.x-firstDirection.x*firstItem.size[0]/2,z:first.z-firstDirection.z*firstItem.size[0]/2};
@@ -882,40 +883,98 @@
       }
     });
   }
+  function buildResidentRoadNetwork() {
+    const roads=state.buildings.filter((building)=>BUILDINGS[building.type].category==='road');
+    const signature=roads.map((road)=>`${road.id}:${road.x}:${road.z}:${road.rotation||0}`).join('|');
+    if(signature===roadNetworkCache.signature) return roadNetworkCache;
+    const segments=roads.map((building)=>{
+      const item=BUILDINGS[building.type], angle=(building.rotation||0)*Math.PI/180, direction={x:Math.cos(angle),z:Math.sin(angle)}, half=item.size[0]/2;
+      const start={x:building.x-direction.x*half,z:building.z-direction.z*half}, end={x:building.x+direction.x*half,z:building.z+direction.z*half};
+      return {building,start,end,points:[{...start,t:0},{...end,t:1}]};
+    });
+    const parameter=(segment,point)=>{
+      const dx=segment.end.x-segment.start.x,dz=segment.end.z-segment.start.z;
+      return ((point.x-segment.start.x)*dx+(point.z-segment.start.z)*dz)/(dx*dx+dz*dz);
+    };
+    for(let first=0;first<segments.length;first++) for(let second=first+1;second<segments.length;second++) {
+      const point=roadCenterlineIntersection(segments[first].building,segments[second].building);
+      if(!point) continue;
+      for(const segment of [segments[first],segments[second]]) {
+        const t=Math.max(0,Math.min(1,parameter(segment,point)));
+        segment.points.push({x:point.x,z:point.z,t});
+      }
+    }
+    const nodes=[], nodeByKey=new Map(), nodeFor=(point)=>{
+      const key=`${Math.round(point.x*2)},${Math.round(point.z*2)}`;
+      if(!nodeByKey.has(key)) { nodeByKey.set(key,nodes.length); nodes.push({x:point.x,z:point.z,neighbors:new Set()}); }
+      return nodeByKey.get(key);
+    };
+    for(const segment of segments) {
+      segment.points.sort((a,b)=>a.t-b.t);
+      const unique=segment.points.filter((point,index,list)=>!index||Math.hypot(point.x-list[index-1].x,point.z-list[index-1].z)>.25);
+      for(let index=0;index<unique.length-1;index++) {
+        const from=nodeFor(unique[index]),to=nodeFor(unique[index+1]);
+        if(from===to) continue; nodes[from].neighbors.add(to); nodes[to].neighbors.add(from);
+      }
+    }
+    for(let first=0;first<nodes.length;first++) for(let second=first+1;second<nodes.length;second++) {
+      if(Math.hypot(nodes[first].x-nodes[second].x,nodes[first].z-nodes[second].z)<=1.1) { nodes[first].neighbors.add(second); nodes[second].neighbors.add(first); }
+    }
+    roadNetworkCache={signature,nodes:nodes.map((node)=>({...node,neighbors:[...node.neighbors]}))};
+    residentWalkers.clear();
+    return roadNetworkCache;
+  }
+  function residentHomeForIndex(index,visibleTotal) {
+    const homes=state.buildings.filter((building)=>BUILDINGS[building.type].category==='residential'), counts=residentHomeCounts();
+    if(!homes.length) return null;
+    const ordinal=Math.min(population()-1,Math.floor(index*population()/Math.max(1,visibleTotal)));
+    let total=0;
+    for(const home of homes) { total+=counts.get(home.id)||0; if(ordinal<total) return home; }
+    return homes[homes.length-1];
+  }
+  function homeFrontPosition(home,index) {
+    if(!home) return {x:0,z:0};
+    const item=BUILDINGS[home.type], angle=(home.rotation||0)*Math.PI/180, c=Math.cos(angle),s=Math.sin(angle);
+    const localX=((index%5)-2)*1.15,localZ=-item.size[2]/2-1.8-Math.floor(index/5%2)*1.2;
+    return {x:home.x+localX*c-localZ*s,z:home.z+localX*s+localZ*c};
+  }
+  function residentRoadPosition(index,network) {
+    let walker=residentWalkers.get(index);
+    if(!walker) {
+      const from=terrainHash(index,network.nodes.length,state.terrainSeed||0)%network.nodes.length, neighbors=network.nodes[from].neighbors;
+      walker={from,to:neighbors.length?neighbors[terrainHash(index,from,17)%neighbors.length]:from,previous:-1,distance:0,speed:1.8+(index%7)*.13,lastTime:worldTime,seed:terrainHash(index,31,state.terrainSeed||0)};
+      residentWalkers.set(index,walker);
+    }
+    let remaining=walker.speed*Math.max(0,Math.min(.2,worldTime-walker.lastTime)); walker.lastTime=worldTime;
+    while(remaining>0) {
+      const from=network.nodes[walker.from],to=network.nodes[walker.to],length=Math.max(.01,Math.hypot(to.x-from.x,to.z-from.z)),available=length-walker.distance;
+      if(remaining<available) { walker.distance+=remaining; remaining=0; break; }
+      remaining-=available; walker.previous=walker.from; walker.from=walker.to; walker.distance=0;
+      const choices=network.nodes[walker.from].neighbors.filter((node)=>node!==walker.previous),fallback=network.nodes[walker.from].neighbors;
+      const candidates=choices.length?choices:fallback;
+      if(!candidates.length) { walker.to=walker.from; break; }
+      walker.seed=(walker.seed*1664525+1013904223)>>>0; walker.to=candidates[walker.seed%candidates.length];
+    }
+    const from=network.nodes[walker.from],to=network.nodes[walker.to],length=Math.max(.01,Math.hypot(to.x-from.x,to.z-from.z)),progress=Math.min(1,walker.distance/length);
+    return {x:from.x+(to.x-from.x)*progress,z:from.z+(to.z-from.z)*progress};
+  }
   function drawResidents() {
     const employment = employmentSummary();
     const visibleTotal = Math.min(employment.total, MAX_VISIBLE_RESIDENTS);
     if (!visibleTotal) return;
-    const ownedLands = LANDS.filter(owned);
-    if (!ownedLands.length) return;
     const daytime = isDaytime();
     // At night every resident is inside a home, so nobody is rendered on the streets.
     if (!daytime) return;
     const visibleEmployed = employment.total ? Math.min(employment.employed, Math.round(visibleTotal * employment.employed / employment.total)) : 0;
-    const staffedWorkplaces=employment.workplaces.filter((workplace)=>workplace.assigned>0);
-    let workplaceIndex=0,workplaceEnd=staffedWorkplaces[0]?.assigned||0;
+    const network=buildResidentRoadNetwork();
     for (let i = 0; i < visibleTotal; i++) {
       const employed = i < visibleEmployed;
-      const phase = worldTime * (daytime ? 1.35 : .72) + i * 1.73;
-      let x, z, workingOutside = false, bodyColor = employed ? '#6e9dbc' : '#81888d';
-      if (daytime && employed && staffedWorkplaces.length) {
-        const ordinal=Math.min(employment.employed-1,Math.floor(i*employment.employed/Math.max(1,visibleEmployed)));
-        while(workplaceIndex<staffedWorkplaces.length-1&&ordinal>=workplaceEnd) { workplaceIndex++; workplaceEnd+=staffedWorkplaces[workplaceIndex].assigned; }
-        const workplace = staffedWorkplaces[workplaceIndex];
-        if (!workplace.profile.outdoor) continue;
-        const item = BUILDINGS[workplace.building.type], ring = Math.floor(i / employment.workplaces.length) % 4;
-        x = workplace.building.x + Math.cos(phase) * (item.size[0] * .62 + 2 + ring * 1.7);
-        z = workplace.building.z + Math.sin(phase * .83) * (item.size[2] * .62 + 2 + ring * 1.5);
-        bodyColor = workplace.profile.color; workingOutside = true;
-      } else {
-        const land = ownedLands[i % ownedLands.length];
-        x = land.x + Math.sin(phase * .63 + i) * 17;
-        z = land.z + Math.sin(phase * .47 + i * 2.1) * 17;
-      }
+      const phase = worldTime*1.35+i*1.73, position=network.nodes.length?residentRoadPosition(i,network):homeFrontPosition(residentHomeForIndex(i,visibleTotal),i);
+      const {x,z}=position, bodyColor=employed?'#6e9dbc':'#81888d';
       const bob = Math.sin(phase * 2.4) * .12;
       box({x, y:2.15 + bob, z}, [1.15, 2.35, 1.15], bodyColor);
       box({x, y:3.75 + bob, z}, [1.25, .85, 1.25], '#f5cba6');
-      if (workingOutside) box({x:x + .9, y:2.25 + bob, z}, [.65, .75, .65], '#5c6670');
+      if (employed) box({x:x + .9, y:2.25 + bob, z}, [.65, .75, .65], '#5c6670');
     }
   }
   function interiorIso(x, z, y, width, height) {
