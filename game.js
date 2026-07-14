@@ -28,6 +28,12 @@
     mine: { name: '철광산', icon: '⛏️', category: 'production', price: 740, income: 74, people: 3, body: '#73777d', roof: '#4a4549', size: [14, 8, 12] },
     forge: { name: '왕실 대장간', icon: '⚒️', category: 'production', price: 660, income: 64, people: 4, body: '#8f5d43', roof: '#3e424d', size: [14, 7, 12] },
     ranch: { name: '목축 농장', icon: '🐄', category: 'production', price: 430, income: 42, people: 4, body: '#c59b62', roof: '#8a5b3d', size: [14, 6, 14] },
+    dirtRoad: { name: '흙길', icon: '🟫', category: 'road', price: 15, income: 0, people: 0, body: '#9a7048', trim: '#c19868', size: [20, .2, 4], roadStyle: 'dirt', noInterior: true },
+    gravelRoad: { name: '자갈길', icon: '🪨', category: 'road', price: 30, income: 0, people: 0, body: '#8d8a82', trim: '#b9b4a9', size: [20, .2, 4], roadStyle: 'gravel', unlockYear: 2, noInterior: true },
+    stoneRoad: { name: '석재 포장길', icon: '▦', category: 'road', price: 55, income: 0, people: 0, body: '#777a7d', trim: '#b8b3a8', size: [20, .2, 5], roadStyle: 'stone', unlockYear: 3, noInterior: true },
+    royalRoad: { name: '왕실 대로', icon: '♛', category: 'road', price: 90, income: 0, people: 0, body: '#8c6d66', trim: '#e2bf62', size: [20, .2, 6], roadStyle: 'royal', unlockYear: 5, noInterior: true },
+    modernRoad: { name: '현대 도로', icon: '🛣️', category: 'road', price: 140, income: 0, people: 0, body: '#3f464d', trim: '#edf0d2', size: [20, .2, 6], roadStyle: 'modern', unlockYear: 7, noInterior: true },
+    futureRoad: { name: '미래 광자도로', icon: '🔷', category: 'road', price: 230, income: 0, people: 0, body: '#263f62', trim: '#67ecff', size: [20, .2, 6], roadStyle: 'future', unlockYear: 10, researchCost: 8, noInterior: true },
   };
   // Each of the ten series has one building for every kingdom year: 10 × 10 = 100 new buildings.
   const ERA_STAGES = [
@@ -72,10 +78,10 @@
   // keeping the catalogue display and the actual tax calculation identical.
   const BUILDING_INCOME_RATE = .1;
   Object.values(BUILDINGS).forEach((item) => {
-    item.income = Math.max(1, Math.round(item.price * BUILDING_INCOME_RATE));
+    item.income = item.category === 'road' ? 0 : Math.max(1, Math.round(item.price * BUILDING_INCOME_RATE));
   });
   const CATALOG_BUILDING_COUNT = Object.values(BUILDINGS).filter((item) => item.catalog).length;
-  const CATEGORIES = [{ id: 'all', name: '전체' }, { id: 'residential', name: '주거' }, { id: 'production', name: '생산' }, { id: 'landmark', name: '랜드마크' }, { id: 'decoration', name: '장식' }];
+  const CATEGORIES = [{ id: 'all', name: '전체' }, { id: 'residential', name: '주거' }, { id: 'production', name: '생산' }, { id: 'landmark', name: '랜드마크' }, { id: 'decoration', name: '장식' }, { id: 'road', name: '길' }];
   const MISSIONS = [
     { id: 'homes', title: '주거 건물 3채를 건설하세요', goal: 3, reward: 450 },
     { id: 'lands', title: '새 영토 2곳을 확보하세요', goal: 5, reward: 700 },
@@ -384,14 +390,20 @@
     const land = world && landAtWorld(world);
     if (!land || !owned(land)) return null;
     const [width, depth] = footprint(item, state.rotation);
-    const snap = (value) => Math.round(value / 4) * 4;
+    const snapStep=item.category==='road'?2:4, snap = (value) => Math.round(value / snapStep) * snapStep;
     const margin = 1;
     const x = Math.max(land.x - 24 + width * .5 + margin, Math.min(land.x + 24 - width * .5 - margin, snap(world.x)));
     const z = Math.max(land.z - 24 + depth * .5 + margin, Math.min(land.z + 24 - depth * .5 - margin, snap(world.z)));
     const occupied = state.buildings.some((building) => {
       if (building.landId !== land.id) return false;
-      const [otherWidth, otherDepth] = footprint(BUILDINGS[building.type], building.rotation);
-      return Math.abs(x - building.x) < (width + otherWidth) * .5 + .6 && Math.abs(z - building.z) < (depth + otherDepth) * .5 + .6;
+      const otherItem=BUILDINGS[building.type], [otherWidth, otherDepth] = footprint(otherItem, building.rotation);
+      let padding=.6;
+      if(item.category==='road'&&otherItem.category==='road') {
+        const directionDifference=Math.abs(((state.rotation-(building.rotation||0))%180+180)%180);
+        if(directionDifference>1) return false;
+        padding=-2.1;
+      }
+      return Math.abs(x - building.x) < (width + otherWidth) * .5 + padding && Math.abs(z - building.z) < (depth + otherDepth) * .5 + padding;
     });
     return { landId: land.id, x, z, valid: !occupied };
   }
@@ -520,8 +532,31 @@
     }
     box(local(markerX, d*.47, h + 2.05), [.32, .32, Math.max(1.8,d*.22)], accent, r);
   }
+  function drawRoadSegment(building) {
+    const item=BUILDINGS[building.type], [w,,d]=item.size, r=(building.rotation||0)*Math.PI/180, c=Math.cos(r), s=Math.sin(r), position={x:building.x,z:building.z};
+    const local=(x,z,y=.74)=>({x:position.x+x*c-z*s,y,z:position.z+x*s+z*c});
+    box(local(0,0,.68),[w,.24,d],item.body,r);
+    if(item.roadStyle==='dirt') {
+      for(const [x,z] of [[-6,-.7],[-2,.8],[2,-.5],[6,.55]]) box(local(x,z,.83),[2.2,.05,.42],item.trim,r);
+    } else if(item.roadStyle==='gravel') {
+      for(let i=-7;i<=7;i+=2) box(local(i,((i*i)%5-2)*.32,.84),[.72,.08,.55],i%4?item.trim:'#6f716f',r);
+    } else if(item.roadStyle==='stone') {
+      for(let x=-7.5;x<=7.5;x+=3) { box(local(x,0,.83),[.12,.06,d-.35],item.trim,r); box(local(x+1.5,0,.835),[.12,.06,d-.35],item.trim,r); }
+      box(local(0,0,.84),[w-.3,.06,.12],item.trim,r);
+    } else if(item.roadStyle==='royal') {
+      for(const z of [-d*.39,d*.39]) box(local(0,z,.84),[w-.2,.08,.18],item.trim,r);
+      for(const x of [-6,-2,2,6]) box(local(x,0,.85),[1.25,.08,.16],item.trim,r);
+    } else if(item.roadStyle==='modern') {
+      for(const z of [-d*.44,d*.44]) box(local(0,z,.84),[w-.15,.08,.14],item.trim,r);
+      for(const x of [-7.5,-4.5,-1.5,1.5,4.5,7.5]) box(local(x,0,.85),[1.35,.09,.18],item.trim,r);
+    } else if(item.roadStyle==='future') {
+      for(const z of [-d*.36,0,d*.36]) box(local(0,z,.86),[w-.2,.1,.16],item.trim,r);
+      for(const x of [-8,-4,0,4,8]) box(local(x,0,.91),[.42,.14,d-.45],'#b6fbff',r);
+    }
+  }
   function drawBuilding(building, isGhost = false) {
     const item = BUILDINGS[building.type]; const [w,h,d] = item.size; const position = { x: building.x, y: 1, z: building.z };
+    if(item.category==='road') { drawRoadSegment(building); return; }
     // The placement preview uses the same solid model as the finished building
     // so overlapping translucent roof faces never make it look broken.
     const alpha = 1, r = (building.rotation || 0) * Math.PI / 180, isPark = item.model === 'park';
@@ -921,7 +956,7 @@
       const button = document.createElement('button'); button.className = `building-card ${selectedBuilding === id ? 'selected':''} ${unlocked ? '' : 'locked'}`; button.disabled = !unlocked;
       button.dataset.buildingId=id;
       const productionNote = item.category === 'production' ? ' · 낮에만 생산' : '';
-      const detail = unlocked ? `세금 +${item.income} / 10초 · 주민 ${item.people}${productionNote}` : `🔒 왕국력 ${requiredYear}년 해금`;
+      const detail = unlocked ? (item.category==='road' ? `길 조각 ${item.size[0]}m · 회전 배치 가능` : `세금 +${item.income} / 10초 · 주민 ${item.people}${productionNote}`) : `🔒 왕국력 ${requiredYear}년 해금`;
       const price = unlocked ? `${format(item.price)} ✦${tokenCost ? `<small>🧪 ${tokenCost}</small>` : ''}` : `${requiredYear}년${tokenCost ? `<small>🧪 ${tokenCost}</small>` : ''}`;
       button.innerHTML = `<span class="card-icon">${item.icon}</span><span><span class="card-title">${item.name}</span><span class="card-detail">${detail}</span></span><b class="card-price">${price}</b>`;
       button.onclick = () => { selectedPlacedBuilding=null; selectedBuilding = selectedBuilding === id ? null : id; state.rotation = 0; updateUI(); }; els.buildingList.append(button);
@@ -968,15 +1003,15 @@
     els.researchInfo.textContent += ` · 토큰 세금 보너스 +${format((state.researchTokens || 0) * 50)}%`;
     updateResearchTimerUI();
     $('#rotationStep').value = String(state.rotationStep || 45);
-    const item = selectedBuilding && BUILDINGS[selectedBuilding]; els.selectionName.textContent = deleteMode ? '삭제 모드' : (item ? item.name : '건물을 선택하세요'); els.selectionMeta.textContent = deleteMode ? '토지를 클릭하면 마지막 건물을 50% 환불로 철거합니다.' : (item ? `${format(item.price)} 골드 · 연구 ${item.researchCost || 0} · 세금 ${item.income}/10초 · 회전 ${state.rotation}°` : `건설 메뉴에서 건물을 선택 · 환생 발전 ${Math.min(3, state.rebirths || 0)}단계`);
+    const item = selectedBuilding && BUILDINGS[selectedBuilding]; els.selectionName.textContent = deleteMode ? '삭제 모드' : (item ? item.name : '건물을 선택하세요'); els.selectionMeta.textContent = deleteMode ? '토지를 클릭하면 마지막 건물을 50% 환불로 철거합니다.' : (item ? (item.category==='road'?`${format(item.price)} 골드 · 길 조각 · 회전 ${state.rotation}° · R로 회전`:`${format(item.price)} 골드 · 연구 ${item.researchCost || 0} · 세금 ${item.income}/10초 · 회전 ${state.rotation}°`) : `건설 메뉴에서 건물을 선택 · 환생 발전 ${Math.min(3, state.rebirths || 0)}단계`);
     let placedSelection=selectedPlacedBuilding&&state.buildings.find((building)=>building.id===selectedPlacedBuilding);
     if(selectedPlacedBuilding&&!placedSelection) selectedPlacedBuilding=null;
     if(placedSelection&&!deleteMode&&!item) {
       const placedItem=BUILDINGS[placedSelection.type];
       els.selectionName.textContent=placedItem.name;
-      els.selectionMeta.textContent=`설치된 건물 · ${interiorEra(placedItem)}년식 내부 · 내부를 볼 수 있습니다.`;
+      els.selectionMeta.textContent=placedItem.noInterior?'설치된 길 · 삭제 모드로 철거할 수 있습니다.':`설치된 건물 · ${interiorEra(placedItem)}년식 내부 · 내부를 볼 수 있습니다.`;
     }
-    els.interiorButton.hidden=!placedSelection||deleteMode||!!item;
+    els.interiorButton.hidden=!placedSelection||deleteMode||!!item||BUILDINGS[placedSelection.type].noInterior;
     $('#deleteButton').classList.toggle('active', deleteMode);
   }
 
@@ -1010,7 +1045,7 @@
   function placedBuildingAtPoint(screenX,screenY) {
     const matches=[];
     for (const building of state.buildings) {
-      const item=BUILDINGS[building.type], [w,h,d]=item.size, top=h+6;
+      const item=BUILDINGS[building.type], [w,h,d]=item.size, top=item.category==='road'?1.2:h+6;
       const points=[];
       for(const y of [1,top]) for(const dx of [-w/2,w/2]) for(const dz of [-d/2,d/2]) points.push(project({x:building.x+dx,y,z:building.z+dz}));
       const minX=Math.min(...points.map(point=>point.x))-6,maxX=Math.max(...points.map(point=>point.x))+6,minY=Math.min(...points.map(point=>point.y))-6,maxY=Math.max(...points.map(point=>point.y))+6;
@@ -1019,7 +1054,7 @@
     matches.sort((a,b)=>a.depth-b.depth); return matches[0]?.building || null;
   }
   function openInterior(building) {
-    if (!building) return;
+    if (!building || BUILDINGS[building.type].noInterior) return;
     interiorBuilding=building; pressedKeys.clear(); resetInteriorView(); const item=BUILDINGS[building.type], profile=item.category==='residential'?homeJobProfile(item):jobProfile(building), seed=designSeed(building.type), era=interiorEra(item), eraStyle=INTERIOR_ERAS[Math.min(INTERIOR_ERAS.length-1,Math.floor((era-1)/2))], theme=interiorTheme(item,building.type);
     els.interiorTitle.textContent=`${item.icon} ${item.name}`;
     const homeResidents=item.category==='residential'?(residentHomeCounts().get(building.id)||0):0;
