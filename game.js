@@ -28,12 +28,12 @@
     mine: { name: '철광산', icon: '⛏️', category: 'production', price: 740, income: 74, people: 3, body: '#73777d', roof: '#4a4549', size: [14, 8, 12] },
     forge: { name: '왕실 대장간', icon: '⚒️', category: 'production', price: 660, income: 64, people: 4, body: '#8f5d43', roof: '#3e424d', size: [14, 7, 12] },
     ranch: { name: '목축 농장', icon: '🐄', category: 'production', price: 430, income: 42, people: 4, body: '#c59b62', roof: '#8a5b3d', size: [14, 6, 14] },
-    dirtRoad: { name: '흙길', icon: '🟫', category: 'road', price: 15, income: 0, people: 0, body: '#9a7048', trim: '#c19868', size: [20, .2, 4], roadStyle: 'dirt', noInterior: true },
-    gravelRoad: { name: '자갈길', icon: '🪨', category: 'road', price: 30, income: 0, people: 0, body: '#8d8a82', trim: '#b9b4a9', size: [20, .2, 4], roadStyle: 'gravel', unlockYear: 2, noInterior: true },
-    stoneRoad: { name: '석재 포장길', icon: '▦', category: 'road', price: 55, income: 0, people: 0, body: '#777a7d', trim: '#b8b3a8', size: [20, .2, 5], roadStyle: 'stone', unlockYear: 3, noInterior: true },
-    royalRoad: { name: '왕실 대로', icon: '♛', category: 'road', price: 90, income: 0, people: 0, body: '#8c6d66', trim: '#e2bf62', size: [20, .2, 6], roadStyle: 'royal', unlockYear: 5, noInterior: true },
-    modernRoad: { name: '현대 도로', icon: '🛣️', category: 'road', price: 140, income: 0, people: 0, body: '#3f464d', trim: '#edf0d2', size: [20, .2, 6], roadStyle: 'modern', unlockYear: 7, noInterior: true },
-    futureRoad: { name: '미래 광자도로', icon: '🔷', category: 'road', price: 230, income: 0, people: 0, body: '#263f62', trim: '#67ecff', size: [20, .2, 6], roadStyle: 'future', unlockYear: 10, researchCost: 8, noInterior: true },
+    dirtRoad: { name: '흙길', icon: '🟫', category: 'road', price: 15, income: 0, people: 0, body: '#9a7048', trim: '#c19868', size: [10, .2, 4], roadStyle: 'dirt', noInterior: true },
+    gravelRoad: { name: '자갈길', icon: '🪨', category: 'road', price: 30, income: 0, people: 0, body: '#8d8a82', trim: '#b9b4a9', size: [10, .2, 4], roadStyle: 'gravel', unlockYear: 2, noInterior: true },
+    stoneRoad: { name: '석재 포장길', icon: '▦', category: 'road', price: 55, income: 0, people: 0, body: '#777a7d', trim: '#b8b3a8', size: [10, .2, 5], roadStyle: 'stone', unlockYear: 3, noInterior: true },
+    royalRoad: { name: '왕실 대로', icon: '♛', category: 'road', price: 90, income: 0, people: 0, body: '#8c6d66', trim: '#e2bf62', size: [10, .2, 6], roadStyle: 'royal', unlockYear: 5, noInterior: true },
+    modernRoad: { name: '현대 도로', icon: '🛣️', category: 'road', price: 140, income: 0, people: 0, body: '#3f464d', trim: '#edf0d2', size: [10, .2, 6], roadStyle: 'modern', unlockYear: 7, noInterior: true },
+    futureRoad: { name: '미래 광자도로', icon: '🔷', category: 'road', price: 230, income: 0, people: 0, body: '#263f62', trim: '#67ecff', size: [10, .2, 6], roadStyle: 'future', unlockYear: 10, researchCost: 8, noInterior: true },
     woodenBridge: { name: '목재 다리', icon: '🌉', category: 'road', price: 80, income: 0, people: 0, body: '#8b633f', trim: '#d0ad6c', size: [22, .6, 8], bridgeStyle: 'wood', requiredTerrain: 'river', noInterior: true },
     stoneBridge: { name: '석재 다리', icon: '🌉', category: 'road', price: 180, income: 0, people: 0, body: '#777a7d', trim: '#c7c3b9', size: [22, .8, 9], bridgeStyle: 'stone', unlockYear: 3, requiredTerrain: 'river', noInterior: true },
     royalBridge: { name: '왕실 다리', icon: '♛', category: 'road', price: 400, income: 0, people: 0, body: '#8c5554', trim: '#e2bf62', size: [24, 1, 10], bridgeStyle: 'royal', unlockYear: 6, requiredTerrain: 'river', noInterior: true },
@@ -700,21 +700,21 @@
     const local=(x,z,y=.74)=>({x:position.x+x*c-z*s,y,z:position.z+x*s+z*c});
     box(local(0,0,.68),[w,.24,d],item.body,r);
     if(item.roadStyle==='dirt') {
-      for(const [x,z] of [[-6,-.7],[-2,.8],[2,-.5],[6,.55]]) box(local(x,z,.83),[2.2,.05,.42],item.trim,r);
+      for(const [factor,z] of [[-.36,-.7],[-.12,.8],[.12,-.5],[.36,.55]]) box(local(w*factor,z,.83),[w*.18,.05,.42],item.trim,r);
     } else if(item.roadStyle==='gravel') {
-      for(let i=-7;i<=7;i+=2) box(local(i,((i*i)%5-2)*.32,.84),[.72,.08,.55],i%4?item.trim:'#6f716f',r);
+      for(let i=-w*.4;i<=w*.4;i+=2) box(local(i,((i*i)%5-2)*.32,.84),[.72,.08,.55],Math.round(i)%4?item.trim:'#6f716f',r);
     } else if(item.roadStyle==='stone') {
-      for(let x=-7.5;x<=7.5;x+=3) { box(local(x,0,.83),[.12,.06,d-.35],item.trim,r); box(local(x+1.5,0,.835),[.12,.06,d-.35],item.trim,r); }
+      for(let x=-w*.38;x<=w*.38;x+=3) { box(local(x,0,.83),[.12,.06,d-.35],item.trim,r); box(local(Math.min(w*.43,x+1.5),0,.835),[.12,.06,d-.35],item.trim,r); }
       box(local(0,0,.84),[w-.3,.06,.12],item.trim,r);
     } else if(item.roadStyle==='royal') {
       for(const z of [-d*.39,d*.39]) box(local(0,z,.84),[w-.2,.08,.18],item.trim,r);
-      for(const x of [-6,-2,2,6]) box(local(x,0,.85),[1.25,.08,.16],item.trim,r);
+      for(const factor of [-.36,-.12,.12,.36]) box(local(w*factor,0,.85),[w*.12,.08,.16],item.trim,r);
     } else if(item.roadStyle==='modern') {
       for(const z of [-d*.44,d*.44]) box(local(0,z,.84),[w-.15,.08,.14],item.trim,r);
-      for(const x of [-7.5,-4.5,-1.5,1.5,4.5,7.5]) box(local(x,0,.85),[1.35,.09,.18],item.trim,r);
+      for(const factor of [-.4,-.24,-.08,.08,.24,.4]) box(local(w*factor,0,.85),[w*.07,.09,.18],item.trim,r);
     } else if(item.roadStyle==='future') {
       for(const z of [-d*.36,0,d*.36]) box(local(0,z,.86),[w-.2,.1,.16],item.trim,r);
-      for(const x of [-8,-4,0,4,8]) box(local(x,0,.91),[.42,.14,d-.45],'#b6fbff',r);
+      for(const factor of [-.4,-.2,0,.2,.4]) box(local(w*factor,0,.91),[.42,.14,d-.45],'#b6fbff',r);
     }
   }
   function drawBridgeSegment(building) {
