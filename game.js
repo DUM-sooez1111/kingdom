@@ -34,6 +34,18 @@
     royalRoad: { name: '왕실 대로', icon: '♛', category: 'road', price: 90, income: 0, people: 0, body: '#8c6d66', trim: '#e2bf62', size: [20, .2, 6], roadStyle: 'royal', unlockYear: 5, noInterior: true },
     modernRoad: { name: '현대 도로', icon: '🛣️', category: 'road', price: 140, income: 0, people: 0, body: '#3f464d', trim: '#edf0d2', size: [20, .2, 6], roadStyle: 'modern', unlockYear: 7, noInterior: true },
     futureRoad: { name: '미래 광자도로', icon: '🔷', category: 'road', price: 230, income: 0, people: 0, body: '#263f62', trim: '#67ecff', size: [20, .2, 6], roadStyle: 'future', unlockYear: 10, researchCost: 8, noInterior: true },
+    plainsWindmill: { name:'평원 풍차 제분소', icon:'🌬️', category:'production', price:620, people:3, body:'#d7c18c', roof:'#8b5a3e', size:[14,8,12], unlockYear:2, requiredTerrain:'plains', terrainModel:'windmill' },
+    cavalryRanch: { name:'왕실 기병 목장', icon:'🐎', category:'residential', price:1100, people:8, body:'#c69a63', roof:'#704936', size:[16,8,14], unlockYear:4, requiredTerrain:'plains', terrainModel:'cavalry' },
+    royalGranary: { name:'대평원 왕실 곡물탑', icon:'🌾', category:'production', price:1600, people:6, body:'#c7ae76', roof:'#6b5546', size:[16,10,14], unlockYear:6, requiredTerrain:'plains', terrainModel:'silo' },
+    fishingPier: { name:'강변 어업 부두', icon:'🎣', category:'production', price:420, people:3, body:'#a87952', roof:'#3e6878', size:[16,5,12], requiredTerrain:'river', terrainModel:'fishing' },
+    watermill: { name:'강물 물레방앗간', icon:'🛞', category:'production', price:900, people:5, body:'#b2875e', roof:'#67483d', size:[14,7,12], unlockYear:3, requiredTerrain:'river', terrainModel:'watermill' },
+    riverHouse: { name:'수상 가옥 마을', icon:'🏠', category:'residential', price:1250, people:10, body:'#d0a76f', roof:'#486b76', size:[16,7,14], unlockYear:5, requiredTerrain:'river', terrainModel:'riverhouse' },
+    lumberCamp: { name:'깊은 숲 벌목장', icon:'🪵', category:'production', price:500, people:4, body:'#98643e', roof:'#4c633f', size:[14,6,12], requiredTerrain:'forest', terrainModel:'lumber' },
+    hunterLodge: { name:'사냥꾼 산장', icon:'🏹', category:'residential', price:780, people:6, body:'#9f7048', roof:'#435a3c', size:[13,7,11], unlockYear:3, requiredTerrain:'forest', terrainModel:'hunter' },
+    forestShrine: { name:'고대 숲 제단', icon:'🗿', category:'decoration', price:950, people:0, body:'#71846a', roof:'#3f6548', size:[12,5,12], unlockYear:5, requiredTerrain:'forest', terrainModel:'shrine' },
+    quarry: { name:'산악 채석장', icon:'🪨', category:'production', price:650, people:4, body:'#85827c', roof:'#55575a', size:[15,6,13], unlockYear:2, requiredTerrain:'mountain', terrainModel:'quarry' },
+    deepMountainMine: { name:'심층 산악 광산', icon:'⛏️', category:'production', price:1100, people:6, body:'#62666b', roof:'#3c3e45', size:[16,9,14], unlockYear:4, requiredTerrain:'mountain', terrainModel:'deepmine' },
+    cliffFortress: { name:'절벽 왕국 요새', icon:'🏯', category:'landmark', price:2200, people:8, body:'#8c9193', roof:'#4b5060', size:[18,12,16], unlockYear:6, requiredTerrain:'mountain', terrainModel:'clifffort' },
   };
   // Each of the ten series has one building for every kingdom year: 10 × 10 = 100 new buildings.
   const ERA_STAGES = [
@@ -83,7 +95,7 @@
     item.income = item.category === 'road' ? 0 : Math.max(1, Math.round(item.price * (BUILDING_INCOME_RATE+categoryBonus)));
   });
   const CATALOG_BUILDING_COUNT = Object.values(BUILDINGS).filter((item) => item.catalog).length;
-  const CATEGORIES = [{ id: 'all', name: '전체' }, { id: 'residential', name: '주거' }, { id: 'production', name: '생산' }, { id: 'landmark', name: '랜드마크' }, { id: 'decoration', name: '장식' }, { id: 'road', name: '길' }];
+  const CATEGORIES = [{ id: 'all', name: '전체' }, { id: 'terrain', name: '지형 전용' }, { id: 'residential', name: '주거' }, { id: 'production', name: '생산' }, { id: 'landmark', name: '랜드마크' }, { id: 'decoration', name: '장식' }, { id: 'road', name: '길' }];
   const MISSIONS = [
     { id: 'homes', title: '주거 건물 3채를 건설하세요', goal: 3, reward: 450 },
     { id: 'roads', title: '왕국에 길 5조각을 연결하세요', goal: 5, reward: 550 },
@@ -190,6 +202,13 @@
     mine: { name: '광부', icon: '⛏', outdoor: false, color: '#7f8791' },
     forge: { name: '대장장이', icon: '⚒', outdoor: false, color: '#b76b46' },
     warehouse: { name: '창고 노동자', icon: '📦', outdoor: false, color: '#9b7658' },
+    plainsWindmill: { name:'제분사', icon:'🌬️', outdoor:false, color:'#c5a45c' },
+    royalGranary: { name:'곡물 관리자', icon:'🌾', outdoor:false, color:'#c9a65b' },
+    fishingPier: { name:'어부', icon:'🎣', outdoor:true, color:'#54a7bd' },
+    watermill: { name:'물레방앗간 제분사', icon:'🛞', outdoor:false, color:'#7aa3ac' },
+    lumberCamp: { name:'벌목꾼', icon:'🪵', outdoor:true, color:'#7e9b5c' },
+    quarry: { name:'석공', icon:'🪨', outdoor:true, color:'#8d9190' },
+    deepMountainMine: { name:'심층 광부', icon:'⛏', outdoor:false, color:'#6f7884' },
     homecraft: { name: '재택 장인', icon: '🧵', outdoor: false, home: true, color: '#b98267' },
     homeoffice: { name: '재택 서기관', icon: '📜', outdoor: false, home: true, color: '#7c93bd' },
     hometech: { name: '재택 기술자', icon: '🛠', outdoor: false, home: true, color: '#69a7a0' },
@@ -430,6 +449,7 @@
     const margin = 1;
     const x = Math.max(land.x - 24 + width * .5 + margin, Math.min(land.x + 24 - width * .5 - margin, snap(world.x)));
     const z = Math.max(land.z - 24 + depth * .5 + margin, Math.min(land.z + 24 - depth * .5 - margin, snap(world.z)));
+    if(item.requiredTerrain&&land.terrain!==item.requiredTerrain) return {landId:land.id,x,z,valid:false,reason:'terrain',requiredTerrain:item.requiredTerrain};
     if(item.category==='landmark') {
       if(state.buildings.some((building)=>building.type===selectedBuilding)) return {landId:land.id,x,z,valid:false,reason:'landmark-unique'};
       const nearby=state.buildings.some((building)=>BUILDINGS[building.type].category==='landmark'&&Math.hypot(building.x-x,building.z-z)<MAP_GRID.tile*5);
@@ -554,6 +574,35 @@
     if (item.tier >= 6) box(local(0, d*.44, h + 2.7), [w*.58, .18, .9], glow, r);
     if (item.tier >= 8) box(local(w*.34, d*.28, h + 4.1), [.24, 5.2, .24], glow, r);
   }
+  function drawTerrainBuildingDetail(item,local,r,w,h,d) {
+    if(!item.requiredTerrain)return;
+    const model=item.terrainModel,accent=item.trim||({plains:'#e0c267',river:'#64c6db',forest:'#79ad62',mountain:'#c4c8c6'}[item.requiredTerrain]);
+    if(model==='windmill') {
+      box(local(0,-d*.58,h+3.5),[.45,6.5,.45],'#765038',r); box(local(0,-d*.61,h+5.3),[6.2,.28,.28],'#efe1bd',r); box(local(0,-d*.62,h+5.3),[.28,6.2,.28],'#efe1bd',r);
+    } else if(model==='cavalry') {
+      for(const x of [-w*.47,0,w*.47]) box(local(x,d*.62,1.6),[.3,2.2,.3],'#765138',r); box(local(0,d*.62,2.3),[w+1,.25,.25],'#765138',r); box(local(-w*.32,d*.38,1.35),[2.8,.9,1.5],'#d8b759',r);
+    } else if(model==='silo') {
+      for(const x of [-w*.3,0,w*.3]) { box(local(x,d*.28,h*.48+1.6),[w*.22,h*.92,w*.22],'#a8a59b',r); pyramid(local(x,d*.28,h*.94+1.6),w*.16,'#666a6d'); }
+    } else if(model==='fishing') {
+      box(local(0,d*.66,1.05),[w+5,.35,4.5],'#9a714b',r); for(const x of [-w*.48,0,w*.48]) box(local(x,d*.66,2),[.35,2.3,.35],'#5f412c',r); for(const x of [-w*.28,w*.28]) { box(local(x,-d*.58,3.2),[.18,4,.18],'#b78b54',r); box(local(x,-d*.63,4.9),[2.2,.12,.12],accent,r); }
+    } else if(model==='watermill') {
+      box(local(w*.52,0,h*.52+1.7),[.32,5.8,5.8],'#6f5138',r); box(local(w*.54,0,h*.52+1.7),[.4,6.4,.5],accent,r); box(local(w*.55,0,h*.52+1.7),[.42,.5,6.4],accent,r);
+    } else if(model==='riverhouse') {
+      for(const x of [-w*.36,w*.36]) for(const z of [-d*.36,d*.36]) box(local(x,z,1.9),[.45,3.2,.45],'#65452f',r); box(local(0,d*.62,1.05),[w+3,.32,3.2],'#a77a4c',r);
+    } else if(model==='lumber') {
+      for(let row=0;row<3;row++) for(let i=0;i<4-row;i++) box(local(-w*.48+i*1.35+row*.62,d*.58,1.05+row*.65),[1.15,1.15,3.4],i%2?'#71482c':'#895a34',r);
+    } else if(model==='hunter') {
+      box(local(0,-d*.56,h*.68+1.5),[4.5,.25,.25],'#d3c195',r); for(const x of [-1.7,1.7]) { box(local(x,-d*.6,h*.86+1.5),[.18,2.4,.18],'#d3c195',r); box(local(x+(x<0?-.6:.6),-d*.6,h+2.1),[1.2,.18,.18],'#d3c195',r); }
+    } else if(model==='shrine') {
+      box(local(0,0,1.35),[5.5,.45,5.5],'#898c80',r); box(local(0,0,3.2),[1.8,3.6,1.8],'#a8aaa1',r); for(const [x,z] of [[-4,-3],[4,-3],[-4,3],[4,3]]) pyramid(local(x,z,1.2),2.2,'#3f8050');
+    } else if(model==='quarry') {
+      for(const [x,z,size] of [[-w*.38,d*.38,2.8],[0,d*.48,2.2],[w*.36,d*.32,3.1]]) { box(local(x,z,1.3),[size,1.5,size*.8],'#777b7c',r); pyramid(local(x,z,2.05),size*.65,'#969a99'); }
+    } else if(model==='deepmine') {
+      box(local(0,-d*.53,2.8),[w*.66,4.6,.55],'#292d32',r); for(const x of [-w*.28,w*.28]) box(local(x,-d*.58,3.6),[.58,6,.58],'#9b7448',r); box(local(-w*.48,d*.4,1.25),[3.2,.6,2],'#b99248',r); box(local(-w*.48,d*.4,1.75),[2.1,.8,1.3],accent,r);
+    } else if(model==='clifffort') {
+      for(const x of [-w*.42,w*.42]) { box(local(x,0,h*.55+2),[3.8,h+1,3.8],'#777d82',r); prism(local(x,0,h+2.2),4.6,4.6,h+2,h+5,item.roof,r); } box(local(0,-d*.55,5.2),[5.5,7,.6],'#3e4149',r);
+    }
+  }
   function designSeed(text) {
     let hash = 2166136261;
     for (let i = 0; i < text.length; i++) { hash ^= text.charCodeAt(i); hash = Math.imul(hash, 16777619); }
@@ -630,6 +679,7 @@
       for (const x of [-w*.25,w*.25]) box(local(x,-d/2-.12,h*.68+1), [1.25,1.3,.13], '#ffd16e', r, alpha);
     }
     drawCatalogDetail(item, local, r, w, h, d);
+    drawTerrainBuildingDetail(item,local,r,w,h,d);
     drawUniqueExterior(item, building.type, local, r, w, h, d);
     if (isGhost) return;
     if (building.type === 'farm') {
@@ -793,6 +843,18 @@
     watchtower:{label:'수호대 초소',signature:'weaponrack',display:'#b8c4ce',kinds:['map','weaponrack','telescope','desk','lantern','bench']},
     park:{label:'시민 휴게 정원',signature:'planter',display:'#a8d5ae',kinds:['planter','bench','fountain','statue','lamppost','trellis']},
     royalGarden:{label:'왕실 온실 정원',signature:'fountain',display:'#a9dfbd',kinds:['fountain','planter','trellis','statue','bench','lamppost']},
+    plainsWindmill:{label:'평원 제분 작업실',signature:'grainbin',display:'#ddd09a',kinds:['grainbin','sack','workbench','scale','barrel','toolrack']},
+    cavalryRanch:{label:'기병대 생활관',signature:'weaponrack',display:'#d8bd8c',kinds:['bed','weaponrack','wardrobe','dining','haystack','chest']},
+    royalGranary:{label:'대평원 곡물 관리실',signature:'grainbin',display:'#d8c887',kinds:['grainbin','barrel','sack','scale','shelf','desk']},
+    fishingPier:{label:'강변 어업 작업실',signature:'fishnet',display:'#9bd8df',kinds:['fishnet','rope','barrel','crate','desk','lantern']},
+    watermill:{label:'수차 제분실',signature:'machine',display:'#91cbd6',kinds:['machine','grainbin','sack','workbench','barrel','toolrack']},
+    riverHouse:{label:'수상 가옥 생활실',signature:'fishnet',display:'#a4d8db',kinds:['bed','fishnet','dining','wardrobe','rope','stove']},
+    lumberCamp:{label:'벌목 작업실',signature:'logpile',display:'#a8c392',kinds:['logpile','workbench','toolrack','barrel','shelf','lantern']},
+    hunterLodge:{label:'사냥꾼 산장 생활실',signature:'weaponrack',display:'#a8be91',kinds:['bed','weaponrack','stove','table','wardrobe','chest']},
+    forestShrine:{label:'고대 숲 성소',signature:'statue',display:'#9bc69e',kinds:['statue','planter','candle','fountain','bench','trellis']},
+    quarry:{label:'채석 작업소',signature:'crusher',display:'#c4c5c0',kinds:['crusher','ore','cart','toolrack','workbench','lantern']},
+    deepMountainMine:{label:'심층 광산 작업소',signature:'ore',display:'#aeb7c2',kinds:['ore','cart','crusher','toolrack','lantern','crate']},
+    cliffFortress:{label:'절벽 요새 지휘실',signature:'map',display:'#b9c2cb',kinds:['map','weaponrack','telescope','banner','writingdesk','candelabra']},
   };
   const ERA_INTERIOR_FURNITURE = ['candle','loom','bookcase','writingdesk','machine','appliance','console','solar','server','robot'];
   function interiorTheme(item,type) {
@@ -952,6 +1014,7 @@
     if (!isBuildingUnlocked(item)) { selectedBuilding = null; updateUI(); return toast(`이 건물은 왕국력 ${unlockYear(item)}년에 해금됩니다.`); }
     if(placement?.reason==='landmark-unique') return toast('같은 랜드마크는 왕국에 하나만 설치할 수 있습니다.');
     if(placement?.reason==='landmark-radius') return toast('다른 랜드마크의 원형 영향 범위 5칸 밖에 설치하세요.');
+    if(placement?.reason==='terrain') { const terrain=TERRAIN_INFO[placement.requiredTerrain]; return toast(`${item.name}은(는) ${terrain.icon} ${terrain.name} 지형에만 설치할 수 있습니다.`); }
     if (!placement || !land || !placement.valid) return toast('소유한 토지의 빈 위치를 선택하세요.');
     if (!owned(land)) return toast('먼저 이 영토를 구매해야 합니다.');
     if (state.cash < item.price) return toast('골드가 부족합니다.');
@@ -1015,7 +1078,7 @@
       button.onclick = () => { selectedCategory = category.id; updateUI(); }; els.categoryList.append(button);
     });
     const buildingEntries = Object.entries(BUILDINGS)
-      .filter(([, item]) => selectedCategory === 'all' || item.category === selectedCategory)
+      .filter(([, item]) => selectedCategory === 'all' || (selectedCategory==='terrain'?!!item.requiredTerrain:item.category === selectedCategory))
       .sort(([, a], [, b]) => Number(isBuildingUnlocked(b)) - Number(isBuildingUnlocked(a)) || unlockYear(a) - unlockYear(b) || a.price - b.price);
     els.buildingList.innerHTML = ''; buildingEntries.forEach(([id,item]) => {
       const unlocked = isBuildingUnlocked(item), requiredYear = unlockYear(item), tokenCost = item.researchCost || 0;
@@ -1033,6 +1096,7 @@
         else if(item.category==='landmark') detail='왕국 수입 +30% · 종류별 1개 · 다른 랜드마크와 5칸 거리';
         else detail=`세금 +${item.income} / 10초`;
       }
+      if(item.requiredTerrain) { const terrain=TERRAIN_INFO[item.requiredTerrain]; detail+=` · ${terrain.icon} ${terrain.name} 전용`; }
       const price = unlocked ? `${format(item.price)} ✦${tokenCost ? `<small>🧪 ${tokenCost}</small>` : ''}` : `${requiredYear}년${tokenCost ? `<small>🧪 ${tokenCost}</small>` : ''}`;
       button.innerHTML = `<span class="card-icon">${item.icon}</span><span><span class="card-title">${item.name}</span><span class="card-detail">${detail}</span></span><b class="card-price">${price}</b>`;
       button.onclick = () => { selectedPlacedBuilding=null; selectedBuilding = selectedBuilding === id ? null : id; state.rotation = 0; updateUI(); }; els.buildingList.append(button);
@@ -1081,6 +1145,7 @@
     updateResearchTimerUI();
     $('#rotationStep').value = String(state.rotationStep || 45);
     const item = selectedBuilding && BUILDINGS[selectedBuilding]; els.selectionName.textContent = deleteMode ? '삭제 모드' : (item ? item.name : '건물을 선택하세요'); els.selectionMeta.textContent = deleteMode ? '토지를 클릭하면 마지막 건물을 50% 환불로 철거합니다.' : (item ? (item.category==='road'?`${format(item.price)} 골드 · 길 조각 · 회전 ${state.rotation}° · R로 회전`:`${format(item.price)} 골드 · 연구 ${item.researchCost || 0} · 세금 ${item.income}/10초 · 회전 ${state.rotation}°`) : `건설 메뉴에서 건물을 선택 · 환생 발전 ${Math.min(3, state.rebirths || 0)}단계`);
+    if(item?.requiredTerrain) { const terrain=TERRAIN_INFO[item.requiredTerrain]; els.selectionMeta.textContent+=` · ${terrain.icon} ${terrain.name} 지형 전용`; }
     let placedSelection=selectedPlacedBuilding&&state.buildings.find((building)=>building.id===selectedPlacedBuilding);
     if(selectedPlacedBuilding&&!placedSelection) selectedPlacedBuilding=null;
     if(placedSelection&&!deleteMode&&!item) {
