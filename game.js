@@ -725,8 +725,24 @@
     const item = BUILDINGS[interiorBuilding.type], seed = designSeed(interiorBuilding.type), era = interiorEra(item), eraStyle = INTERIOR_ERAS[Math.min(INTERIOR_ERAS.length-1,Math.floor((era-1)/2))];
     const accent = item.trim || eraStyle.accent, gradient=interiorCtx.createLinearGradient(0,0,0,height);
     gradient.addColorStop(0,shade(item.roof,-18)); gradient.addColorStop(1,'#142735'); interiorCtx.fillStyle=gradient; interiorCtx.fillRect(0,0,width,height);
-    interiorBox(0,0,0,10,7,.18,eraStyle.floor,width,height); interiorBox(0,6.75,.18,10,.25,4,eraStyle.wall,width,height); interiorBox(0,0,.18,.25,7,4,eraStyle.wall,width,height);
-    const stripeCount=1+(seed%3); for(let i=0;i<stripeCount;i++) interiorBox(.3,6.68,1.1+i*.85,9.4,.09,.12,accent,width,height);
+    // Open-front dollhouse layout: both walls meet at the far (0,0) corner.
+    // Keeping the x=10 and z=7 edges open prevents furniture from ever sitting
+    // behind a foreground wall while the player rotates the room.
+    interiorBox(0,0,0,10,7,.18,eraStyle.floor,width,height);
+    interiorBox(0,0,.18,10,.25,4,eraStyle.wall,width,height);
+    interiorBox(0,0,.18,.25,7,4,eraStyle.wall,width,height);
+    interiorBox(.25,.27,.22,9.5,.12,.2,accent,width,height);
+    interiorBox(.27,.25,.22,.12,6.5,.2,accent,width,height);
+    // Rear-wall window or era display, plus small framed decorations on the
+    // side wall. They stay behind the room contents like the reference image.
+    const wallDisplay = era >= 9 ? '#69ddeb' : (era >= 5 ? '#8eb8c1' : '#b8d5c7');
+    interiorBox(5.55,.27,1.45,3.2,.1,1.65,accent,width,height);
+    interiorBox(5.72,.38,1.6,2.86,.06,1.34,wallDisplay,width,height);
+    for(let i=0;i<3;i++) {
+      interiorBox(.28,1.05+i*1.35,1.35+(i%2)*.45,.1,1,.9,accent,width,height);
+      interiorBox(.39,1.18+i*1.35,1.5+(i%2)*.45,.05,.74,.6,eraStyle.floor,width,height);
+    }
+    const stripeCount=1+(seed%3); for(let i=0;i<stripeCount;i++) interiorBox(.4,.28,3.45-i*.32,4.4,.08,.1,accent,width,height);
     queueInteriorFaces=true;
     const kinds=[...interiorKinds(item,interiorBuilding.type)]; if(era>=7) kinds.push('console','lamp'); if(era>=9) kinds.push('holo');
     const slots=[[1.5,1.4],[4.2,1.35],[7.5,1.5],[1.6,4.4],[4.7,4.5],[7.7,4.25]], count=4+(seed%3), offset=seed%slots.length;
