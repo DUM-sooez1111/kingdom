@@ -1006,12 +1006,14 @@
   function interiorPaint(points, color, depth=0) {
     if(queueInteriorFaces) interiorFaces.push({points,color,depth}); else paintInteriorFace(points,color);
   }
-  function interiorBox(x,z,y,sx,sz,sy,color,width,height) {
-    const p000=interiorIso(x,z,y,width,height), p100=interiorIso(x+sx,z,y,width,height), p110=interiorIso(x+sx,z+sz,y,width,height), p010=interiorIso(x,z+sz,y,width,height);
-    const p001=interiorIso(x,z,y+sy,width,height), p101=interiorIso(x+sx,z,y+sy,width,height), p111=interiorIso(x+sx,z+sz,y+sy,width,height), p011=interiorIso(x,z+sz,y+sy,width,height);
-    interiorPaint([p010,p110,p111,p011],shade(color,-16),interiorDepth(x+sx/2,z+sz));
-    interiorPaint([p100,p110,p111,p101],shade(color,2),interiorDepth(x+sx,z+sz/2));
-    interiorPaint([p001,p101,p111,p011],shade(color,22),interiorDepth(x+sx/2,z+sz/2)+.001);
+  function interiorBox(x,z,y,sx,sz,sy,color,width,height,rotation=0) {
+    const centerX=x+sx/2,centerZ=z+sz/2,c=Math.cos(rotation),s=Math.sin(rotation);
+    const world=(px,pz,py)=>{ const dx=px-centerX,dz=pz-centerZ; return {x:centerX+dx*c-dz*s,z:centerZ+dx*s+dz*c,y:py}; };
+    const v000=world(x,z,y),v100=world(x+sx,z,y),v110=world(x+sx,z+sz,y),v010=world(x,z+sz,y),v001=world(x,z,y+sy),v101=world(x+sx,z,y+sy),v111=world(x+sx,z+sz,y+sy),v011=world(x,z+sz,y+sy);
+    const iso=(point)=>interiorIso(point.x,point.z,point.y,width,height),depth=(points)=>points.reduce((sum,point)=>sum+interiorDepth(point.x,point.z),0)/points.length;
+    interiorPaint([iso(v010),iso(v110),iso(v111),iso(v011)],shade(color,-16),depth([v010,v110,v111,v011]));
+    interiorPaint([iso(v100),iso(v110),iso(v111),iso(v101)],shade(color,2),depth([v100,v110,v111,v101]));
+    interiorPaint([iso(v001),iso(v101),iso(v111),iso(v011)],shade(color,22),depth([v001,v101,v111,v011])+.001);
   }
   const INTERIOR_THEMES = {
     hut:{label:'소박한 농가',signature:'stove',display:'#d7caa4',kinds:['bed','dining','wardrobe','basket','stove','chest']},
@@ -1064,8 +1066,13 @@
     for(const kind of theme.kinds) if(!kinds.includes(kind)) kinds.push(kind);
     return kinds;
   }
-  function drawInteriorFurniture(kind,x,z,accent,width,height) {
-    const b = (dx,dz,y,sx,sz,sy,color) => interiorBox(x+dx,z+dz,y,sx,sz,sy,color,width,height);
+  const WALL_ALIGNED_FURNITURE = new Set(['wardrobe','shelf','bookcase','toolrack','weaponrack','fishnet','banner','trellis','server','appliance']);
+  function drawInteriorFurniture(kind,x,z,accent,width,height,rotation=0) {
+    const c=Math.cos(rotation),s=Math.sin(rotation);
+    const b = (dx,dz,y,sx,sz,sy,color) => {
+      const centerX=dx+sx/2,centerZ=dz+sz/2,rotatedX=centerX*c-centerZ*s,rotatedZ=centerX*s+centerZ*c;
+      interiorBox(x+rotatedX-sx/2,z+rotatedZ-sz/2,y,sx,sz,sy,color,width,height,rotation);
+    };
     if (kind === 'bed') { b(-.8,-.4,0,1.9,1,.45,'#80584a'); b(-.72,-.32,.45,1.72,.84,.25,accent); b(-.62,-.24,.7,.55,.68,.18,'#ead9b5'); }
     else if (kind === 'canopybed') { b(-.85,-.5,0,2.05,1.18,.48,'#765246'); b(-.75,-.4,.48,1.85,.98,.3,accent); for(const dx of [-.82,.92]) for(const dz of [-.47,.55]) b(dx,dz,.1,.12,.12,2.1,'#6a4937'); b(-.82,.46,1.75,1.86,.12,.25,accent); }
     else if (kind === 'table' || kind === 'dining' || kind === 'map') { const long=kind==='dining'; b(long?-.9:-.65,long?-.42:-.45,.8,long?1.9:1.4,long?.9:.95,.18,kind==='map'?'#5f8fa5':'#805d42'); for(const [dx,dz] of [[long?-.78:-.55,-.35],[long?.65:.45,-.35],[long?-.78:-.55,.3],[long?.65:.45,.3]]) b(dx,dz,0,.14,.14,.82,'#60422f'); if(kind==='map') b(-.45,-.25,.99,1,.55,.05,'#e4d19b'); }
@@ -1142,16 +1149,25 @@
     const stripeCount=1+(seed%3); for(let i=0;i<stripeCount;i++) interiorBox(.4,.28,3.45-i*.32,4.4,.08,.1,accent,width,height);
     queueInteriorFaces=true;
     const kinds=[...interiorKinds(item,interiorBuilding.type)]; if(era>=7) kinds.push('console','lamp'); if(era>=9) kinds.push('holo');
-    const slots=[[1.5,1.4],[4.2,1.35],[7.5,1.5],[1.6,4.4],[4.7,4.5],[7.7,4.25]], count=4+(seed%3), offset=seed%slots.length;
+    const slots=[{x:1.45,z:1.15,rotation:Math.PI},{x:4.85,z:1.15,rotation:Math.PI},{x:8.15,z:1.15,rotation:Math.PI},{x:1.45,z:5.75,rotation:0},{x:4.85,z:5.75,rotation:0},{x:8.15,z:5.75,rotation:0}], count=item.category==='residential'?6:5+(seed%2);
     const mandatory=[theme.signature]; if(item.catalog) mandatory.push(ERA_INTERIOR_FURNITURE[Math.max(0,Math.min(9,(item.tier||1)-1))]);
-    const furniture=[]; for(let i=0;i<count;i++) { const slot=slots[(i+offset)%slots.length], kind=i<mandatory.length?mandatory[i]:kinds[(i+seed)%kinds.length]; furniture.push({kind,x:slot[0],z:slot[1]}); }
-    furniture.sort((a,b)=>interiorDepth(a.x,a.z)-interiorDepth(b.x,b.z)); furniture.forEach((entry)=>drawInteriorFurniture(entry.kind,entry.x,entry.z,accent,width,height));
+    const furniture=[]; for(let i=0;i<count;i++) { const slot=slots[i%slots.length], kind=i<mandatory.length?mandatory[i]:kinds[(i+seed)%kinds.length], rotation=WALL_ALIGNED_FURNITURE.has(kind)?slot.rotation:Math.PI-interiorView.yaw; furniture.push({kind,x:slot.x,z:slot.z,rotation}); }
+    furniture.sort((a,b)=>interiorDepth(a.x,a.z)-interiorDepth(b.x,b.z)); furniture.forEach((entry)=>drawInteriorFurniture(entry.kind,entry.x,entry.z,accent,width,height,entry.rotation));
     const workProfile=item.category==='residential'?homeJobProfile(item):jobProfile(interiorBuilding);
     let insideWorkers=0;
-    if(isDaytime()&&item.category==='production'&&!workProfile.outdoor) insideWorkers=Math.min(3,item.people);
-    else if(isDaytime()&&item.category==='residential') insideWorkers=Math.min(3,homeJobCapacity(item));
-    else if(!isDaytime()&&item.category==='residential') insideWorkers=Math.min(6,residentHomeCounts().get(interiorBuilding.id)||0);
-    for(let i=0;i<insideWorkers;i++) { const x=2.2+(i%4)*1.65,z=3+Math.floor(i/4)*1.25+Math.sin(worldTime+i)*.2,bob=Math.sin(worldTime*3+i)*.06; interiorBox(x,z,.18,.42,.42,1.1,workProfile.color||'#6e9dbc',width,height); interiorBox(x-.04,z-.04,1.28+bob,.5,.5,.42,'#f5cba6',width,height); }
+    if(item.category==='production'&&isDaytime()&&!workProfile.outdoor) insideWorkers=Math.min(3,item.people);
+    else if(item.category==='residential') insideWorkers=Math.min(6,residentHomeCounts().get(interiorBuilding.id)||item.people||0);
+    const walkingLoop=[[2.25,2.35],[4.9,2.2],[7.5,2.45],[7.35,4.35],[5.05,4.7],[2.4,4.3]];
+    for(let i=0;i<insideWorkers;i++) {
+      let x,z;
+      if(item.category==='residential') {
+        let route=(worldTime*(.18+(i%3)*.025)+i/Math.max(1,insideWorkers))*walkingLoop.length;
+        if(i%2) route=walkingLoop.length-route%walkingLoop.length; else route%=walkingLoop.length;
+        const segment=Math.floor(route)%walkingLoop.length,next=(segment+1)%walkingLoop.length,raw=route-Math.floor(route),progress=raw*raw*(3-2*raw);
+        x=walkingLoop[segment][0]+(walkingLoop[next][0]-walkingLoop[segment][0])*progress; z=walkingLoop[segment][1]+(walkingLoop[next][1]-walkingLoop[segment][1])*progress;
+      } else { x=2.2+(i%4)*1.65; z=3+Math.floor(i/4)*1.25+Math.sin(worldTime+i)*.2; }
+      const bob=Math.sin(worldTime*3+i)*.06; interiorBox(x-.21,z-.21,.18,.42,.42,1.1,workProfile.color||'#6e9dbc',width,height); interiorBox(x-.25,z-.25,1.28+bob,.5,.5,.42,'#f5cba6',width,height);
+    }
     queueInteriorFaces=false; interiorFaces.sort((a,b)=>a.depth-b.depth); interiorFaces.forEach((face)=>paintInteriorFace(face.points,face.color));
     interiorCtx.fillStyle='rgba(255,255,255,.08)'; interiorCtx.fillRect(0,height-34,width,34); interiorCtx.fillStyle='#d7e5e6'; interiorCtx.font='12px system-ui'; interiorCtx.fillText(`${theme.label} · ${era}년식 ${eraStyle.label} · 고유 디자인 ${seed.toString(16).toUpperCase().padStart(8,'0')} · ${isDaytime()?'낮':'밤'}`,18,height-13);
   }
