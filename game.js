@@ -34,6 +34,10 @@
     royalRoad: { name: '왕실 대로', icon: '♛', category: 'road', price: 90, income: 0, people: 0, body: '#8c6d66', trim: '#e2bf62', size: [20, .2, 6], roadStyle: 'royal', unlockYear: 5, noInterior: true },
     modernRoad: { name: '현대 도로', icon: '🛣️', category: 'road', price: 140, income: 0, people: 0, body: '#3f464d', trim: '#edf0d2', size: [20, .2, 6], roadStyle: 'modern', unlockYear: 7, noInterior: true },
     futureRoad: { name: '미래 광자도로', icon: '🔷', category: 'road', price: 230, income: 0, people: 0, body: '#263f62', trim: '#67ecff', size: [20, .2, 6], roadStyle: 'future', unlockYear: 10, researchCost: 8, noInterior: true },
+    woodenBridge: { name: '목재 다리', icon: '🌉', category: 'road', price: 80, income: 0, people: 0, body: '#8b633f', trim: '#d0ad6c', size: [22, .6, 8], bridgeStyle: 'wood', requiredTerrain: 'river', noInterior: true },
+    stoneBridge: { name: '석재 다리', icon: '🌉', category: 'road', price: 180, income: 0, people: 0, body: '#777a7d', trim: '#c7c3b9', size: [22, .8, 9], bridgeStyle: 'stone', unlockYear: 3, requiredTerrain: 'river', noInterior: true },
+    royalBridge: { name: '왕실 다리', icon: '♛', category: 'road', price: 400, income: 0, people: 0, body: '#8c5554', trim: '#e2bf62', size: [24, 1, 10], bridgeStyle: 'royal', unlockYear: 6, requiredTerrain: 'river', noInterior: true },
+    futureBridge: { name: '미래 빛의 다리', icon: '🔷', category: 'road', price: 800, income: 0, people: 0, body: '#263f62', trim: '#67ecff', size: [24, .8, 10], bridgeStyle: 'future', unlockYear: 10, researchCost: 10, requiredTerrain: 'river', noInterior: true },
     plainsWindmill: { name:'평원 풍차 제분소', icon:'🌬️', category:'production', price:620, people:3, body:'#d7c18c', roof:'#8b5a3e', size:[14,8,12], unlockYear:2, requiredTerrain:'plains', terrainModel:'windmill' },
     cavalryRanch: { name:'왕실 기병 목장', icon:'🐎', category:'residential', price:1100, people:8, body:'#c69a63', roof:'#704936', size:[16,8,14], unlockYear:4, requiredTerrain:'plains', terrainModel:'cavalry' },
     royalGranary: { name:'대평원 왕실 곡물탑', icon:'🌾', category:'production', price:1600, people:6, body:'#c7ae76', roof:'#6b5546', size:[16,10,14], unlockYear:6, requiredTerrain:'plains', terrainModel:'silo' },
@@ -145,14 +149,27 @@
     mountain:{name:'산지',icon:'⛰️',owned:'#77766e',locked:'#4c514d'},
     river:{name:'강',icon:'🌊',owned:'#3b91b0',locked:'#285d72'},
   };
-  const PRESET_TERRAINS={core6:'forest',pass2:'river',pass3:'mountain',north1:'forest',north4:'mountain',south1:'river',south3:'forest',south4:'mountain'};
-  LANDS.forEach((land)=>{ land.terrain=PRESET_TERRAINS[land.id]||'plains'; });
   const MAP_GRID = { columns: 28, rows: 16, minX: -672, minZ: -360, tile: 48 };
-  function terrainForCell(column,row) {
-    const riverColumn=9+Math.floor(row/4);
+  function terrainHash(column,row,seed) {
+    let value=(column+17)*374761393+(row+31)*668265263+(seed+7)*69069;
+    value=(value^(value>>>13))*1274126177;
+    return (value^(value>>>16))>>>0;
+  }
+  function riverColumnForRow(row,seed=0) {
+    let column=6+(Math.abs(seed*7+5)%16);
+    for(let current=1;current<=row;current++) {
+      const turn=terrainHash(current,seed,seed)%5;
+      column+=turn===0?-1:turn===4?1:0;
+      column=Math.max(3,Math.min(MAP_GRID.columns-4,column));
+    }
+    return column;
+  }
+  function terrainForCell(column,row,seed=0) {
+    const riverColumn=riverColumnForRow(row,seed);
     if(column===riverColumn) return 'river';
-    if((column<7&&row>3&&row<13)||(column>14&&column<20&&row>9)) return 'forest';
-    if((column>21&&row<8)||(row>12&&column>9)) return 'mountain';
+    const roll=terrainHash(column,row,seed)%100;
+    if(roll<24) return 'forest';
+    if(roll<39) return 'mountain';
     return 'plains';
   }
   const occupiedLandCoordinates = new Set(LANDS.map((land) => `${land.x},${land.z}`));
@@ -161,13 +178,20 @@
       const x = MAP_GRID.minX + column * MAP_GRID.tile, z = MAP_GRID.minZ + row * MAP_GRID.tile;
       if (occupiedLandCoordinates.has(`${x},${z}`)) continue;
       const distance = Math.abs(x) / MAP_GRID.tile + Math.abs(z) / MAP_GRID.tile;
-      const terrain=terrainForCell(column,row), terrainInfo=TERRAIN_INFO[terrain];
+      const terrain=terrainForCell(column,row,0), terrainInfo=TERRAIN_INFO[terrain];
       LANDS.push({ id: `realm_${column + 1}_${row + 1}`, name: `${terrainInfo.name} 영토 ${column + 1}-${row + 1}`, x, z, terrain, price: 700 + Math.floor(distance * 140), owned: false });
     }
   }
-  const START = { cash: 1000, owned: ['core1', 'core2', 'core3'], buildings: [], workers: 0, autoCollect: false, rotation: 0, rotationStep: 45, missionIndex: 0, rebirths: 0, year: 1, researchTokens: 0, researchCount: 0, researchStartedAt: 0, researchEndsAt: 0, researchDuration: 0, researchPendingReward: 0 };
+  const START = { cash: 1000, owned: ['core1', 'core2', 'core3'], buildings: [], workers: 0, autoCollect: false, rotation: 0, rotationStep: 45, missionIndex: 0, rebirths: 0, terrainSeed: 0, year: 1, researchTokens: 0, researchCount: 0, researchStartedAt: 0, researchEndsAt: 0, researchDuration: 0, researchPendingReward: 0 };
   const storageKey = 'crownvale-browser-v1';
   let state = load();
+  function applyTerrainLayout(seed=0) {
+    LANDS.forEach((land)=>{
+      const column=Math.round((land.x-MAP_GRID.minX)/MAP_GRID.tile), row=Math.round((land.z-MAP_GRID.minZ)/MAP_GRID.tile);
+      land.terrain=column>=0&&column<MAP_GRID.columns&&row>=0&&row<MAP_GRID.rows?terrainForCell(column,row,seed):'plains';
+    });
+  }
+  applyTerrainLayout(state.terrainSeed||0);
   let selectedBuilding = null;
   let selectedPlacedBuilding = null;
   let interiorBuilding = null;
@@ -447,8 +471,9 @@
     const [width, depth] = footprint(item, state.rotation);
     const snapStep=item.category==='road'?2:4, snap = (value) => Math.round(value / snapStep) * snapStep;
     const margin = 1;
-    const x = Math.max(land.x - 24 + width * .5 + margin, Math.min(land.x + 24 - width * .5 - margin, snap(world.x)));
-    const z = Math.max(land.z - 24 + depth * .5 + margin, Math.min(land.z + 24 - depth * .5 - margin, snap(world.z)));
+    let x = Math.max(land.x - 24 + width * .5 + margin, Math.min(land.x + 24 - width * .5 - margin, snap(world.x)));
+    let z = Math.max(land.z - 24 + depth * .5 + margin, Math.min(land.z + 24 - depth * .5 - margin, snap(world.z)));
+    if(item.bridgeStyle) { x=land.x; z=land.z; }
     if(item.requiredTerrain&&land.terrain!==item.requiredTerrain) return {landId:land.id,x,z,valid:false,reason:'terrain',requiredTerrain:item.requiredTerrain};
     if(item.category==='landmark') {
       if(state.buildings.some((building)=>building.type===selectedBuilding)) return {landId:land.id,x,z,valid:false,reason:'landmark-unique'};
@@ -509,7 +534,8 @@
 
   function drawLand(land) {
     const active = owned(land); const selected = selectedLand === land.id;
-    const terrainInfo=TERRAIN_INFO[land.terrain||'plains'], color=active?terrainInfo.owned:terrainInfo.locked;
+    const surfaceTerrain=land.terrain==='river'?'plains':(land.terrain||'plains');
+    const terrainInfo=TERRAIN_INFO[surfaceTerrain], color=active?terrainInfo.owned:terrainInfo.locked;
     const surface = [
       {x:land.x-24,y:.5,z:land.z-24}, {x:land.x+24,y:.5,z:land.z-24},
       {x:land.x+24,y:.5,z:land.z+24}, {x:land.x-24,y:.5,z:land.z+24},
@@ -531,16 +557,30 @@
   function drawTerrainFeatures(land) {
     const terrain=land.terrain||'plains', seed=designSeed(land.id), occupiedPoints=state.buildings.filter((building)=>building.landId===land.id);
     const clearAt=(x,z)=>!occupiedPoints.some((building)=>Math.hypot(building.x-x,building.z-z)<10);
-    if(terrain==='river') {
-      box({x:land.x,y:.67,z:land.z},[29,.14,46],'#3185a8');
-      for(const x of [land.x-16.2,land.x+16.2]) box({x,y:.73,z:land.z},[3.2,.13,46],'#b8a475');
-    } else if(terrain==='forest') {
+    if(terrain==='forest') {
       const points=[[-15,-14],[14,13],[(seed%11)-5,15]];
       points.forEach(([dx,dz],index)=>{ const x=land.x+dx,z=land.z+dz,size=3.1+((seed>>index)%3); if(!clearAt(x,z))return; box({x,y:2.1,z},[.8,3.1,.8],'#5f422c'); pyramid({x,y:3.4,z},size,index%2?'#337044':'#2d7b47'); });
     } else if(terrain==='mountain') {
       const points=[[-13,12,5.5],[14,-11,4.2]];
       points.forEach(([dx,dz,size],index)=>{ const x=land.x+dx,z=land.z+dz; if(!clearAt(x,z))return; pyramid({x,y:.72,z},size,index?'#777b79':'#686d6c'); pyramid({x,y:.72+size*1.05,z},size*.32,'#d3d9d7'); });
     }
+  }
+  function riverPathPoints() {
+    const seed=state.terrainSeed||0;
+    return Array.from({length:MAP_GRID.rows},(_,row)=>({
+      x:MAP_GRID.minX+riverColumnForRow(row,seed)*MAP_GRID.tile,
+      z:MAP_GRID.minZ+row*MAP_GRID.tile,
+    }));
+  }
+  function drawRiverPath() {
+    const points=riverPathPoints();
+    for(let index=0;index<points.length-1;index++) {
+      const a=points[index], b=points[index+1], dx=b.x-a.x, dz=b.z-a.z, length=Math.hypot(dx,dz), angle=Math.atan2(dz,dx);
+      const midpoint={x:(a.x+b.x)/2,y:.77,z:(a.z+b.z)/2}, normalX=-dz/length, normalZ=dx/length;
+      box(midpoint,[length+12,.18,10],'#3185a8',angle);
+      for(const side of [-1,1]) box({x:midpoint.x+normalX*6.3,y:.82,z:midpoint.z+normalZ*6.3},[length+12,.15,2.1],'#b8a475',angle);
+    }
+    points.forEach((point)=>box({x:point.x,y:.78,z:point.z},[11,.18,11],'#3185a8'));
   }
   function drawCatalogDetail(item, local, r, w, h, d) {
     if (!item.catalog) return;
@@ -658,8 +698,30 @@
       for(const x of [-8,-4,0,4,8]) box(local(x,0,.91),[.42,.14,d-.45],'#b6fbff',r);
     }
   }
+  function drawBridgeSegment(building) {
+    const item=BUILDINGS[building.type], [w,,d]=item.size, r=(building.rotation||0)*Math.PI/180, c=Math.cos(r), s=Math.sin(r), position={x:building.x,z:building.z};
+    const local=(x,z,y=1.15)=>({x:position.x+x*c-z*s,y,z:position.z+x*s+z*c});
+    box(local(0,0,1.22),[w,.55,d],item.body,r);
+    for(const x of [-w*.34,w*.34]) box(local(x,0,.78),[1.15,1.45,d*.78],item.trim,r);
+    for(const z of [-d*.43,d*.43]) {
+      box(local(0,z,2.25),[w,.3,.3],item.trim,r);
+      for(const x of [-w*.42,-w*.2,0,w*.2,w*.42]) box(local(x,z,1.75),[.28,1.8,.28],item.trim,r);
+    }
+    if(item.bridgeStyle==='wood') {
+      for(let x=-w*.42;x<=w*.42;x+=2.3) box(local(x,0,1.53),[.18,.08,d*.9],'#d9b979',r);
+    } else if(item.bridgeStyle==='stone') {
+      for(let x=-w*.38;x<=w*.38;x+=3.2) box(local(x,0,1.53),[.13,.08,d*.88],'#aaa79f',r);
+    } else if(item.bridgeStyle==='royal') {
+      box(local(0,0,1.54),[w*.92,.09,d*.48],'#a54549',r);
+      for(const x of [-w*.42,0,w*.42]) box(local(x,0,2.85),[.55,.55,.55],'#f0cf70',r);
+    } else if(item.bridgeStyle==='future') {
+      for(const z of [-d*.28,d*.28]) box(local(0,z,1.58),[w*.9,.12,.18],'#9cf8ff',r);
+      for(const x of [-w*.36,-w*.12,w*.12,w*.36]) box(local(x,0,1.62),[.35,.16,d*.72],'#67ecff',r);
+    }
+  }
   function drawBuilding(building, isGhost = false) {
     const item = BUILDINGS[building.type]; const [w,h,d] = item.size; const position = { x: building.x, y: 1, z: building.z };
+    if(item.bridgeStyle) { drawBridgeSegment(building); return; }
     if(item.category==='road') { drawRoadSegment(building); return; }
     // The placement preview uses the same solid model as the finished building
     // so overlapping translucent roof faces never make it look broken.
@@ -982,10 +1044,11 @@
     faces.length = 0; hitTiles.length = 0;
     faceLayer = 0; LANDS.forEach(drawLand);
     faceLayer = 1; LANDS.forEach(drawTerrainFeatures); drawWorldArt(); drawDecorations();
-    faceLayer = 2; LANDS.forEach(drawLandBorder);
-    faceLayer = 3; state.buildings.forEach(drawBuilding); drawResidents();
+    faceLayer = 2; drawRiverPath();
+    faceLayer = 3; LANDS.forEach(drawLandBorder);
+    faceLayer = 4; state.buildings.forEach(drawBuilding); drawResidents();
     if (hoveredPlacement && hoveredPlacement.valid && selectedBuilding && isBuildingUnlocked(BUILDINGS[selectedBuilding])) {
-      faceLayer = 4;
+      faceLayer = 5;
       drawBuilding({ type: selectedBuilding, x: hoveredPlacement.x, z: hoveredPlacement.z, rotation: state.rotation }, true);
     }
     faces.sort((a,b) => a.layer - b.layer || b.depth - a.depth);
@@ -1041,9 +1104,10 @@
     if (state.cash < requiredCash || population() < requiredPopulation || state.owned.length < requiredLands) return toast(`환생에는 ${format(requiredCash)} 골드 · 주민 ${requiredPopulation}명 · 영토 ${requiredLands}곳이 필요합니다.`);
     if (!window.confirm('환생하면 왕국의 건물과 영토가 초기화됩니다. 대신 모든 골드 수입이 영구적으로 10% 증가하고 건물이 발전합니다. 계속할까요?')) return;
     const rebirths = (state.rebirths || 0) + 1;
-    state = { ...structuredClone(START), rebirths, year: (state.year || 1) + 1, researchTokens: state.researchTokens || 0 };
+    state = { ...structuredClone(START), rebirths, terrainSeed: rebirths, year: (state.year || 1) + 1, researchTokens: state.researchTokens || 0 };
+    applyTerrainLayout(state.terrainSeed);
     selectedBuilding = null; selectedLand = 'core1'; deleteMode = false;
-    toast(`환생 완료! 왕국력 ${state.year}년 · 수입 +${rebirths * 10}% · 건물 발전 ${Math.min(3, rebirths)}단계`); save(true); updateUI();
+    toast(`환생 완료! 지형과 강의 위치가 새롭게 바뀌었습니다 · 왕국력 ${state.year}년 · 수입 +${rebirths * 10}%`); save(true); updateUI();
   }
   function purchaseLand(id) {
     const land = LANDS.find((entry) => entry.id === id); if (owned(land)) return;
@@ -1089,7 +1153,7 @@
       let detail=`🔒 왕국력 ${requiredYear}년 해금`;
       if(unlocked) {
         if(landmarkPlaced) detail='왕국에 이미 설치됨 · 종류별 1개 제한';
-        else if(item.category==='road') detail=`길 조각 ${item.size[0]}m · 회전 배치 가능`;
+        else if(item.category==='road') detail=item.bridgeStyle?`강을 건너는 ${item.size[0]}m 다리 · 강 지형 전용 · 회전 배치 가능`:`길 조각 ${item.size[0]}m · 회전 배치 가능`;
         else if(item.category==='residential') detail=`세금 +${item.income} / 10초 · 주민 +${item.people}`;
         else if(item.category==='production') detail=`세금 +${item.income} / 10초 · 가격의 1% 추가 · 일자리 ${item.people}${productionNote}`;
         else if(item.category==='decoration') detail=`세금 +${item.income} / 10초 · 가격의 0.5% 추가`;
@@ -1144,7 +1208,7 @@
     els.researchInfo.textContent += ` · 토큰 세금 보너스 +${format((state.researchTokens || 0) * 50)}%`;
     updateResearchTimerUI();
     $('#rotationStep').value = String(state.rotationStep || 45);
-    const item = selectedBuilding && BUILDINGS[selectedBuilding]; els.selectionName.textContent = deleteMode ? '삭제 모드' : (item ? item.name : '건물을 선택하세요'); els.selectionMeta.textContent = deleteMode ? '토지를 클릭하면 마지막 건물을 50% 환불로 철거합니다.' : (item ? (item.category==='road'?`${format(item.price)} 골드 · 길 조각 · 회전 ${state.rotation}° · R로 회전`:`${format(item.price)} 골드 · 연구 ${item.researchCost || 0} · 세금 ${item.income}/10초 · 회전 ${state.rotation}°`) : `건설 메뉴에서 건물을 선택 · 환생 발전 ${Math.min(3, state.rebirths || 0)}단계`);
+    const item = selectedBuilding && BUILDINGS[selectedBuilding]; els.selectionName.textContent = deleteMode ? '삭제 모드' : (item ? item.name : '건물을 선택하세요'); els.selectionMeta.textContent = deleteMode ? '토지를 클릭하면 마지막 건물을 50% 환불로 철거합니다.' : (item ? (item.category==='road'?`${format(item.price)} 골드 · ${item.bridgeStyle?'다리':'길 조각'} · 회전 ${state.rotation}° · R로 회전`:`${format(item.price)} 골드 · 연구 ${item.researchCost || 0} · 세금 ${item.income}/10초 · 회전 ${state.rotation}°`) : `건설 메뉴에서 건물을 선택 · 환생 발전 ${Math.min(3, state.rebirths || 0)}단계`);
     if(item?.requiredTerrain) { const terrain=TERRAIN_INFO[item.requiredTerrain]; els.selectionMeta.textContent+=` · ${terrain.icon} ${terrain.name} 지형 전용`; }
     let placedSelection=selectedPlacedBuilding&&state.buildings.find((building)=>building.id===selectedPlacedBuilding);
     if(selectedPlacedBuilding&&!placedSelection) selectedPlacedBuilding=null;
