@@ -9,7 +9,7 @@
   const els = {
     cash: $('#cash'), population: $('#population'), rebirths: $('#rebirths'), year: $('#year'), researchTokens: $('#researchTokens'), dayIcon: $('#dayIcon'), dayClock: $('#dayClock'), productionStatus: $('#productionStatus'), categoryList: $('#categoryList'), buildingList: $('#buildingList'), landList: $('#landList'),
     selectionName: $('#selectionName'), selectionMeta: $('#selectionMeta'), workerInfo: $('#workerInfo'), employmentInfo: $('#employmentInfo'), jobList: $('#jobList'),
-    storedTax: $('#storedTax'), missionTitle: $('#missionTitle'), missionText: $('#missionText'), unlockInfo: $('#unlockInfo'), researchInfo: $('#researchInfo'),
+    storedTax: $('#storedTax'), missionTitle: $('#missionTitle'), missionText: $('#missionText'), unlockInfo: $('#unlockInfo'), researchInfo: $('#researchInfo'), researchTimer: $('#researchTimer'), researchProgress: $('#researchProgress'),
     missionProgress: $('#missionProgress'), claimMission: $('#claimMission'), toast: $('#toast'), interiorModal: $('#interiorModal'), interiorTitle: $('#interiorTitle'), interiorMeta: $('#interiorMeta'), interiorButton: $('#interiorButton'),
   };
 
@@ -116,7 +116,7 @@
       LANDS.push({ id: `realm_${column + 1}_${row + 1}`, name: `확장 영토 ${column + 1}-${row + 1}`, x, z, price: 700 + Math.floor(distance * 140), owned: false });
     }
   }
-  const START = { cash: 1000, owned: ['core1', 'core2', 'core3'], buildings: [], workers: 0, autoCollect: false, rotation: 0, rotationStep: 45, missionIndex: 0, rebirths: 0, year: 1, researchTokens: 0, researchCount: 0 };
+  const START = { cash: 1000, owned: ['core1', 'core2', 'core3'], buildings: [], workers: 0, autoCollect: false, rotation: 0, rotationStep: 45, missionIndex: 0, rebirths: 0, year: 1, researchTokens: 0, researchCount: 0, researchStartedAt: 0, researchEndsAt: 0, researchDuration: 0, researchPendingReward: 0 };
   const storageKey = 'crownvale-browser-v1';
   let state = load();
   let selectedBuilding = null;
@@ -281,11 +281,48 @@
   function workerCost() { return 600 + (state.workers || 0) * 150; }
   function researchPrice() { return 300 + kingdomYear() * 150 + (state.researchCount || 0) * 50; }
   function researchReward() { return 1 + Math.floor((kingdomYear() - 1) / 2); }
+  function researchDurationSeconds() { return Math.min(180, 15 + kingdomYear() * 5 + (state.researchCount || 0) * 3); }
+  function researchInProgress() { return Number(state.researchEndsAt) > 0; }
+  function formatDuration(milliseconds) {
+    const seconds = Math.max(0, Math.ceil(milliseconds / 1000));
+    const minutes = Math.floor(seconds / 60), remainder = seconds % 60;
+    return minutes ? `${minutes}:${String(remainder).padStart(2, '0')}` : `${remainder}초`;
+  }
+  function finishResearchIfReady(now = Date.now()) {
+    if (!researchInProgress() || now < Number(state.researchEndsAt)) return false;
+    const reward = Math.max(1, Number(state.researchPendingReward) || researchReward());
+    state.researchTokens = (state.researchTokens || 0) + reward;
+    state.researchStartedAt = 0; state.researchEndsAt = 0; state.researchDuration = 0; state.researchPendingReward = 0;
+    toast(`연구 완료! 연구 토큰 ${reward}개를 획득했습니다.`);
+    save(true); updateUI();
+    return true;
+  }
+  function updateResearchTimerUI(now = Date.now()) {
+    const button = $('#conductResearch');
+    if (researchInProgress()) {
+      const remaining = Math.max(0, Number(state.researchEndsAt) - now);
+      const fallbackDuration = Math.max(1, Number(state.researchEndsAt) - Number(state.researchStartedAt || now));
+      const duration = Math.max(1, Number(state.researchDuration) || fallbackDuration);
+      const progress = Math.max(0, Math.min(100, (1 - remaining / duration) * 100));
+      els.researchTimer.textContent = `연구 진행 중 · ${formatDuration(remaining)} 남음`;
+      els.researchProgress.style.width = `${progress}%`;
+      button.disabled = true;
+      button.innerHTML = `연구 진행 중 <span>${formatDuration(remaining)}</span>`;
+    } else {
+      const duration = researchDurationSeconds() * 1000;
+      els.researchTimer.textContent = `예상 연구 시간 ${formatDuration(duration)}`;
+      els.researchProgress.style.width = '0%';
+      button.disabled = false;
+      button.innerHTML = `연구 수행 <span>${format(researchPrice())} 골드</span>`;
+    }
+  }
   function conductResearch() {
-    const price = researchPrice(), reward = researchReward();
+    if (researchInProgress()) return toast('이미 연구가 진행 중입니다.');
+    const price = researchPrice(), reward = researchReward(), duration = researchDurationSeconds() * 1000, now = Date.now();
     if (state.cash < price) return toast('연구에 필요한 골드가 부족합니다.');
-    state.cash -= price; state.researchTokens = (state.researchTokens || 0) + reward; state.researchCount = (state.researchCount || 0) + 1;
-    toast(`연구 완료! 연구 토큰 ${reward}개를 획득했습니다.`); save(true); updateUI();
+    state.cash -= price; state.researchCount = (state.researchCount || 0) + 1;
+    state.researchStartedAt = now; state.researchEndsAt = now + duration; state.researchDuration = duration; state.researchPendingReward = reward;
+    toast(`연구를 시작했습니다. ${formatDuration(duration)} 뒤 연구 토큰 ${reward}개를 획득합니다.`); save(true); updateUI();
   }
   function countCategory(category) { return state.buildings.filter((building) => BUILDINGS[building.type].category === category).length; }
   function incomePerTick() { return state.buildings.reduce((total, building) => total + BUILDINGS[building.type].income, 0) * totalIncomeMultiplier(); }
@@ -630,14 +667,21 @@
   function interiorDepth(x,z) { const dx=x-5,dz=z-3.5; return dx*Math.sin(interiorView.yaw)+dz*Math.cos(interiorView.yaw); }
   function clampInteriorView() { interiorView.yaw=Math.max(.12,Math.min(1.45,interiorView.yaw)); interiorView.tilt=Math.max(.45,Math.min(.92,interiorView.tilt)); interiorView.zoom=Math.max(.65,Math.min(1.6,interiorView.zoom)); }
   function resetInteriorView() { interiorView.yaw=Math.PI/4; interiorView.tilt=.68; interiorView.zoom=1; interiorView.drag=null; interiorCanvas.classList.remove('dragging'); }
-  function interiorPaint(points, color) {
+  const interiorFaces=[];
+  let queueInteriorFaces=false;
+  function paintInteriorFace(points,color) {
     interiorCtx.beginPath(); points.forEach((point,index) => index ? interiorCtx.lineTo(point.x,point.y) : interiorCtx.moveTo(point.x,point.y)); interiorCtx.closePath();
-    interiorCtx.fillStyle = color; interiorCtx.fill(); interiorCtx.strokeStyle = 'rgba(12,23,29,.28)'; interiorCtx.lineWidth = 1; interiorCtx.stroke();
+    interiorCtx.globalAlpha=1; interiorCtx.fillStyle = color; interiorCtx.fill(); interiorCtx.strokeStyle = 'rgba(12,23,29,.42)'; interiorCtx.lineWidth = 1; interiorCtx.stroke();
+  }
+  function interiorPaint(points, color, depth=0) {
+    if(queueInteriorFaces) interiorFaces.push({points,color,depth}); else paintInteriorFace(points,color);
   }
   function interiorBox(x,z,y,sx,sz,sy,color,width,height) {
     const p000=interiorIso(x,z,y,width,height), p100=interiorIso(x+sx,z,y,width,height), p110=interiorIso(x+sx,z+sz,y,width,height), p010=interiorIso(x,z+sz,y,width,height);
     const p001=interiorIso(x,z,y+sy,width,height), p101=interiorIso(x+sx,z,y+sy,width,height), p111=interiorIso(x+sx,z+sz,y+sy,width,height), p011=interiorIso(x,z+sz,y+sy,width,height);
-    interiorPaint([p010,p110,p111,p011],shade(color,-16)); interiorPaint([p100,p110,p111,p101],shade(color,2)); interiorPaint([p001,p101,p111,p011],shade(color,22));
+    interiorPaint([p010,p110,p111,p011],shade(color,-16),interiorDepth(x+sx/2,z+sz));
+    interiorPaint([p100,p110,p111,p101],shade(color,2),interiorDepth(x+sx,z+sz/2));
+    interiorPaint([p001,p101,p111,p011],shade(color,22),interiorDepth(x+sx/2,z+sz/2)+.001);
   }
   function interiorKinds(item, type) {
     const key = item.model || type;
@@ -677,11 +721,13 @@
     const rect = interiorCanvas.getBoundingClientRect(), ratio = Math.min(window.devicePixelRatio || 1, 2), width = Math.max(1,rect.width), height = Math.max(1,rect.height);
     if (interiorCanvas.width !== Math.floor(width*ratio) || interiorCanvas.height !== Math.floor(height*ratio)) { interiorCanvas.width=Math.floor(width*ratio); interiorCanvas.height=Math.floor(height*ratio); }
     interiorCtx.setTransform(ratio,0,0,ratio,0,0);
+    interiorFaces.length=0; queueInteriorFaces=false;
     const item = BUILDINGS[interiorBuilding.type], seed = designSeed(interiorBuilding.type), era = interiorEra(item), eraStyle = INTERIOR_ERAS[Math.min(INTERIOR_ERAS.length-1,Math.floor((era-1)/2))];
     const accent = item.trim || eraStyle.accent, gradient=interiorCtx.createLinearGradient(0,0,0,height);
     gradient.addColorStop(0,shade(item.roof,-18)); gradient.addColorStop(1,'#142735'); interiorCtx.fillStyle=gradient; interiorCtx.fillRect(0,0,width,height);
     interiorBox(0,0,0,10,7,.18,eraStyle.floor,width,height); interiorBox(0,6.75,.18,10,.25,4,eraStyle.wall,width,height); interiorBox(0,0,.18,.25,7,4,eraStyle.wall,width,height);
     const stripeCount=1+(seed%3); for(let i=0;i<stripeCount;i++) interiorBox(.3,6.68,1.1+i*.85,9.4,.09,.12,accent,width,height);
+    queueInteriorFaces=true;
     const kinds=[...interiorKinds(item,interiorBuilding.type)]; if(era>=7) kinds.push('console','lamp'); if(era>=9) kinds.push('holo');
     const slots=[[1.5,1.4],[4.2,1.35],[7.5,1.5],[1.6,4.4],[4.7,4.5],[7.7,4.25]], count=4+(seed%3), offset=seed%slots.length;
     const furniture=[]; for(let i=0;i<count;i++) { const slot=slots[(i+offset)%slots.length]; furniture.push({kind:kinds[(i+seed)%kinds.length],x:slot[0],z:slot[1]}); }
@@ -692,6 +738,7 @@
     else if(isDaytime()&&item.category==='residential') insideWorkers=Math.min(3,homeJobCapacity(item));
     else if(!isDaytime()&&item.category==='residential') insideWorkers=Math.min(6,residentHomeCounts().get(interiorBuilding.id)||0);
     for(let i=0;i<insideWorkers;i++) { const x=2.2+(i%4)*1.65,z=3+Math.floor(i/4)*1.25+Math.sin(worldTime+i)*.2,bob=Math.sin(worldTime*3+i)*.06; interiorBox(x,z,.18,.42,.42,1.1,workProfile.color||'#6e9dbc',width,height); interiorBox(x-.04,z-.04,1.28+bob,.5,.5,.42,'#f5cba6',width,height); }
+    queueInteriorFaces=false; interiorFaces.sort((a,b)=>a.depth-b.depth); interiorFaces.forEach((face)=>paintInteriorFace(face.points,face.color));
     interiorCtx.fillStyle='rgba(255,255,255,.08)'; interiorCtx.fillRect(0,height-34,width,34); interiorCtx.fillStyle='#d7e5e6'; interiorCtx.font='12px system-ui'; interiorCtx.fillText(`${era}년식 ${eraStyle.label} · 고유 디자인 ${seed.toString(16).toUpperCase().padStart(8,'0')} · ${isDaytime()?'낮':'밤'}`,18,height-13);
   }
   function render() {
@@ -847,7 +894,7 @@
     hireButton.innerHTML = state.workers >= 20 ? '수집자 최대 고용 완료' : `수집자 고용 <span>${format(workerCost())} 골드</span>`;
     els.researchInfo.textContent = `보유 연구 토큰 ${format(state.researchTokens || 0)}개 · 왕국력 ${kingdomYear()}년 연구 보상 ${researchReward()}개`;
     els.researchInfo.textContent += ` · 토큰 세금 보너스 +${format((state.researchTokens || 0) * 50)}%`;
-    $('#conductResearch').innerHTML = `연구 수행 <span>${format(researchPrice())} 골드</span>`;
+    updateResearchTimerUI();
     $('#rotationStep').value = String(state.rotationStep || 45);
     const item = selectedBuilding && BUILDINGS[selectedBuilding]; els.selectionName.textContent = deleteMode ? '삭제 모드' : (item ? item.name : '건물을 선택하세요'); els.selectionMeta.textContent = deleteMode ? '토지를 클릭하면 마지막 건물을 50% 환불로 철거합니다.' : (item ? `${format(item.price)} 골드 · 연구 ${item.researchCost || 0} · 세금 ${item.income}/10초 · 회전 ${state.rotation}°` : `건설 메뉴에서 건물을 선택 · 환생 발전 ${Math.min(3, state.rebirths || 0)}단계`);
     let placedSelection=selectedPlacedBuilding&&state.buildings.find((building)=>building.id===selectedPlacedBuilding);
@@ -979,6 +1026,9 @@
     const dt = Math.min(.25,(now-lastTime)/1000); lastTime=now;
     worldTime += dt;
     updateClockUI();
+    const wallClock = Date.now();
+    finishResearchIfReady(wallClock);
+    updateResearchTimerUI(wallClock);
     const multiplier = totalIncomeMultiplier();
     for (const building of state.buildings) {
       const item = BUILDINGS[building.type];
