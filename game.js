@@ -547,6 +547,15 @@
     const base = [{x:center.x-r,y:center.y,z:center.z-r},{x:center.x+r,y:center.y,z:center.z-r},{x:center.x+r,y:center.y,z:center.z+r},{x:center.x-r,y:center.y,z:center.z+r}], peak={x:center.x,y:center.y+h,z:center.z};
     addFace([base[0],base[1],peak], shade(color,-16)); addFace([base[1],base[2],peak], shade(color,3)); addFace([base[2],base[3],peak], shade(color,16)); addFace([base[3],base[0],peak], shade(color,-4));
   }
+  function octagonalPad(center,radius,height,color) {
+    const bottom=[],top=[];
+    for(let index=0;index<8;index++) {
+      const angle=Math.PI/8+index*Math.PI/4, x=center.x+Math.cos(angle)*radius, z=center.z+Math.sin(angle)*radius;
+      bottom.push({x,y:center.y-height/2,z}); top.push({x,y:center.y+height/2,z});
+    }
+    addFace(top,color);
+    for(let index=0;index<8;index++) addFace([bottom[index],bottom[(index+1)%8],top[(index+1)%8],top[index]],shade(color,index%2?8:-7));
+  }
 
   function drawLand(land) {
     const active = owned(land); const selected = selectedLand === land.id;
@@ -715,6 +724,36 @@
     } else if(item.roadStyle==='future') {
       for(const z of [-d*.36,0,d*.36]) box(local(0,z,.86),[w-.2,.1,.16],item.trim,r);
       for(const factor of [-.4,-.2,0,.2,.4]) box(local(w*factor,0,.91),[.42,.14,d-.45],'#b6fbff',r);
+    }
+  }
+  function roadCenterlineIntersection(first,second) {
+    const firstItem=BUILDINGS[first.type], secondItem=BUILDINGS[second.type];
+    if(!firstItem.roadStyle||!secondItem.roadStyle) return null;
+    const firstAngle=(first.rotation||0)*Math.PI/180, secondAngle=(second.rotation||0)*Math.PI/180;
+    const firstDirection={x:Math.cos(firstAngle),z:Math.sin(firstAngle)}, secondDirection={x:Math.cos(secondAngle),z:Math.sin(secondAngle)};
+    const firstStart={x:first.x-firstDirection.x*firstItem.size[0]/2,z:first.z-firstDirection.z*firstItem.size[0]/2};
+    const secondStart={x:second.x-secondDirection.x*secondItem.size[0]/2,z:second.z-secondDirection.z*secondItem.size[0]/2};
+    const firstVector={x:firstDirection.x*firstItem.size[0],z:firstDirection.z*firstItem.size[0]}, secondVector={x:secondDirection.x*secondItem.size[0],z:secondDirection.z*secondItem.size[0]};
+    const cross=(a,b)=>a.x*b.z-a.z*b.x, denominator=cross(firstVector,secondVector);
+    if(Math.abs(denominator)<.001) return null;
+    const difference={x:secondStart.x-firstStart.x,z:secondStart.z-firstStart.z};
+    const firstDistance=cross(difference,secondVector)/denominator, secondDistance=cross(difference,firstVector)/denominator;
+    if(firstDistance<-.03||firstDistance>1.03||secondDistance<-.03||secondDistance>1.03) return null;
+    return {x:firstStart.x+firstVector.x*firstDistance,z:firstStart.z+firstVector.z*firstDistance};
+  }
+  function drawRoadJunctions() {
+    const roads=state.buildings.filter((building)=>BUILDINGS[building.type].roadStyle), drawn=new Set();
+    for(let firstIndex=0;firstIndex<roads.length;firstIndex++) for(let secondIndex=firstIndex+1;secondIndex<roads.length;secondIndex++) {
+      const point=roadCenterlineIntersection(roads[firstIndex],roads[secondIndex]);
+      if(!point) continue;
+      const key=`${Math.round(point.x*2)},${Math.round(point.z*2)}`;
+      if(drawn.has(key)) continue; drawn.add(key);
+      const firstItem=BUILDINGS[roads[firstIndex].type], secondItem=BUILDINGS[roads[secondIndex].type], dominant=firstItem.price>=secondItem.price?firstItem:secondItem;
+      const radius=Math.max(firstItem.size[2],secondItem.size[2])*.62+.55;
+      octagonalPad({x:point.x,y:.88,z:point.z},radius,.16,dominant.body);
+      if(['stone','royal','modern','future'].includes(dominant.roadStyle)) {
+        for(const road of [roads[firstIndex],roads[secondIndex]]) box({x:point.x,y:.985,z:point.z},[radius*1.55,.05,.16],dominant.trim,(road.rotation||0)*Math.PI/180);
+      }
     }
   }
   function drawBridgeSegment(building) {
@@ -1065,9 +1104,11 @@
     faceLayer = 1; LANDS.forEach(drawTerrainFeatures); drawWorldArt(); drawDecorations();
     faceLayer = 2; drawRiverPath();
     faceLayer = 3; LANDS.forEach(drawLandBorder);
-    faceLayer = 4; state.buildings.forEach(drawBuilding); drawResidents();
+    faceLayer = 4; state.buildings.forEach(drawBuilding);
+    faceLayer = 5; drawRoadJunctions();
+    faceLayer = 6; drawResidents();
     if (hoveredPlacement && hoveredPlacement.valid && selectedBuilding && isBuildingUnlocked(BUILDINGS[selectedBuilding])) {
-      faceLayer = 5;
+      faceLayer = 7;
       drawBuilding({ type: selectedBuilding, x: hoveredPlacement.x, z: hoveredPlacement.z, rotation: state.rotation }, true);
     }
     faces.sort((a,b) => a.layer - b.layer || b.depth - a.depth);
