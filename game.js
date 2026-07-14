@@ -683,26 +683,56 @@
     interiorPaint([p100,p110,p111,p101],shade(color,2),interiorDepth(x+sx,z+sz/2));
     interiorPaint([p001,p101,p111,p011],shade(color,22),interiorDepth(x+sx/2,z+sz/2)+.001);
   }
-  function interiorKinds(item, type) {
-    const key = item.model || type;
-    const groups = {
-      home:['bed','table','chest','hearth','shelf'], apartment:['bed','table','shelf','plant','chest'], hut:['bed','table','hearth','chest'], woodhouse:['bed','table','shelf','hearth'], village:['bed','table','plant','chest','shelf'], manor:['bed','table','throne','shelf','plant'], homestead:['bed','table','chest','plant','hearth'],
-      farm:['crop','crate','table','sack','shelf'], ranch:['sack','crate','table','bench','crop'], harbor:['crate','counter','table','sack','shelf'], market:['counter','crate','table','shelf','plant'], mine:['ore','cart','table','crate','shelf'], forge:['forge','anvil','table','crate','shelf'], warehouse:['crate','crate','shelf','table','sack'],
-      hall:['throne','table','shelf','plant','chest'], tower:['table','shelf','chest','map','bench'], park:['plant','bench','plant','table','fountain'], royalGarden:['plant','bench','fountain','plant','table'], watchtower:['map','table','shelf','bench','chest'],
-    };
-    if (groups[key]) return groups[key];
-    if (item.category === 'residential') return groups.home;
-    if (item.category === 'production') return ['table','crate','shelf','counter','sack'];
-    if (item.category === 'decoration') return groups.park;
-    return groups.hall;
+  const INTERIOR_THEMES = {
+    hut:{label:'소박한 농가',signature:'stove',display:'#d7caa4',kinds:['bed','dining','wardrobe','basket','stove','chest']},
+    woodhouse:{label:'나무 장인의 집',signature:'logpile',display:'#c7a178',kinds:['bed','workbench','wardrobe','logpile','stove','shelf']},
+    village:{label:'마을 가족실',signature:'sofa',display:'#c9d4b0',kinds:['bed','dining','sofa','wardrobe','bookcase','stove']},
+    manor:{label:'귀족 응접실',signature:'canopybed',display:'#d9c0dc',kinds:['canopybed','sofa','writingdesk','bookcase','wardrobe','candelabra']},
+    homestead:{label:'영주 생활관',signature:'banner',display:'#d2bdd8',kinds:['canopybed','dining','banner','bookcase','candelabra','wardrobe']},
+    home:{label:'시대 주택',signature:'wardrobe',display:'#c9dfcf',kinds:['bed','dining','wardrobe','stove','bookcase','sofa']},
+    apartment:{label:'공동 주거실',signature:'sofa',display:'#b8d8dc',kinds:['bed','sofa','desk','wardrobe','bookcase','appliance']},
+    warehouse:{label:'왕실 저장고',signature:'barrel',display:'#d2bb8d',kinds:['crate','barrel','shelf','scale','cart','sack']},
+    farm:{label:'농장 작업실',signature:'grainbin',display:'#c9dc91',kinds:['crop','grainbin','basket','toolrack','workbench','sack']},
+    ranch:{label:'목축 관리실',signature:'haystack',display:'#d9c58a',kinds:['haystack','trough','barrel','toolrack','bench','sack']},
+    harbor:{label:'항만 작업실',signature:'fishnet',display:'#9bcbd4',kinds:['fishnet','barrel','crate','crane','rope','desk']},
+    market:{label:'상인 판매실',signature:'marketstall',display:'#dfb28e',kinds:['marketstall','counter','scale','barrel','shelf','crate']},
+    mine:{label:'광산 작업소',signature:'crusher',display:'#aeb7c2',kinds:['ore','cart','crusher','toolrack','lantern','crate']},
+    forge:{label:'대장장이 공방',signature:'bellows',display:'#d69a78',kinds:['forge','anvil','bellows','workbench','toolrack','barrel']},
+    hall:{label:'왕국 행정실',signature:'throne',display:'#d8c4e1',kinds:['throne','writingdesk','bookcase','banner','statue','candelabra']},
+    tower:{label:'감시 지휘실',signature:'telescope',display:'#afc6d5',kinds:['map','telescope','weaponrack','desk','lantern','chest']},
+    watchtower:{label:'수호대 초소',signature:'weaponrack',display:'#b8c4ce',kinds:['map','weaponrack','telescope','desk','lantern','bench']},
+    park:{label:'시민 휴게 정원',signature:'planter',display:'#a8d5ae',kinds:['planter','bench','fountain','statue','lamppost','trellis']},
+    royalGarden:{label:'왕실 온실 정원',signature:'fountain',display:'#a9dfbd',kinds:['fountain','planter','trellis','statue','bench','lamppost']},
+  };
+  const ERA_INTERIOR_FURNITURE = ['candle','loom','bookcase','writingdesk','machine','appliance','console','solar','server','robot'];
+  function interiorTheme(item,type) {
+    return INTERIOR_THEMES[type] || INTERIOR_THEMES[item.model] || (item.category==='residential'?INTERIOR_THEMES.home:item.category==='production'?INTERIOR_THEMES.warehouse:item.category==='decoration'?INTERIOR_THEMES.park:INTERIOR_THEMES.hall);
+  }
+  function shiftHexColor(hex,amount) {
+    const value=parseInt((hex||'#777777').slice(1),16), clampValue=(number)=>Math.max(0,Math.min(255,number));
+    return `#${[value>>16,(value>>8)&255,value&255].map(channel=>clampValue(channel+amount).toString(16).padStart(2,'0')).join('')}`;
+  }
+  function interiorPalette(item,type,eraStyle,seed) {
+    const variation=((seed>>>4)%7-3)*4, theme=interiorTheme(item,type);
+    return {theme,floor:shiftHexColor(eraStyle.floor,variation),wall:shiftHexColor(eraStyle.wall,-variation),accent:item.trim||eraStyle.accent,display:shiftHexColor(theme.display,(seed%5-2)*5)};
+  }
+  function interiorKinds(item,type) {
+    const theme=interiorTheme(item,type), kinds=[theme.signature];
+    if(item.catalog) kinds.push(ERA_INTERIOR_FURNITURE[Math.max(0,Math.min(9,(item.tier||1)-1))]);
+    for(const kind of theme.kinds) if(!kinds.includes(kind)) kinds.push(kind);
+    return kinds;
   }
   function drawInteriorFurniture(kind,x,z,accent,width,height) {
     const b = (dx,dz,y,sx,sz,sy,color) => interiorBox(x+dx,z+dz,y,sx,sz,sy,color,width,height);
     if (kind === 'bed') { b(-.8,-.4,0,1.9,1,.45,'#80584a'); b(-.72,-.32,.45,1.72,.84,.25,accent); b(-.62,-.24,.7,.55,.68,.18,'#ead9b5'); }
-    else if (kind === 'table' || kind === 'map') { b(-.65,-.45,.8,1.4,.95,.18,kind==='map'?'#5f8fa5':'#805d42'); for(const [dx,dz] of [[-.55,-.35],[.45,-.35],[-.55,.3],[.45,.3]]) b(dx,dz,0,.14,.14,.82,'#60422f'); if(kind==='map') b(-.45,-.25,.99,1,.55,.05,'#e4d19b'); }
+    else if (kind === 'canopybed') { b(-.85,-.5,0,2.05,1.18,.48,'#765246'); b(-.75,-.4,.48,1.85,.98,.3,accent); for(const dx of [-.82,.92]) for(const dz of [-.47,.55]) b(dx,dz,.1,.12,.12,2.1,'#6a4937'); b(-.82,.46,1.75,1.86,.12,.25,accent); }
+    else if (kind === 'table' || kind === 'dining' || kind === 'map') { const long=kind==='dining'; b(long?-.9:-.65,long?-.42:-.45,.8,long?1.9:1.4,long?.9:.95,.18,kind==='map'?'#5f8fa5':'#805d42'); for(const [dx,dz] of [[long?-.78:-.55,-.35],[long?.65:.45,-.35],[long?-.78:-.55,.3],[long?.65:.45,.3]]) b(dx,dz,0,.14,.14,.82,'#60422f'); if(kind==='map') b(-.45,-.25,.99,1,.55,.05,'#e4d19b'); }
+    else if (kind === 'desk' || kind === 'writingdesk') { b(-.75,-.38,.72,1.55,.78,.2,'#76523b'); b(-.68,-.3,0,.18,.18,.75,'#553b2e'); b(.52,-.3,0,.18,.18,.75,'#553b2e'); b(-.45,-.28,.95,.72,.46,.06,kind==='writingdesk'?'#e9d7a7':accent); b(.32,-.2,.92,.32,.3,.18,'#5d4939'); }
+    else if (kind === 'sofa') { b(-.85,-.42,.15,1.8,.86,.48,accent); b(-.85,.25,.45,1.8,.2,.85,'#6f5964'); b(-1.02,-.35,.38,.2,.72,.55,'#6f5964'); b(.75,-.35,.38,.2,.72,.55,'#6f5964'); }
+    else if (kind === 'wardrobe') { b(-.7,-.34,0,1.45,.68,2.2,'#77543c'); b(-.64,-.4,.12,.66,.08,1.92,'#966b49'); b(.04,-.4,.12,.66,.08,1.92,'#966b49'); b(-.05,-.48,1,.1,.08,.12,accent); b(.18,-.48,1,.1,.08,.12,accent); }
     else if (kind === 'chest' || kind === 'crate' || kind === 'sack') { b(-.5,-.45,0,1, .9, kind==='sack'?.7:1, kind==='sack'?'#b99a67':'#8a613d'); if(kind!=='sack') b(-.48,-.43,.45,.96,.86,.12,accent); }
-    else if (kind === 'hearth' || kind === 'forge') { b(-.6,-.5,0,1.2,1,1.25,'#4b4a4c'); b(-.35,-.52,.35,.7,.12,.45,'#e77835'); b(.2,.1,1.1,.28,.28,1.8,'#565b61'); }
-    else if (kind === 'shelf') { b(-.65,-.24,0,1.3,.45,2,'#6c4d36'); for(const y of [.55,1.15,1.75]) b(-.58,-.29,y,1.16,.55,.12,accent); }
+    else if (kind === 'hearth' || kind === 'forge' || kind === 'stove') { const compact=kind==='stove'; b(compact?-.48:-.6,compact?-.4:-.5,0,compact?.95:1.2,compact?.8:1,compact?1:1.25,'#4b4a4c'); b(compact?-.28:-.35,compact?-.42:-.52,.35,compact?.55:.7,.12,.45,'#e77835'); b(compact?.18:.2,.1,compact?.85:1.1,.28,.28,compact?1.35:1.8,'#565b61'); }
+    else if (kind === 'shelf' || kind === 'bookcase') { b(-.65,-.24,0,1.3,.45,2,kind==='bookcase'?'#594235':'#6c4d36'); for(const y of [.55,1.15,1.75]) { b(-.58,-.29,y,1.16,.55,.12,accent); if(kind==='bookcase') for(let i=0;i<4;i++) b(-.5+i*.28,-.34,y+.12,.18,.12,.32,['#8e4d42','#52728b','#9b7a43','#6f5b88'][i]); } }
     else if (kind === 'anvil') { b(-.45,-.35,0,.9,.7,.65,'#565c65'); b(-.7,-.48,.65,1.4,.95,.35,'#747c86'); }
     else if (kind === 'crop') { for(let i=-1;i<=1;i++) { b(i*.35,-.4,0,.16,.16,.8,'#568948'); b(i*.35-.08,-.48,.8,.32,.32,.25,'#8ebc59'); } }
     else if (kind === 'counter') { b(-.85,-.35,0,1.7,.7,1.05,'#855c3d'); b(-.95,-.43,1.05,1.9,.86,.18,accent); }
@@ -714,6 +744,31 @@
     else if (kind === 'console') { b(-.7,-.35,0,1.4,.7,.9,'#394b5d'); b(-.55,-.4,.92,1.1,.12,.72,'#67c9d8'); b(-.45,-.43,1.08,.9,.06,.35,accent); }
     else if (kind === 'holo') { b(-.55,-.5,0,1.1,1,.22,'#4b5673'); b(-.32,-.28,.22,.64,.56,.18,accent); b(-.18,-.15,.4,.36,.3,1.25,'#79eaff'); }
     else if (kind === 'lamp') { b(-.1,-.1,0,.2,.2,1.65,'#596573'); b(-.38,-.35,1.55,.76,.7,.35,accent); }
+    else if (kind === 'workbench') { b(-.9,-.38,.72,1.9,.8,.22,'#795437'); for(const dx of [-.78,.65]) b(dx,-.28,0,.18,.18,.75,'#563b2b'); b(-.58,-.42,.98,.8,.12,.16,'#68727b'); b(.32,-.36,.95,.36,.3,.2,accent); }
+    else if (kind === 'loom') { b(-.78,-.35,0,.16,.16,1.85,'#6f4d32'); b(.62,-.35,0,.16,.16,1.85,'#6f4d32'); for(const y of [.35,1.65]) b(-.78,-.35,y,1.55,.18,.14,'#825d3d'); for(let i=0;i<5;i++) b(-.58+i*.28,-.4,.45,.08,.1,1.1,i%2?accent:'#e5d4b4'); }
+    else if (kind === 'logpile') { for(let row=0;row<2;row++) for(let i=0;i<3-row;i++) b(-.7+i*.48+row*.23,-.35,row*.34,.42,.7,.3,i%2?'#70482d':'#895b34'); }
+    else if (kind === 'barrel' || kind === 'grainbin') { const color=kind==='grainbin'?'#b58a46':'#7b5033'; b(-.45,-.42,0,.9,.84,1.05,color); for(const y of [.18,.78]) b(-.5,-.47,y,1,.94,.12,kind==='grainbin'?accent:'#4f4f50'); b(-.36,-.33,1.05,.72,.66,.12,accent); }
+    else if (kind === 'basket') { b(-.5,-.42,0,1,.84,.52,'#aa7b43'); b(-.4,-.32,.52,.8,.64,.12,accent); for(let i=0;i<3;i++) b(-.3+i*.28,-.2,.62,.16,.16,.28,['#c65d48','#d8b84c','#6ca35b'][i]); }
+    else if (kind === 'haystack') { for(let row=0;row<3;row++) b(-.75+row*.18,-.45+row*.1,row*.32,1.5-row*.36,.9-row*.2,.36,row%2?'#c29a45':'#d3ad54'); }
+    else if (kind === 'trough') { b(-.9,-.4,.22,1.8,.8,.45,'#765039'); b(-.72,-.25,.55,1.44,.5,.12,'#6aa0ad'); }
+    else if (kind === 'toolrack' || kind === 'weaponrack') { b(-.75,-.16,0,1.5,.24,1.65,'#65462f'); for(let i=0;i<3;i++) { b(-.55+i*.5,-.24,.35,.1,.12,1.15,'#737b83'); b(-.68+i*.5,-.3,1.34,.36,.16,.18,kind==='weaponrack'?'#9da7ad':accent); } }
+    else if (kind === 'fishnet') { b(-.75,-.18,0,1.5,.2,1.8,'#6a4a31'); for(let i=0;i<5;i++) b(-.62+i*.3,-.25,.28,.04,.08,1.28,'#c8b883'); for(let i=0;i<4;i++) b(-.62,-.26,.35+i*.31,1.25,.06,.04,'#c8b883'); }
+    else if (kind === 'crane') { b(-.15,-.15,0,.3,.3,2.2,'#765038'); b(-.1,-.1,1.9,1.45,.2,.22,'#8b633e'); b(1.08,-.12,.45,.08,.08,1.5,'#5f6670'); b(.92,-.2,.28,.38,.38,.25,'#8a613d'); }
+    else if (kind === 'rope') { for(let i=0;i<3;i++) { b(-.55+i*.42,-.32,.08,.34,.64,.18,'#b2925c'); b(-.47+i*.42,-.24,.28,.18,.48,.12,'#d0b172'); } }
+    else if (kind === 'scale') { b(-.45,-.35,0,.9,.7,.2,'#6b5a44'); b(-.08,-.08,.2,.16,.16,1.25,'#787f86'); b(-.72,-.25,1.05,.65,.5,.12,accent); b(.08,-.25,1.05,.65,.5,.12,accent); }
+    else if (kind === 'marketstall') { b(-.9,-.35,0,1.8,.7,1,'#80573b'); b(-1,-.48,1,2,.95,.22,accent); for(const dx of [-.82,.78]) b(dx,-.38,1.18,.12,.12,1.15,'#65442f'); b(-.98,-.46,2.15,1.98,.92,.18,'#e2c275'); }
+    else if (kind === 'lantern' || kind === 'candle' || kind === 'candelabra' || kind === 'lamppost') { const tall=kind==='lamppost', arms=kind==='candelabra'?3:1; b(-.08,-.08,0,.16,.16,tall?2:1.25,'#555d65'); for(let i=0;i<arms;i++) b(-.34+i*(arms===1?0:.34),-.22,tall?1.75:1.05,.34,.34,.42,kind==='candle'?'#f0d49a':accent); }
+    else if (kind === 'crusher' || kind === 'machine') { b(-.72,-.45,0,1.45,.9,1.25,'#59616a'); b(-.58,-.54,.48,1.15,.14,.42,kind==='machine'?accent:'#9a6944'); b(-.5,-.28,1.25,.42,.42,.65,'#737d85'); b(.18,-.28,1.25,.42,.42,.65,'#737d85'); }
+    else if (kind === 'bellows') { b(-.65,-.4,.25,1.3,.8,.35,'#684735'); b(-.52,-.3,.6,1.05,.58,.38,'#a36b4b'); b(.55,-.12,.42,.72,.18,.18,'#656d73'); }
+    else if (kind === 'banner') { b(-.08,-.12,0,.16,.16,2.2,'#67472f'); b(-.68,-.18,1.18,1.35,.16,.95,accent); b(-.54,-.2,1.35,1.08,.08,.18,'#e8c96d'); }
+    else if (kind === 'statue') { b(-.5,-.45,0,1,.9,.38,'#9ca1a1'); b(-.25,-.22,.38,.5,.45,1.2,'#b8bcbc'); b(-.36,-.32,1.55,.72,.65,.55,'#c7caca'); }
+    else if (kind === 'telescope') { b(-.08,-.08,0,.16,.16,1.25,'#676e74'); b(-.65,-.18,1.05,1.5,.36,.36,'#596b78'); b(.72,-.14,1.08,.34,.28,.28,accent); }
+    else if (kind === 'planter') { b(-.6,-.52,0,1.2,1,.45,'#8a5c3d'); for(const dx of [-.35,0,.35]) { b(dx,-.08,.45,.1,.1,.75,'#4e7e4e'); b(dx-.14,-.2,1.02,.32,.4,.3,'#74a965'); } }
+    else if (kind === 'trellis') { b(-.75,-.12,0,1.5,.2,1.8,'#7e5c3d'); for(let i=0;i<4;i++) b(-.62+i*.4,-.2,.2,.08,.1,1.45,'#9a7049'); for(let i=0;i<3;i++) b(-.7,-.22,.45+i*.45,1.4,.08,.08,'#9a7049'); }
+    else if (kind === 'appliance') { b(-.55,-.4,0,1.1,.8,1.45,'#c4ccd0'); b(-.42,-.48,.72,.84,.08,.5,'#608ba0'); b(-.38,-.5,.18,.18,.08,.18,accent); }
+    else if (kind === 'solar') { b(-.75,-.5,.45,1.5,1,.18,'#345f7a'); b(-.62,-.42,.63,1.25,.76,.08,'#6ec5d0'); b(-.08,-.08,0,.16,.16,.48,'#626b73'); }
+    else if (kind === 'server') { b(-.55,-.38,0,1.1,.76,1.9,'#354554'); for(let i=0;i<4;i++) { b(-.44,-.46,.28+i*.4,.88,.08,.22,'#5a7487'); b(.25,-.52,.34+i*.4,.12,.06,.08,i%2?accent:'#7be8a4'); } }
+    else if (kind === 'robot') { b(-.4,-.34,.3,.8,.68,.9,'#7d929e'); b(-.32,-.28,1.2,.64,.56,.55,'#a9bdc5'); b(-.2,-.35,1.38,.14,.08,.12,accent); b(.08,-.35,1.38,.14,.08,.12,accent); for(const dx of [-.32,.22]) b(dx,-.2,0,.18,.18,.38,'#586771'); }
     else { b(-.15,-.12,0,.3,.3,.75,'#6c4b32'); b(-.6,-.55,.75,1.2,1.1,.9,'#4e8b55'); }
   }
   function drawInteriorScene() {
@@ -722,31 +777,32 @@
     if (interiorCanvas.width !== Math.floor(width*ratio) || interiorCanvas.height !== Math.floor(height*ratio)) { interiorCanvas.width=Math.floor(width*ratio); interiorCanvas.height=Math.floor(height*ratio); }
     interiorCtx.setTransform(ratio,0,0,ratio,0,0);
     interiorFaces.length=0; queueInteriorFaces=false;
-    const item = BUILDINGS[interiorBuilding.type], seed = designSeed(interiorBuilding.type), era = interiorEra(item), eraStyle = INTERIOR_ERAS[Math.min(INTERIOR_ERAS.length-1,Math.floor((era-1)/2))];
-    const accent = item.trim || eraStyle.accent, gradient=interiorCtx.createLinearGradient(0,0,0,height);
+    const item = BUILDINGS[interiorBuilding.type], seed = designSeed(interiorBuilding.type), era = interiorEra(item), eraStyle = INTERIOR_ERAS[Math.min(INTERIOR_ERAS.length-1,Math.floor((era-1)/2))], palette=interiorPalette(item,interiorBuilding.type,eraStyle,seed), theme=palette.theme;
+    const accent = palette.accent, gradient=interiorCtx.createLinearGradient(0,0,0,height);
     gradient.addColorStop(0,shade(item.roof,-18)); gradient.addColorStop(1,'#142735'); interiorCtx.fillStyle=gradient; interiorCtx.fillRect(0,0,width,height);
     // Open-front dollhouse layout: both walls meet at the far (0,0) corner.
     // Keeping the x=10 and z=7 edges open prevents furniture from ever sitting
     // behind a foreground wall while the player rotates the room.
-    interiorBox(0,0,0,10,7,.18,eraStyle.floor,width,height);
-    interiorBox(0,0,.18,10,.25,4,eraStyle.wall,width,height);
-    interiorBox(0,0,.18,.25,7,4,eraStyle.wall,width,height);
+    interiorBox(0,0,0,10,7,.18,palette.floor,width,height);
+    interiorBox(0,0,.18,10,.25,4,palette.wall,width,height);
+    interiorBox(0,0,.18,.25,7,4,palette.wall,width,height);
     interiorBox(.25,.27,.22,9.5,.12,.2,accent,width,height);
     interiorBox(.27,.25,.22,.12,6.5,.2,accent,width,height);
     // Rear-wall window or era display, plus small framed decorations on the
     // side wall. They stay behind the room contents like the reference image.
-    const wallDisplay = era >= 9 ? '#69ddeb' : (era >= 5 ? '#8eb8c1' : '#b8d5c7');
+    const wallDisplay = era >= 9 ? '#69ddeb' : palette.display;
     interiorBox(5.55,.27,1.45,3.2,.1,1.65,accent,width,height);
     interiorBox(5.72,.38,1.6,2.86,.06,1.34,wallDisplay,width,height);
     for(let i=0;i<3;i++) {
       interiorBox(.28,1.05+i*1.35,1.35+(i%2)*.45,.1,1,.9,accent,width,height);
-      interiorBox(.39,1.18+i*1.35,1.5+(i%2)*.45,.05,.74,.6,eraStyle.floor,width,height);
+      interiorBox(.39,1.18+i*1.35,1.5+(i%2)*.45,.05,.74,.6,palette.floor,width,height);
     }
     const stripeCount=1+(seed%3); for(let i=0;i<stripeCount;i++) interiorBox(.4,.28,3.45-i*.32,4.4,.08,.1,accent,width,height);
     queueInteriorFaces=true;
     const kinds=[...interiorKinds(item,interiorBuilding.type)]; if(era>=7) kinds.push('console','lamp'); if(era>=9) kinds.push('holo');
     const slots=[[1.5,1.4],[4.2,1.35],[7.5,1.5],[1.6,4.4],[4.7,4.5],[7.7,4.25]], count=4+(seed%3), offset=seed%slots.length;
-    const furniture=[]; for(let i=0;i<count;i++) { const slot=slots[(i+offset)%slots.length]; furniture.push({kind:kinds[(i+seed)%kinds.length],x:slot[0],z:slot[1]}); }
+    const mandatory=[theme.signature]; if(item.catalog) mandatory.push(ERA_INTERIOR_FURNITURE[Math.max(0,Math.min(9,(item.tier||1)-1))]);
+    const furniture=[]; for(let i=0;i<count;i++) { const slot=slots[(i+offset)%slots.length], kind=i<mandatory.length?mandatory[i]:kinds[(i+seed)%kinds.length]; furniture.push({kind,x:slot[0],z:slot[1]}); }
     furniture.sort((a,b)=>interiorDepth(a.x,a.z)-interiorDepth(b.x,b.z)); furniture.forEach((entry)=>drawInteriorFurniture(entry.kind,entry.x,entry.z,accent,width,height));
     const workProfile=item.category==='residential'?homeJobProfile(item):jobProfile(interiorBuilding);
     let insideWorkers=0;
@@ -755,7 +811,7 @@
     else if(!isDaytime()&&item.category==='residential') insideWorkers=Math.min(6,residentHomeCounts().get(interiorBuilding.id)||0);
     for(let i=0;i<insideWorkers;i++) { const x=2.2+(i%4)*1.65,z=3+Math.floor(i/4)*1.25+Math.sin(worldTime+i)*.2,bob=Math.sin(worldTime*3+i)*.06; interiorBox(x,z,.18,.42,.42,1.1,workProfile.color||'#6e9dbc',width,height); interiorBox(x-.04,z-.04,1.28+bob,.5,.5,.42,'#f5cba6',width,height); }
     queueInteriorFaces=false; interiorFaces.sort((a,b)=>a.depth-b.depth); interiorFaces.forEach((face)=>paintInteriorFace(face.points,face.color));
-    interiorCtx.fillStyle='rgba(255,255,255,.08)'; interiorCtx.fillRect(0,height-34,width,34); interiorCtx.fillStyle='#d7e5e6'; interiorCtx.font='12px system-ui'; interiorCtx.fillText(`${era}년식 ${eraStyle.label} · 고유 디자인 ${seed.toString(16).toUpperCase().padStart(8,'0')} · ${isDaytime()?'낮':'밤'}`,18,height-13);
+    interiorCtx.fillStyle='rgba(255,255,255,.08)'; interiorCtx.fillRect(0,height-34,width,34); interiorCtx.fillStyle='#d7e5e6'; interiorCtx.font='12px system-ui'; interiorCtx.fillText(`${theme.label} · ${era}년식 ${eraStyle.label} · 고유 디자인 ${seed.toString(16).toUpperCase().padStart(8,'0')} · ${isDaytime()?'낮':'밤'}`,18,height-13);
   }
   function render() {
     // The sea is intentionally a screen-space background. A giant 3D water
@@ -964,10 +1020,10 @@
   }
   function openInterior(building) {
     if (!building) return;
-    interiorBuilding=building; pressedKeys.clear(); resetInteriorView(); const item=BUILDINGS[building.type], profile=item.category==='residential'?homeJobProfile(item):jobProfile(building), seed=designSeed(building.type), era=interiorEra(item), eraStyle=INTERIOR_ERAS[Math.min(INTERIOR_ERAS.length-1,Math.floor((era-1)/2))];
+    interiorBuilding=building; pressedKeys.clear(); resetInteriorView(); const item=BUILDINGS[building.type], profile=item.category==='residential'?homeJobProfile(item):jobProfile(building), seed=designSeed(building.type), era=interiorEra(item), eraStyle=INTERIOR_ERAS[Math.min(INTERIOR_ERAS.length-1,Math.floor((era-1)/2))], theme=interiorTheme(item,building.type);
     els.interiorTitle.textContent=`${item.icon} ${item.name}`;
     const homeResidents=item.category==='residential'?(residentHomeCounts().get(building.id)||0):0;
-    els.interiorMeta.textContent=`${era}년식 ${eraStyle.label} · ${item.category==='production'||item.category==='residential'?profile.name:'생활 공간'} · ${item.category==='residential'?`귀가 주민 ${homeResidents}명`:`주민 ${item.people}명`}`;
+    els.interiorMeta.textContent=`${theme.label} · ${era}년식 ${eraStyle.label} · ${item.category==='production'||item.category==='residential'?profile.name:'생활 공간'} · ${item.category==='residential'?`귀가 주민 ${homeResidents}명`:`주민 ${item.people}명`}`;
     els.interiorModal.hidden=false; drawInteriorScene();
   }
   function closeInterior() { interiorBuilding=null; resetInteriorView(); els.interiorModal.hidden=true; }
