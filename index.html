@@ -19,6 +19,7 @@
           <div class="resource"><span>⌛</span><strong id="year">1년</strong><small>왕국력</small></div>
           <div class="resource clock-resource"><span id="dayIcon">☀</span><strong id="dayClock">낮 08:00</strong><small id="productionStatus">생산 가동</small></div>
           <div class="resource"><span>🧪</span><strong id="researchTokens">0</strong><small>연구 토큰</small></div>
+          <button id="tutorialButton" class="icon-button tutorial-button" title="튜토리얼 책자" aria-label="튜토리얼 책자 열기">📖</button>
           <button id="saveButton" class="icon-button" title="저장">▣</button>
         </div>
       </header>
@@ -44,6 +45,14 @@
           <header><div><span class="eyebrow">건물 내부</span><h2 id="interiorTitle">건물</h2><p id="interiorMeta"></p></div><div class="interior-actions"><button id="resetInteriorView" class="secondary compact">◎ 시점 초기화</button><button id="closeInterior" class="icon-button" aria-label="내부 보기 닫기">✕</button></div></header>
           <canvas id="interiorCanvas" width="900" height="520"></canvas>
           <p class="interior-help">마우스 드래그: 좌우·상하 둘러보기 · 휠: 확대/축소 · Q/E: 회전 · W/S: 줌 · R: 초기화 · Esc: 닫기</p>
+        </div>
+      </section>
+      <section id="tutorialModal" class="tutorial-modal" hidden aria-label="왕실 튜토리얼 책자" role="dialog" aria-modal="true">
+        <div class="tutorial-book">
+          <header class="tutorial-header"><div><span id="tutorialKicker">왕실 안내서</span><h2 id="tutorialTitle">왕국에 오신 것을 환영합니다</h2></div><button id="closeTutorial" class="tutorial-close" aria-label="튜토리얼 닫기">✕</button></header>
+          <article id="tutorialContent" class="tutorial-content"></article>
+          <footer class="tutorial-footer"><button id="tutorialPrev">← 이전 장</button><span id="tutorialPage">1 / 8</span><button id="tutorialNext">다음 장 →</button></footer>
+          <div id="tutorialDots" class="tutorial-dots" aria-label="튜토리얼 페이지"></div>
         </div>
       </section>
       <div id="toast" role="status"></div>

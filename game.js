@@ -10,7 +10,7 @@
     cash: $('#cash'), population: $('#population'), rebirths: $('#rebirths'), year: $('#year'), researchTokens: $('#researchTokens'), dayIcon: $('#dayIcon'), dayClock: $('#dayClock'), productionStatus: $('#productionStatus'), categoryList: $('#categoryList'), buildingList: $('#buildingList'), landList: $('#landList'),
     selectionName: $('#selectionName'), selectionMeta: $('#selectionMeta'), workerInfo: $('#workerInfo'), employmentInfo: $('#employmentInfo'), jobList: $('#jobList'),
     storedTax: $('#storedTax'), missionTitle: $('#missionTitle'), missionText: $('#missionText'), unlockInfo: $('#unlockInfo'), researchInfo: $('#researchInfo'), researchTimer: $('#researchTimer'), researchProgress: $('#researchProgress'),
-    missionProgress: $('#missionProgress'), claimMission: $('#claimMission'), toast: $('#toast'), interiorModal: $('#interiorModal'), interiorTitle: $('#interiorTitle'), interiorMeta: $('#interiorMeta'), interiorButton: $('#interiorButton'),
+    missionProgress: $('#missionProgress'), claimMission: $('#claimMission'), toast: $('#toast'), interiorModal: $('#interiorModal'), interiorTitle: $('#interiorTitle'), interiorMeta: $('#interiorMeta'), interiorButton: $('#interiorButton'), tutorialModal: $('#tutorialModal'), tutorialKicker: $('#tutorialKicker'), tutorialTitle: $('#tutorialTitle'), tutorialContent: $('#tutorialContent'), tutorialPage: $('#tutorialPage'), tutorialDots: $('#tutorialDots'),
   };
 
   const BUILDINGS = {
@@ -121,6 +121,16 @@
     { id: 'landmarks', title: '5칸 간격으로 랜드마크 2개를 세우세요', goal: 2, reward: 10000 },
     { id: 'lands', title: '대왕국 영토 30곳을 확보하세요', goal: 30, reward: 12000 },
   ];
+  const TUTORIAL_PAGES = [
+    { kicker:'제1장 · 왕국의 시작', title:'Crownvale에 오신 것을 환영합니다', lead:'작은 영토를 거대한 시대 왕국으로 성장시키세요.', tips:[['첫 번째 목표','주거 건물을 지어 주민을 늘리고 생산 건물로 세금을 모으세요.'],['왕실 의뢰','왼쪽 의뢰를 완료하면 골드 보상을 받아 더 빠르게 확장할 수 있습니다.'],['저장','상단의 ▣ 버튼을 누르면 현재 왕국이 브라우저에 저장됩니다.'],['메뉴','오른쪽 메뉴는 ✕로 닫고 ☰ 버튼으로 언제든 다시 열 수 있습니다.']] },
+    { kicker:'제2장 · 카메라', title:'왕국을 자유롭게 둘러보기', lead:'높은 시점에서 영토 전체를 살펴보고 원하는 장소로 이동하세요.', tips:[['이동','<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>로 화면을 이동합니다.'],['회전','<kbd>Q</kbd>와 <kbd>E</kbd>로 카메라 방향을 회전합니다.'],['확대와 축소','게임 화면 위에서 마우스 휠을 돌려 가까이 또는 멀리 봅니다.'],['마우스 이동','마우스 오른쪽 버튼을 누른 채 드래그해 카메라를 움직입니다.']] },
+    { kicker:'제3장 · 건설', title:'건물을 선택하고 배치하기', lead:'건설 메뉴에서 시대와 목적에 맞는 건물을 선택하세요.', tips:[['건물 찾기','건설 목록 위에서 마우스 휠을 돌리고 카테고리로 종류를 좁힙니다.'],['배치','건물을 선택한 뒤 소유한 영토를 좌클릭하면 실루엣 위치에 실제 건물이 설치됩니다.'],['회전','<kbd>R</kbd>을 누르거나 회전 버튼을 사용합니다. 아래 각도 메뉴에서 15°·30°·45°·90°를 고릅니다.'],['철거','삭제 버튼을 켜고 건물을 선택하면 가격의 50%를 돌려받습니다.']] },
+    { kicker:'제4장 · 길과 주민', title:'살아 움직이는 왕국 만들기', lead:'길을 연결하면 주민들이 왕국 전역의 길망을 따라 이동합니다.', tips:[['길 연결','10m 길 조각을 이어 놓으세요. X자와 T자 교차로는 자동으로 부드럽게 연결됩니다.'],['무작위 산책','낮에는 주민이 교차로마다 다음 길을 골라 이동하고 막다른 길에서는 되돌아갑니다.'],['길이 없을 때','설치된 길이 하나도 없으면 주민은 자기 집 출입문 앞에서 기다립니다.'],['밤','밤이 되면 모든 주민이 집 안으로 돌아가 거리에서 보이지 않습니다.']] },
+    { kicker:'제5장 · 세금과 시간', title:'낮과 밤의 세금 관리', lead:'건물이 만든 세금은 쌓인 뒤 직접 또는 자동으로 수금됩니다.', tips:[['낮 세금','낮에는 건물의 기본 세금을 100% 획득합니다.'],['밤 세금','밤에는 기본 세금의 50%를 획득하지만 모든 세금 +% 보너스는 유지됩니다.'],['세금 수집자','노동자를 고용하면 일정 수의 건물을 자동 수금하고 수입 보너스도 얻습니다.'],['수입 증가','비싼 건물, 연구 토큰, 환생, 랜드마크를 활용하면 세금이 크게 증가합니다.']] },
+    { kicker:'제6장 · 영토와 지형', title:'448칸의 왕국 확장', lead:'평원·숲·산·강마다 설치할 수 있는 특별 건물이 다릅니다.', tips:[['영토 구입','영토 탭에서 잠긴 땅을 골드로 구입해 건설 공간을 넓힙니다.'],['지형 전용','지형 전용 카테고리에서 평원·숲·산·강 전용 건물을 확인합니다.'],['강과 다리','강은 하나의 자연스러운 물길로 이어지며 다리는 강 지형에만 설치할 수 있습니다.'],['자연 군락','숲은 큰 숲으로, 산은 산맥으로 모여 생성되고 환생할 때 위치가 달라집니다.']] },
+    { kicker:'제7장 · 연구와 시대', title:'더 최신식인 왕국으로', lead:'연구를 완료해 토큰을 모으고 새로운 시대의 건물을 해금하세요.', tips:[['연구 시간','연구는 즉시 끝나지 않습니다. 연구 탭에서 남은 시간을 확인하세요.'],['연구 토큰','연구 토큰 1개마다 세금 수입이 50% 증가하며 최신 연구일수록 더 많은 토큰을 줍니다.'],['연도 해금','왕국력이 올라가면 석재·산업·현대·미래 건물이 차례로 해금됩니다.'],['비용','최신식 건물은 연구 토큰과 골드가 더 필요하지만 더 많은 세금을 생산합니다.']] },
+    { kicker:'제8장 · 환생과 탐험', title:'새로운 왕국으로 다시 시작하기', lead:'충분히 성장했다면 환생해 더 강한 다음 왕국을 시작하세요.', tips:[['환생 조건','필요한 골드·주민·영토를 모두 확보해야 하며 환생할수록 조건이 증가합니다.'],['영구 보너스','환생 횟수마다 세금 수입이 영구적으로 증가하고 건물 외형이 발전합니다.'],['새 지도','환생하면 숲·산 군락과 자연스러운 강의 위치가 새롭게 바뀝니다.'],['건물 내부','설치된 건물을 선택하고 내부 보기를 누르면 시대와 건물 종류에 맞는 가구와 주민을 볼 수 있습니다.']] },
+  ];
   const LANDS = [
     { id: 'core1', name: '왕실 들판', x: -96, z: -24, price: 0, owned: true },
     { id: 'core2', name: '햇살 초원', x: -48, z: -24, price: 0, owned: true },
@@ -205,6 +215,7 @@
   }
   applyTerrainLayout(state.terrainSeed||0);
   let selectedBuilding = null;
+  let tutorialPageIndex = Math.max(0,Math.min(TUTORIAL_PAGES.length-1,Number(localStorage.getItem('crownvale-tutorial-page'))||0));
   let selectedPlacedBuilding = null;
   let interiorBuilding = null;
   const interiorView = { yaw:Math.PI/4, tilt:.68, zoom:1, drag:null };
@@ -1356,6 +1367,11 @@
   $('#rebirthButton').onclick = rebirth;
   $('#cancelButton').onclick = () => { selectedBuilding = null; selectedPlacedBuilding=null; deleteMode = false; updateUI(); };
   $('#saveButton').onclick = () => save();
+  $('#tutorialButton').onclick=openTutorial;
+  $('#closeTutorial').onclick=closeTutorial;
+  $('#tutorialPrev').onclick=()=>showTutorialPage(tutorialPageIndex-1);
+  $('#tutorialNext').onclick=()=>showTutorialPage(tutorialPageIndex+1);
+  els.tutorialModal.addEventListener('click',(event)=>{ if(event.target===els.tutorialModal) closeTutorial(); });
   els.interiorButton.onclick = () => openInterior(state.buildings.find((building)=>building.id===selectedPlacedBuilding));
   $('#closeInterior').onclick = closeInterior;
   $('#resetInteriorView').onclick = resetInteriorView;
@@ -1396,6 +1412,18 @@
     els.interiorModal.hidden=false; drawInteriorScene();
   }
   function closeInterior() { interiorBuilding=null; resetInteriorView(); els.interiorModal.hidden=true; }
+  function renderTutorialPage() {
+    const page=TUTORIAL_PAGES[tutorialPageIndex];
+    els.tutorialKicker.textContent=page.kicker; els.tutorialTitle.textContent=page.title;
+    els.tutorialContent.innerHTML=`<p class="tutorial-lead">${page.lead}</p><div class="tutorial-grid">${page.tips.map(([title,text])=>`<section class="tutorial-tip"><b>${title}</b><p>${text}</p></section>`).join('')}</div>`;
+    els.tutorialPage.textContent=`${tutorialPageIndex+1} / ${TUTORIAL_PAGES.length}`;
+    $('#tutorialPrev').disabled=tutorialPageIndex===0; $('#tutorialNext').disabled=tutorialPageIndex===TUTORIAL_PAGES.length-1;
+    els.tutorialDots.innerHTML=''; TUTORIAL_PAGES.forEach((_,index)=>{ const dot=document.createElement('button'); dot.classList.toggle('active',index===tutorialPageIndex); dot.setAttribute('aria-label',`${index+1}장`); dot.onclick=()=>showTutorialPage(index); els.tutorialDots.append(dot); });
+    localStorage.setItem('crownvale-tutorial-page',String(tutorialPageIndex));
+  }
+  function showTutorialPage(index) { tutorialPageIndex=Math.max(0,Math.min(TUTORIAL_PAGES.length-1,index)); renderTutorialPage(); }
+  function openTutorial() { pressedKeys.clear(); renderTutorialPage(); els.tutorialModal.hidden=false; $('#closeTutorial').focus(); }
+  function closeTutorial() { els.tutorialModal.hidden=true; $('#tutorialButton').focus(); }
 
   function tileAtPoint(x, y) {
     return [...hitTiles].sort((a,b)=>a.depth-b.depth).find((entry) => pointInPolygon(x, y, entry.points));
@@ -1443,6 +1471,12 @@
   }, { passive: false });
   window.addEventListener('keydown', (event) => {
     const key = event.key.toLowerCase();
+    if (!els.tutorialModal.hidden) {
+      if(event.key==='Escape') closeTutorial();
+      else if(event.key==='ArrowLeft') showTutorialPage(tutorialPageIndex-1);
+      else if(event.key==='ArrowRight') showTutorialPage(tutorialPageIndex+1);
+      event.preventDefault(); return;
+    }
     if (event.key === 'Escape' && interiorBuilding) { closeInterior(); return; }
     if (interiorBuilding) {
       if(key==='q') interiorView.yaw-=.1;
