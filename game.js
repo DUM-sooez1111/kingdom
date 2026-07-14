@@ -155,21 +155,33 @@
     value=(value^(value>>>13))*1274126177;
     return (value^(value>>>16))>>>0;
   }
+  function riverCenterColumn(row,seed=0) {
+    const base=5+(terrainHash(0,0,seed)%18);
+    const phase=(terrainHash(1,1,seed)%628)/100;
+    const curve=Math.sin(row*.36+phase)*2.15+Math.sin(row*.16+phase*.55)*1.15;
+    return Math.max(2.5,Math.min(MAP_GRID.columns-3.5,base+curve));
+  }
   function riverColumnForRow(row,seed=0) {
-    let column=6+(Math.abs(seed*7+5)%16);
-    for(let current=1;current<=row;current++) {
-      const turn=terrainHash(current,seed,seed)%5;
-      column+=turn===0?-1:turn===4?1:0;
-      column=Math.max(3,Math.min(MAP_GRID.columns-4,column));
+    return Math.round(riverCenterColumn(row,seed));
+  }
+  function terrainCluster(kind,index,seed=0) {
+    const anchors=[[5,4],[21,4],[6,12],[21,12]], offset=Math.abs(seed)%4;
+    const slot=(offset+(kind==='forest'?index*2:index*2+1))%4, anchor=anchors[slot];
+    const jitterX=(terrainHash(slot,index,seed)%5)-2, jitterZ=(terrainHash(index,slot,seed+11)%3)-1;
+    return {x:anchor[0]+jitterX,z:anchor[1]+jitterZ,rx:kind==='forest'?(index?4.4:5.2):(index?3.8:4.5),rz:kind==='forest'?(index?3.5:4.1):(index?3.5:4)};
+  }
+  function insideTerrainCluster(column,row,kind,seed=0) {
+    for(let index=0;index<2;index++) {
+      const cluster=terrainCluster(kind,index,seed), dx=(column-cluster.x)/cluster.rx, dz=(row-cluster.z)/cluster.rz;
+      if(dx*dx+dz*dz<=1) return true;
     }
-    return column;
+    return false;
   }
   function terrainForCell(column,row,seed=0) {
     const riverColumn=riverColumnForRow(row,seed);
     if(column===riverColumn) return 'river';
-    const roll=terrainHash(column,row,seed)%100;
-    if(roll<24) return 'forest';
-    if(roll<39) return 'mountain';
+    if(insideTerrainCluster(column,row,'forest',seed)) return 'forest';
+    if(insideTerrainCluster(column,row,'mountain',seed)) return 'mountain';
     return 'plains';
   }
   const occupiedLandCoordinates = new Set(LANDS.map((land) => `${land.x},${land.z}`));
@@ -473,7 +485,10 @@
     const margin = 1;
     let x = Math.max(land.x - 24 + width * .5 + margin, Math.min(land.x + 24 - width * .5 - margin, snap(world.x)));
     let z = Math.max(land.z - 24 + depth * .5 + margin, Math.min(land.z + 24 - depth * .5 - margin, snap(world.z)));
-    if(item.bridgeStyle) { x=land.x; z=land.z; }
+    if(item.bridgeStyle) {
+      const row=Math.round((land.z-MAP_GRID.minZ)/MAP_GRID.tile);
+      x=MAP_GRID.minX+riverCenterColumn(row,state.terrainSeed||0)*MAP_GRID.tile; z=land.z;
+    }
     if(item.requiredTerrain&&land.terrain!==item.requiredTerrain) return {landId:land.id,x,z,valid:false,reason:'terrain',requiredTerrain:item.requiredTerrain};
     if(item.category==='landmark') {
       if(state.buildings.some((building)=>building.type===selectedBuilding)) return {landId:land.id,x,z,valid:false,reason:'landmark-unique'};
@@ -567,18 +582,21 @@
   }
   function riverPathPoints() {
     const seed=state.terrainSeed||0;
-    return Array.from({length:MAP_GRID.rows},(_,row)=>({
-      x:MAP_GRID.minX+riverColumnForRow(row,seed)*MAP_GRID.tile,
-      z:MAP_GRID.minZ+row*MAP_GRID.tile,
-    }));
+    return Array.from({length:MAP_GRID.rows*2+1},(_,index)=>{
+      const row=-.5+index*.5;
+      return {
+        x:MAP_GRID.minX+riverCenterColumn(row,seed)*MAP_GRID.tile,
+        z:MAP_GRID.minZ+row*MAP_GRID.tile,
+      };
+    });
   }
   function drawRiverPath() {
     const points=riverPathPoints();
     for(let index=0;index<points.length-1;index++) {
       const a=points[index], b=points[index+1], dx=b.x-a.x, dz=b.z-a.z, length=Math.hypot(dx,dz), angle=Math.atan2(dz,dx);
       const midpoint={x:(a.x+b.x)/2,y:.77,z:(a.z+b.z)/2}, normalX=-dz/length, normalZ=dx/length;
-      box(midpoint,[length+12,.18,10],'#3185a8',angle);
-      for(const side of [-1,1]) box({x:midpoint.x+normalX*6.3,y:.82,z:midpoint.z+normalZ*6.3},[length+12,.15,2.1],'#b8a475',angle);
+      box(midpoint,[length+5,.18,10],'#3185a8',angle);
+      for(const side of [-1,1]) box({x:midpoint.x+normalX*6.3,y:.82,z:midpoint.z+normalZ*6.3},[length+5,.15,2.1],'#b8a475',angle);
     }
     points.forEach((point)=>box({x:point.x,y:.78,z:point.z},[11,.18,11],'#3185a8'));
   }
