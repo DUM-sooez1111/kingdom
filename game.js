@@ -44,6 +44,10 @@
     fishingPier: { name:'강변 어업 부두', icon:'🎣', category:'production', price:420, people:3, body:'#a87952', roof:'#3e6878', size:[16,5,12], requiredTerrain:'river', terrainModel:'fishing' },
     watermill: { name:'강물 물레방앗간', icon:'🛞', category:'production', price:900, people:5, body:'#b2875e', roof:'#67483d', size:[14,7,12], unlockYear:3, requiredTerrain:'river', terrainModel:'watermill' },
     riverHouse: { name:'수상 가옥 마을', icon:'🏠', category:'residential', price:1250, people:10, body:'#d0a76f', roof:'#486b76', size:[16,7,14], unlockYear:5, requiredTerrain:'river', terrainModel:'riverhouse' },
+    lakeFishery: { name:'호수 어업장', icon:'🐟', category:'production', price:480, people:4, body:'#b58a5d', roof:'#3f6d77', size:[14,6,12], requiredTerrain:'lake', terrainModel:'lakeFishery', model:'lakeFishery' },
+    floatingMarket: { name:'수상 장터', icon:'🛶', category:'production', price:1150, people:7, body:'#c8845d', roof:'#9e4f58', size:[18,7,15], unlockYear:3, requiredTerrain:'lake', terrainModel:'floatingMarket', model:'floatingMarket' },
+    lakeVilla: { name:'호숫가 수상 저택', icon:'🏡', category:'residential', price:1900, people:12, body:'#d9c89e', roof:'#426b78', size:[18,9,16], unlockYear:5, requiredTerrain:'lake', terrainModel:'lakeVilla', model:'lakeVilla' },
+    aquaLab: { name:'수상 생태 연구소', icon:'🔬', category:'production', price:4600, people:10, body:'#79aeb7', roof:'#304e68', trim:'#74eff2', size:[20,11,18], unlockYear:8, researchCost:5, requiredTerrain:'lake', terrainModel:'aquaLab', model:'aquaLab' },
     lumberCamp: { name:'깊은 숲 벌목장', icon:'🪵', category:'production', price:500, people:4, body:'#98643e', roof:'#4c633f', size:[14,6,12], requiredTerrain:'forest', terrainModel:'lumber' },
     hunterLodge: { name:'사냥꾼 산장', icon:'🏹', category:'residential', price:780, people:6, body:'#9f7048', roof:'#435a3c', size:[13,7,11], unlockYear:3, requiredTerrain:'forest', terrainModel:'hunter' },
     forestShrine: { name:'고대 숲 제단', icon:'🗿', category:'decoration', price:950, people:0, body:'#71846a', roof:'#3f6548', size:[12,5,12], unlockYear:5, requiredTerrain:'forest', terrainModel:'shrine' },
@@ -275,6 +279,10 @@
     royalGranary: { name:'곡물 관리자', icon:'🌾', outdoor:false, color:'#c9a65b' },
     fishingPier: { name:'어부', icon:'🎣', outdoor:true, color:'#54a7bd' },
     watermill: { name:'물레방앗간 제분사', icon:'🛞', outdoor:false, color:'#7aa3ac' },
+    lakeFishery: { name:'호수 어부', icon:'🐟', outdoor:true, color:'#58a9bd' },
+    floatingMarket: { name:'수상 상인', icon:'🛶', outdoor:true, color:'#d7835d' },
+    lakeVilla: { name:'호수 관리인', icon:'🏡', outdoor:false, color:'#82a7b2' },
+    aquaLab: { name:'생태 연구원', icon:'🔬', outdoor:false, color:'#61bec5' },
     lumberCamp: { name:'벌목꾼', icon:'🪵', outdoor:true, color:'#7e9b5c' },
     quarry: { name:'석공', icon:'🪨', outdoor:true, color:'#8d9190' },
     deepMountainMine: { name:'심층 광부', icon:'⛏', outdoor:false, color:'#6f7884' },
@@ -692,7 +700,7 @@
   }
   function drawTerrainBuildingDetail(item,local,r,w,h,d) {
     if(!item.requiredTerrain)return;
-    const model=item.terrainModel,accent=item.trim||({plains:'#e0c267',river:'#64c6db',forest:'#79ad62',mountain:'#c4c8c6'}[item.requiredTerrain]);
+    const model=item.terrainModel,accent=item.trim||({plains:'#e0c267',river:'#64c6db',lake:'#76d4df',forest:'#79ad62',mountain:'#c4c8c6'}[item.requiredTerrain]);
     if(model==='windmill') {
       box(local(0,-d*.58,h+3.5),[.45,6.5,.45],'#765038',r); box(local(0,-d*.61,h+5.3),[6.2,.28,.28],'#efe1bd',r); box(local(0,-d*.62,h+5.3),[.28,6.2,.28],'#efe1bd',r);
     } else if(model==='cavalry') {
@@ -705,6 +713,21 @@
       box(local(w*.52,0,h*.52+1.7),[.32,5.8,5.8],'#6f5138',r); box(local(w*.54,0,h*.52+1.7),[.4,6.4,.5],accent,r); box(local(w*.55,0,h*.52+1.7),[.42,.5,6.4],accent,r);
     } else if(model==='riverhouse') {
       for(const x of [-w*.36,w*.36]) for(const z of [-d*.36,d*.36]) box(local(x,z,1.9),[.45,3.2,.45],'#65452f',r); box(local(0,d*.62,1.05),[w+3,.32,3.2],'#a77a4c',r);
+    } else if(model==='lakeFishery') {
+      box(local(0,d*.68,1.08),[w+6,.34,4.8],'#9b7048',r); for(const x of [-w*.5,0,w*.5]) box(local(x,d*.68,2),[.35,2.3,.35],'#60422d',r);
+      for(const x of [-w*.3,w*.3]) { box(local(x,-d*.58,3.1),[.18,4.2,.18],'#b88c55',r); box(local(x,-d*.63,5),[2.5,.12,.12],accent,r); }
+      box(local(w*.36,d*.8,1.45),[4.8,.55,1.8],'#557d8a',r); box(local(w*.36,d*.8,1.78),[3.4,.18,1.2],'#d6bf83',r);
+    } else if(model==='floatingMarket') {
+      box(local(0,0,1.08),[w+5,.42,d+4],'#9d744d',r); for(const x of [-w*.34,0,w*.34]) { box(local(x,-d*.58,4.15),[w*.24,.24,3.8],x?accent:'#f2ce72',r); for(const side of [-1,1]) box(local(x+side*w*.1,-d*.52,2.5),[.18,3.2,.18],'#69462f',r); }
+      for(const z of [-d*.55,d*.55]) box(local(0,z,1.38),[w+3,.12,.35],'#edd28a',r);
+    } else if(model==='lakeVilla') {
+      for(const x of [-w*.4,w*.4]) for(const z of [-d*.42,d*.42]) box(local(x,z,2),[.5,3.7,.5],'#5d4938',r);
+      box(local(0,d*.62,2),[w+4,.4,4.2],'#a77d55',r); for(const x of [-w*.4,0,w*.4]) box(local(x,d*.66,3.1),[.25,2.2,.25],accent,r);
+      box(local(0,d*.69,4.15),[w+2,.22,.25],accent,r); box(local(0,-d*.54,h*.7+1.8),[w*.62,.22,.18],'#9ce1e8',r);
+    } else if(model==='aquaLab') {
+      octagonalPad(local(0,0,1.25),Math.max(w,d)*.67,.48,'#496b78'); octagonalPad(local(0,0,1.55),Math.max(w,d)*.56,.2,accent);
+      for(const [x,z] of [[-w*.38,0],[w*.38,0],[0,d*.38]]) { box(local(x,z,h*.48+2),[2.4,h*.82,2.4],'#4e6d79',r); box(local(x,z,h*.88+2),[2.8,.28,2.8],accent,r); }
+      box(local(0,-d*.58,h*.64+1.8),[w*.72,.28,.2],'#b7fbff',r);
     } else if(model==='lumber') {
       for(let row=0;row<3;row++) for(let i=0;i<4-row;i++) box(local(-w*.48+i*1.35+row*.62,d*.58,1.05+row*.65),[1.15,1.15,3.4],i%2?'#71482c':'#895a34',r);
     } else if(model==='hunter') {
@@ -1076,6 +1099,10 @@
     fishingPier:{label:'강변 어업 작업실',signature:'fishnet',display:'#9bd8df',kinds:['fishnet','rope','barrel','crate','desk','lantern']},
     watermill:{label:'수차 제분실',signature:'machine',display:'#91cbd6',kinds:['machine','grainbin','sack','workbench','barrel','toolrack']},
     riverHouse:{label:'수상 가옥 생활실',signature:'fishnet',display:'#a4d8db',kinds:['bed','fishnet','dining','wardrobe','rope','stove']},
+    lakeFishery:{label:'호수 어업 작업실',signature:'fishnet',display:'#8fd5df',kinds:['fishnet','rope','barrel','crate','workbench','lantern']},
+    floatingMarket:{label:'수상 장터 상점',signature:'marketstall',display:'#e4b695',kinds:['marketstall','counter','scale','basket','barrel','shelf']},
+    lakeVilla:{label:'호숫가 저택 거실',signature:'sofa',display:'#b9dfe1',kinds:['bed','sofa','dining','wardrobe','bookcase','planter']},
+    aquaLab:{label:'수상 생태 연구실',signature:'console',display:'#7ee8ee',kinds:['console','machine','server','desk','holo','appliance']},
     lumberCamp:{label:'벌목 작업실',signature:'logpile',display:'#a8c392',kinds:['logpile','workbench','toolrack','barrel','shelf','lantern']},
     hunterLodge:{label:'사냥꾼 산장 생활실',signature:'weaponrack',display:'#a8be91',kinds:['bed','weaponrack','stove','table','wardrobe','chest']},
     forestShrine:{label:'고대 숲 성소',signature:'statue',display:'#9bc69e',kinds:['statue','planter','candle','fountain','bench','trellis']},
