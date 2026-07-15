@@ -241,7 +241,7 @@
   const CAMERA_MIN_ZOOM = 180;
   const CAMERA_MAX_ZOOM = 3600;
   const CAMERA_ZOOM_STEP = 1.2;
-  const DAY_CYCLE_SECONDS = 96;
+  const DAY_CYCLE_SECONDS = 120;
   const MAX_VISIBLE_RESIDENTS = 120;
   const JOB_PROFILES = {
     unemployed: { name: '백수', icon: '🚶', outdoor: true, leisure: true, color: '#78a879' },
