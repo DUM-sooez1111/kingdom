@@ -125,11 +125,11 @@
     { kicker:'제1장 · 왕국의 시작', title:'Crownvale에 오신 것을 환영합니다', lead:'작은 영토를 거대한 시대 왕국으로 성장시키세요.', tips:[['첫 번째 목표','주거 건물을 지어 주민을 늘리고 생산 건물로 세금을 모으세요.'],['왕실 의뢰','왼쪽 의뢰를 완료하면 골드 보상을 받아 더 빠르게 확장할 수 있습니다.'],['저장','상단의 ▣ 버튼을 누르면 현재 왕국이 브라우저에 저장됩니다.'],['메뉴','오른쪽 메뉴는 ✕로 닫고 ☰ 버튼으로 언제든 다시 열 수 있습니다.']] },
     { kicker:'제2장 · 카메라', title:'왕국을 자유롭게 둘러보기', lead:'높은 시점에서 영토 전체를 살펴보고 원하는 장소로 이동하세요.', tips:[['이동','<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>로 화면을 이동합니다.'],['회전','<kbd>Q</kbd>와 <kbd>E</kbd>로 카메라 방향을 회전합니다.'],['확대와 축소','게임 화면 위에서 마우스 휠을 돌려 가까이 또는 멀리 봅니다.'],['마우스 이동','마우스 오른쪽 버튼을 누른 채 드래그해 카메라를 움직입니다.']] },
     { kicker:'제3장 · 건설', title:'건물을 선택하고 배치하기', lead:'건설 메뉴에서 시대와 목적에 맞는 건물을 선택하세요.', tips:[['건물 찾기','건설 목록 위에서 마우스 휠을 돌리고 카테고리로 종류를 좁힙니다.'],['배치','건물을 선택한 뒤 소유한 영토를 좌클릭하면 실루엣 위치에 실제 건물이 설치됩니다.'],['회전','<kbd>R</kbd>을 누르거나 회전 버튼을 사용합니다. 아래 각도 메뉴에서 15°·30°·45°·90°를 고릅니다.'],['철거','삭제 버튼을 켜고 건물을 선택하면 가격의 50%를 돌려받습니다.']] },
-    { kicker:'제4장 · 길과 주민', title:'살아 움직이는 왕국 만들기', lead:'길을 연결하면 주민들이 왕국 전역의 길망을 따라 이동합니다.', tips:[['길 연결','10m 길 조각을 이어 놓으세요. X자와 T자 교차로는 자동으로 부드럽게 연결됩니다.'],['무작위 산책','낮에는 주민이 교차로마다 다음 길을 골라 이동하고 막다른 길에서는 되돌아갑니다.'],['길이 없을 때','설치된 길이 하나도 없으면 주민은 자기 집 출입문 앞에서 기다립니다.'],['밤','밤이 되면 모든 주민이 집 안으로 돌아가 거리에서 보이지 않습니다.']] },
+    { kicker:'제4장 · 길과 주민', title:'살아 움직이는 왕국 만들기', lead:'길을 연결하면 주민들이 왕국 전역의 길망을 따라 이동합니다.', tips:[['길 연결','10m 길 조각을 이어 놓으세요. X자와 T자 교차로는 자동으로 부드럽게 연결됩니다.'],['백수의 산책','직업이 없는 백수 주민은 낮에 길을 따라 천천히 산책하고, 교차로에서 무작위 방향을 고릅니다.'],['길이 없을 때','설치된 길이 하나도 없으면 주민은 자기 집 출입문 앞에서 기다립니다.'],['밤','밤이 되면 모든 주민이 집 안으로 돌아가 거리에서 보이지 않습니다.']] },
     { kicker:'제5장 · 세금과 시간', title:'낮과 밤의 세금 관리', lead:'건물이 만든 세금은 쌓인 뒤 직접 또는 자동으로 수금됩니다.', tips:[['낮 세금','낮에는 건물의 기본 세금을 100% 획득합니다.'],['밤 세금','밤에는 기본 세금의 50%를 획득하지만 모든 세금 +% 보너스는 유지됩니다.'],['세금 수집자','노동자를 고용하면 일정 수의 건물을 자동 수금하고 수입 보너스도 얻습니다.'],['수입 증가','비싼 건물, 연구 토큰, 환생, 랜드마크를 활용하면 세금이 크게 증가합니다.']] },
     { kicker:'제6장 · 영토와 지형', title:'448칸의 왕국 확장', lead:'평원·숲·산·강마다 설치할 수 있는 특별 건물이 다릅니다.', tips:[['영토 구입','영토 탭에서 잠긴 땅을 골드로 구입해 건설 공간을 넓힙니다.'],['지형 전용','지형 전용 카테고리에서 평원·숲·산·강 전용 건물을 확인합니다.'],['강과 다리','강은 하나의 자연스러운 물길로 이어지며 다리는 강 지형에만 설치할 수 있습니다.'],['자연 군락','숲은 큰 숲으로, 산은 산맥으로 모여 생성되고 환생할 때 위치가 달라집니다.']] },
     { kicker:'제7장 · 연구와 시대', title:'더 최신식인 왕국으로', lead:'연구를 완료해 토큰을 모으고 새로운 시대의 건물을 해금하세요.', tips:[['연구 시간','연구는 즉시 끝나지 않습니다. 연구 탭에서 남은 시간을 확인하세요.'],['연구 토큰','연구 토큰 1개마다 세금 수입이 50% 증가하며 최신 연구일수록 더 많은 토큰을 줍니다.'],['연도 해금','왕국력이 올라가면 석재·산업·현대·미래 건물이 차례로 해금됩니다.'],['비용','최신식 건물은 연구 토큰과 골드가 더 필요하지만 더 많은 세금을 생산합니다.']] },
-    { kicker:'제8장 · 환생과 탐험', title:'새로운 왕국으로 다시 시작하기', lead:'충분히 성장했다면 환생해 더 강한 다음 왕국을 시작하세요.', tips:[['환생 조건','필요한 골드·주민·영토를 모두 확보해야 하며 환생할수록 조건이 증가합니다.'],['영구 보너스','환생 횟수마다 세금 수입이 영구적으로 증가하고 건물 외형이 발전합니다.'],['새 지도','환생하면 숲·산 군락과 자연스러운 강의 위치가 새롭게 바뀝니다.'],['건물 내부','설치된 건물을 선택하고 내부 보기를 누르면 시대와 건물 종류에 맞는 가구와 주민을 볼 수 있습니다.']] },
+    { kicker:'제8장 · 환생과 탐험', title:'새로운 왕국으로 다시 시작하기', lead:'충분히 성장했다면 환생해 더 강한 다음 왕국을 시작하세요.', tips:[['환생 조건','필요한 골드·주민·영토를 모두 확보해야 하며 환생할수록 조건이 증가합니다.'],['건물 보존','환생해도 설치한 건물과 보유 영토는 그대로 남고, 건물에 쌓인 세금만 초기화됩니다.'],['영구 보너스','환생 횟수마다 세금 수입이 영구적으로 증가하고 건물 외형이 발전합니다.'],['새 지도','환생하면 숲·산 군락과 자연스러운 강의 위치가 새롭게 바뀝니다.']] },
   ];
   const LANDS = [
     { id: 'core1', name: '왕실 들판', x: -96, z: -24, price: 0, owned: true },
@@ -244,6 +244,7 @@
   const DAY_CYCLE_SECONDS = 96;
   const MAX_VISIBLE_RESIDENTS = 120;
   const JOB_PROFILES = {
+    unemployed: { name: '백수', icon: '🚶', outdoor: true, leisure: true, color: '#78a879' },
     farm: { name: '농부', icon: '🌾', outdoor: true, color: '#d7b34f' },
     ranch: { name: '목동', icon: '🐑', outdoor: true, color: '#a9c66d' },
     harbor: { name: '항구 노동자', icon: '⚓', outdoor: true, color: '#5aa9c4' },
@@ -364,7 +365,9 @@
         current.count += assigned; jobs.set(key, current); remaining -= assigned;
       }
     }
-    return { total, employed, unemployed: total - employed, capacity, workplaces, jobs: [...jobs.values()] };
+    const unemployed=total-employed, jobRows=[...jobs.values()];
+    if(unemployed>0) jobRows.push({ ...JOB_PROFILES.unemployed, count:unemployed });
+    return { total, employed, unemployed, capacity, workplaces, jobs:jobRows };
   }
   function residentHomeCounts() {
     const homes=state.buildings.filter((building)=>BUILDINGS[building.type].category==='residential'), counts=new Map();
@@ -981,7 +984,7 @@
     for (let i = 0; i < visibleTotal; i++) {
       const employed = i < visibleEmployed;
       const phase = worldTime*1.35+i*1.73, position=network.nodes.length?residentRoadPosition(i,network):homeFrontPosition(residentHomeForIndex(i,visibleTotal),i);
-      const {x,z}=position, bodyColor=employed?'#6e9dbc':'#81888d';
+      const {x,z}=position, bodyColor=employed?'#6e9dbc':JOB_PROFILES.unemployed.color;
       const bob = Math.sin(phase * 2.4) * .12;
       box({x, y:2.15 + bob, z}, [1.15, 2.35, 1.15], bodyColor);
       box({x, y:3.75 + bob, z}, [1.25, .85, 1.25], '#f5cba6');
@@ -1250,12 +1253,15 @@
   function rebirth() {
     const { cash: requiredCash, population: requiredPopulation, lands: requiredLands } = rebirthRequirements();
     if (state.cash < requiredCash || population() < requiredPopulation || state.owned.length < requiredLands) return toast(`환생에는 ${format(requiredCash)} 골드 · 주민 ${requiredPopulation}명 · 영토 ${requiredLands}곳이 필요합니다.`);
-    if (!window.confirm('환생하면 왕국의 건물과 영토가 초기화됩니다. 대신 모든 골드 수입이 영구적으로 10% 증가하고 건물이 발전합니다. 계속할까요?')) return;
+    if (!window.confirm('환생해도 건물과 보유 영토는 그대로 남습니다. 보유 골드와 수집자는 초기화되며, 모든 골드 수입이 영구적으로 10% 증가하고 건물이 발전합니다. 계속할까요?')) return;
     const rebirths = (state.rebirths || 0) + 1;
-    state = { ...structuredClone(START), rebirths, terrainSeed: rebirths, year: (state.year || 1) + 1, researchTokens: state.researchTokens || 0 };
+    const preservedBuildings=state.buildings.map((building)=>({ ...building, tax:0 }));
+    const preservedOwned=[...state.owned], preservedRotationStep=state.rotationStep||45;
+    state = { ...structuredClone(START), buildings:preservedBuildings, owned:preservedOwned, rotationStep:preservedRotationStep, rebirths, terrainSeed: rebirths, year: (state.year || 1) + 1, researchTokens: state.researchTokens || 0 };
     applyTerrainLayout(state.terrainSeed);
-    selectedBuilding = null; selectedLand = 'core1'; deleteMode = false;
-    toast(`환생 완료! 지형과 강의 위치가 새롭게 바뀌었습니다 · 왕국력 ${state.year}년 · 수입 +${rebirths * 10}%`); save(true); updateUI();
+    residentWalkers.clear(); roadNetworkCache={signature:'',nodes:[]};
+    selectedBuilding = null; selectedPlacedBuilding=null; selectedLand = state.owned[0]||'core1'; deleteMode = false;
+    toast(`환생 완료! 건물 ${state.buildings.length}채와 영토 ${state.owned.length}곳 보존 · 왕국력 ${state.year}년 · 수입 +${rebirths * 10}%`); save(true); updateUI();
   }
   function purchaseLand(id) {
     const land = LANDS.find((entry) => entry.id === id); if (owned(land)) return;
@@ -1346,7 +1352,7 @@
     } else {
       employment.jobs.forEach((job) => {
         const row = document.createElement('div'); row.className = 'job-row';
-        const workplaceText = job.home ? '낮에는 자기 집 안에서만 근무' : (job.outdoor ? '낮에는 건물 밖에서 근무' : '낮에는 생산 건물 안에서 근무');
+        const workplaceText = job.leisure ? '낮에는 영토의 길을 따라 천천히 산책' : (job.home ? '낮에는 자기 집 안에서만 근무' : (job.outdoor ? '낮에는 건물 밖에서 근무' : '낮에는 생산 건물 안에서 근무'));
         row.innerHTML = `<span>${job.icon} ${job.name}</span><b>${format(job.count)}명</b><small>${workplaceText}</small>`;
         els.jobList.append(row);
       });
