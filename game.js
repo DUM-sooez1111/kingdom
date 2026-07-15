@@ -1066,20 +1066,19 @@
     for(const kind of theme.kinds) if(!kinds.includes(kind)) kinds.push(kind);
     return kinds;
   }
-  const WALL_ALIGNED_FURNITURE = new Set(['wardrobe','shelf','bookcase','toolrack','weaponrack','fishnet','banner','trellis','server','appliance']);
   function drawInteriorFurniture(kind,x,z,accent,width,height,rotation=0) {
     const c=Math.cos(rotation),s=Math.sin(rotation);
     const b = (dx,dz,y,sx,sz,sy,color) => {
       const centerX=dx+sx/2,centerZ=dz+sz/2,rotatedX=centerX*c-centerZ*s,rotatedZ=centerX*s+centerZ*c;
       interiorBox(x+rotatedX-sx/2,z+rotatedZ-sz/2,y,sx,sz,sy,color,width,height,rotation);
     };
-    if (kind === 'bed') { b(-.8,-.4,0,1.9,1,.45,'#80584a'); b(-.72,-.32,.45,1.72,.84,.25,accent); b(-.62,-.24,.7,.55,.68,.18,'#ead9b5'); }
+    if (kind === 'bed') { b(-.88,-.47,0,2.08,1.14,.18,'#5c4035'); b(-.8,-.4,.18,1.92,1,.38,'#80584a'); b(-.71,-.31,.56,1.74,.82,.22,accent); b(-.62,-.23,.78,.58,.66,.2,'#f1dfbd'); b(.08,-.23,.76,.78,.66,.08,'#d9c8aa'); }
     else if (kind === 'canopybed') { b(-.85,-.5,0,2.05,1.18,.48,'#765246'); b(-.75,-.4,.48,1.85,.98,.3,accent); for(const dx of [-.82,.92]) for(const dz of [-.47,.55]) b(dx,dz,.1,.12,.12,2.1,'#6a4937'); b(-.82,.46,1.75,1.86,.12,.25,accent); }
-    else if (kind === 'table' || kind === 'dining' || kind === 'map') { const long=kind==='dining'; b(long?-.9:-.65,long?-.42:-.45,.8,long?1.9:1.4,long?.9:.95,.18,kind==='map'?'#5f8fa5':'#805d42'); for(const [dx,dz] of [[long?-.78:-.55,-.35],[long?.65:.45,-.35],[long?-.78:-.55,.3],[long?.65:.45,.3]]) b(dx,dz,0,.14,.14,.82,'#60422f'); if(kind==='map') b(-.45,-.25,.99,1,.55,.05,'#e4d19b'); }
-    else if (kind === 'desk' || kind === 'writingdesk') { b(-.75,-.38,.72,1.55,.78,.2,'#76523b'); b(-.68,-.3,0,.18,.18,.75,'#553b2e'); b(.52,-.3,0,.18,.18,.75,'#553b2e'); b(-.45,-.28,.95,.72,.46,.06,kind==='writingdesk'?'#e9d7a7':accent); b(.32,-.2,.92,.32,.3,.18,'#5d4939'); }
-    else if (kind === 'sofa') { b(-.85,-.42,.15,1.8,.86,.48,accent); b(-.85,.25,.45,1.8,.2,.85,'#6f5964'); b(-1.02,-.35,.38,.2,.72,.55,'#6f5964'); b(.75,-.35,.38,.2,.72,.55,'#6f5964'); }
-    else if (kind === 'wardrobe') { b(-.7,-.34,0,1.45,.68,2.2,'#77543c'); b(-.64,-.4,.12,.66,.08,1.92,'#966b49'); b(.04,-.4,.12,.66,.08,1.92,'#966b49'); b(-.05,-.48,1,.1,.08,.12,accent); b(.18,-.48,1,.1,.08,.12,accent); }
-    else if (kind === 'chest' || kind === 'crate' || kind === 'sack') { b(-.5,-.45,0,1, .9, kind==='sack'?.7:1, kind==='sack'?'#b99a67':'#8a613d'); if(kind!=='sack') b(-.48,-.43,.45,.96,.86,.12,accent); }
+    else if (kind === 'table' || kind === 'dining' || kind === 'map') { const long=kind==='dining'; b(long?-1:-.75,long?-.5:-.53,.79,long?2.1:1.6,long?1.05:1.1,.2,kind==='map'?'#547f94':'#895f3f'); b(long?-.9:-.65,long?-.4:-.43,.99,long?1.9:1.4,long?.85:.9,.07,accent); for(const [dx,dz] of [[long?-.82:-.57,-.39],[long?.66:.43,-.39],[long?-.82:-.57,.28],[long?.66:.43,.28]]) b(dx,dz,0,.16,.16,.82,'#563a2a'); if(kind==='map') { b(-.5,-.3,1.07,1.1,.62,.05,'#ead7a0'); b(-.38,-.32,1.13,.08,.5,.04,'#b67851'); } }
+    else if (kind === 'desk' || kind === 'writingdesk') { b(-.82,-.44,.72,1.7,.9,.22,'#7f573b'); b(-.72,-.34,0,.2,.2,.75,'#513728'); b(.54,-.34,0,.2,.2,.75,'#513728'); b(-.52,-.34,.95,.82,.52,.07,kind==='writingdesk'?'#f1dfb2':accent); b(.34,-.26,.92,.36,.34,.22,'#554234'); b(-.7,.18,.25,1.45,.1,.32,'#67452f'); }
+    else if (kind === 'sofa') { b(-.98,-.5,.1,2.06,1.02,.22,'#59434a'); b(-.86,-.4,.32,1.82,.78,.42,accent); b(-.78,-.31,.73,.78,.57,.16,shiftHexColor(accent,18)); b(.08,-.31,.73,.78,.57,.16,shiftHexColor(accent,8)); b(-.86,.24,.45,1.82,.22,.92,'#735966'); b(-1.05,-.37,.38,.24,.72,.62,'#735966'); b(.96,-.37,.38,.24,.72,.62,'#735966'); }
+    else if (kind === 'wardrobe') { b(-.78,-.39,0,1.6,.78,2.28,'#6f4c36'); b(-.69,-.46,.14,.72,.1,1.96,'#9a6c48'); b(.04,-.46,.14,.72,.1,1.96,'#8c6042'); b(-.66,-.5,1.18,1.38,.06,.08,'#d2aa62'); b(-.1,-.54,1.02,.1,.08,.14,'#ead084'); b(.22,-.54,1.02,.1,.08,.14,'#ead084'); b(-.72,-.34,2.28,1.48,.66,.13,accent); }
+    else if (kind === 'chest' || kind === 'crate' || kind === 'sack') { const sack=kind==='sack'; b(-.56,-.5,0,1.12,1,sack?.7:1,sack?'#b99a67':'#845a38'); if(!sack) { b(-.54,-.48,.48,1.08,.96,.16,accent); b(-.08,-.54,.22,.16,.08,.52,'#d5b15e'); } else { b(-.4,-.34,.7,.8,.68,.14,'#d7bc83'); b(-.2,-.38,.82,.4,.08,.12,accent); } }
     else if (kind === 'hearth' || kind === 'forge' || kind === 'stove') { const compact=kind==='stove'; b(compact?-.48:-.6,compact?-.4:-.5,0,compact?.95:1.2,compact?.8:1,compact?1:1.25,'#4b4a4c'); b(compact?-.28:-.35,compact?-.42:-.52,.35,compact?.55:.7,.12,.45,'#e77835'); b(compact?.18:.2,.1,compact?.85:1.1,.28,.28,compact?1.35:1.8,'#565b61'); }
     else if (kind === 'shelf' || kind === 'bookcase') { b(-.65,-.24,0,1.3,.45,2,kind==='bookcase'?'#594235':'#6c4d36'); for(const y of [.55,1.15,1.75]) { b(-.58,-.29,y,1.16,.55,.12,accent); if(kind==='bookcase') for(let i=0;i<4;i++) b(-.5+i*.28,-.34,y+.12,.18,.12,.32,['#8e4d42','#52728b','#9b7a43','#6f5b88'][i]); } }
     else if (kind === 'anvil') { b(-.45,-.35,0,.9,.7,.65,'#565c65'); b(-.7,-.48,.65,1.4,.95,.35,'#747c86'); }
@@ -1151,7 +1150,10 @@
     const kinds=[...interiorKinds(item,interiorBuilding.type)]; if(era>=7) kinds.push('console','lamp'); if(era>=9) kinds.push('holo');
     const slots=[{x:1.45,z:1.15,rotation:Math.PI},{x:4.85,z:1.15,rotation:Math.PI},{x:8.15,z:1.15,rotation:Math.PI},{x:1.45,z:5.75,rotation:0},{x:4.85,z:5.75,rotation:0},{x:8.15,z:5.75,rotation:0}], count=item.category==='residential'?6:5+(seed%2);
     const mandatory=[theme.signature]; if(item.catalog) mandatory.push(ERA_INTERIOR_FURNITURE[Math.max(0,Math.min(9,(item.tier||1)-1))]);
-    const furniture=[]; for(let i=0;i<count;i++) { const slot=slots[i%slots.length], kind=i<mandatory.length?mandatory[i]:kinds[(i+seed)%kinds.length], rotation=WALL_ALIGNED_FURNITURE.has(kind)?slot.rotation:Math.PI-interiorView.yaw; furniture.push({kind,x:slot.x,z:slot.z,rotation}); }
+    // Furniture is anchored to the room, so rotating the camera never rotates
+    // or slides the furniture itself. Every item keeps its assigned wall-facing
+    // direction while the room is being inspected.
+    const furniture=[]; for(let i=0;i<count;i++) { const slot=slots[i%slots.length], kind=i<mandatory.length?mandatory[i]:kinds[(i+seed)%kinds.length]; furniture.push({kind,x:slot.x,z:slot.z,rotation:slot.rotation}); }
     furniture.sort((a,b)=>interiorDepth(a.x,a.z)-interiorDepth(b.x,b.z)); furniture.forEach((entry)=>drawInteriorFurniture(entry.kind,entry.x,entry.z,accent,width,height,entry.rotation));
     const workProfile=item.category==='residential'?homeJobProfile(item):jobProfile(interiorBuilding);
     let insideWorkers=0;
@@ -1161,12 +1163,12 @@
     for(let i=0;i<insideWorkers;i++) {
       let x,z;
       if(item.category==='residential') {
-        let route=(worldTime*(.18+(i%3)*.025)+i/Math.max(1,insideWorkers))*walkingLoop.length;
+        let route=(worldTime*(.065+(i%3)*.009)+i/Math.max(1,insideWorkers))*walkingLoop.length;
         if(i%2) route=walkingLoop.length-route%walkingLoop.length; else route%=walkingLoop.length;
         const segment=Math.floor(route)%walkingLoop.length,next=(segment+1)%walkingLoop.length,raw=route-Math.floor(route),progress=raw*raw*(3-2*raw);
         x=walkingLoop[segment][0]+(walkingLoop[next][0]-walkingLoop[segment][0])*progress; z=walkingLoop[segment][1]+(walkingLoop[next][1]-walkingLoop[segment][1])*progress;
-      } else { x=2.2+(i%4)*1.65; z=3+Math.floor(i/4)*1.25+Math.sin(worldTime+i)*.2; }
-      const bob=Math.sin(worldTime*3+i)*.06; interiorBox(x-.21,z-.21,.18,.42,.42,1.1,workProfile.color||'#6e9dbc',width,height); interiorBox(x-.25,z-.25,1.28+bob,.5,.5,.42,'#f5cba6',width,height);
+      } else { x=2.2+(i%4)*1.65; z=3+Math.floor(i/4)*1.25+Math.sin(worldTime*.45+i)*.14; }
+      const bob=Math.sin(worldTime*1.45+i)*.035; interiorBox(x-.21,z-.21,.18,.42,.42,1.1,workProfile.color||'#6e9dbc',width,height); interiorBox(x-.25,z-.25,1.28+bob,.5,.5,.42,'#f5cba6',width,height);
     }
     queueInteriorFaces=false; interiorFaces.sort((a,b)=>a.depth-b.depth); interiorFaces.forEach((face)=>paintInteriorFace(face.points,face.color));
     interiorCtx.fillStyle='rgba(255,255,255,.08)'; interiorCtx.fillRect(0,height-34,width,34); interiorCtx.fillStyle='#d7e5e6'; interiorCtx.font='12px system-ui'; interiorCtx.fillText(`${theme.label} · ${era}년식 ${eraStyle.label} · 고유 디자인 ${seed.toString(16).toUpperCase().padStart(8,'0')} · ${isDaytime()?'낮':'밤'}`,18,height-13);
