@@ -127,7 +127,7 @@
     { kicker:'제3장 · 건설', title:'건물을 선택하고 배치하기', lead:'건설 메뉴에서 시대와 목적에 맞는 건물을 선택하세요.', tips:[['건물 찾기','건설 목록 위에서 마우스 휠을 돌리고 카테고리로 종류를 좁힙니다.'],['배치','건물을 선택한 뒤 소유한 영토를 좌클릭하면 실루엣 위치에 실제 건물이 설치됩니다.'],['회전','<kbd>R</kbd>을 누르거나 회전 버튼을 사용합니다. 아래 각도 메뉴에서 15°·30°·45°·90°를 고릅니다.'],['철거','삭제 버튼을 켜고 건물을 선택하면 가격의 50%를 돌려받습니다.']] },
     { kicker:'제4장 · 길과 주민', title:'살아 움직이는 왕국 만들기', lead:'길을 연결하면 주민들이 왕국 전역의 길망을 따라 이동합니다.', tips:[['길 연결','10m 길 조각을 이어 놓으세요. X자와 T자 교차로는 자동으로 부드럽게 연결됩니다.'],['백수의 산책','직업이 없는 백수 주민은 낮에 길을 따라 천천히 산책하고, 교차로에서 무작위 방향을 고릅니다.'],['길이 없을 때','설치된 길이 하나도 없으면 주민은 자기 집 출입문 앞에서 기다립니다.'],['밤','밤이 되면 모든 주민이 집 안으로 돌아가 거리에서 보이지 않습니다.']] },
     { kicker:'제5장 · 세금과 시간', title:'낮과 밤의 세금 관리', lead:'건물이 만든 세금은 쌓인 뒤 직접 또는 자동으로 수금됩니다.', tips:[['낮 세금','낮에는 건물의 기본 세금을 100% 획득합니다.'],['밤 세금','밤에는 기본 세금의 50%를 획득하지만 모든 세금 +% 보너스는 유지됩니다.'],['세금 수집자','노동자를 고용하면 일정 수의 건물을 자동 수금하고 수입 보너스도 얻습니다.'],['수입 증가','비싼 건물, 연구 토큰, 환생, 랜드마크를 활용하면 세금이 크게 증가합니다.']] },
-    { kicker:'제6장 · 영토와 지형', title:'448칸의 왕국 확장', lead:'평원·숲·산·강마다 설치할 수 있는 특별 건물이 다릅니다.', tips:[['영토 구입','영토 탭에서 잠긴 땅을 골드로 구입해 건설 공간을 넓힙니다.'],['지형 전용','지형 전용 카테고리에서 평원·숲·산·강 전용 건물을 확인합니다.'],['강과 다리','강은 하나의 자연스러운 물길로 이어지며 다리는 강 지형에만 설치할 수 있습니다.'],['자연 군락','숲은 큰 숲으로, 산은 산맥으로 모여 생성되고 환생할 때 위치가 달라집니다.']] },
+    { kicker:'제6장 · 영토와 지형', title:'448칸의 왕국 확장', lead:'평원·숲·산·강·호수가 어우러진 영토를 확장하세요.', tips:[['영토 구입','영토 탭에서 잠긴 땅을 골드로 구입해 건설 공간을 넓힙니다.'],['지형 전용','지형 전용 카테고리에서 각 자연환경에 맞는 특별 건물을 확인합니다.'],['강과 호수','강은 한 줄의 자연스러운 물길로 이어지고, 호수는 여러 영토에 걸친 넓은 물 지형으로 생성됩니다.'],['자연 군락','숲·산·호수는 군락으로 모이며 환생할 때 위치와 모양이 달라집니다.']] },
     { kicker:'제7장 · 연구와 시대', title:'더 최신식인 왕국으로', lead:'연구를 완료해 토큰을 모으고 새로운 시대의 건물을 해금하세요.', tips:[['연구 시간','연구는 즉시 끝나지 않습니다. 연구 탭에서 남은 시간을 확인하세요.'],['연구 토큰','연구 토큰 1개마다 세금 수입이 50% 증가하며 최신 연구일수록 더 많은 토큰을 줍니다.'],['연도 해금','왕국력이 올라가면 석재·산업·현대·미래 건물이 차례로 해금됩니다.'],['비용','최신식 건물은 연구 토큰과 골드가 더 필요하지만 더 많은 세금을 생산합니다.']] },
     { kicker:'제8장 · 환생과 탐험', title:'새로운 왕국으로 다시 시작하기', lead:'충분히 성장했다면 환생해 더 강한 다음 왕국을 시작하세요.', tips:[['환생 조건','필요한 골드·주민·영토를 모두 확보해야 하며 환생할수록 조건이 증가합니다.'],['건물 보존','환생해도 설치한 건물과 보유 영토는 그대로 남고, 건물에 쌓인 세금만 초기화됩니다.'],['영구 보너스','환생 횟수마다 세금 수입이 영구적으로 증가하고 건물 외형이 발전합니다.'],['새 지도','환생하면 숲·산 군락과 자연스러운 강의 위치가 새롭게 바뀝니다.']] },
   ];
@@ -158,6 +158,7 @@
     forest:{name:'숲',icon:'🌲',owned:'#3f8150',locked:'#294f3d'},
     mountain:{name:'산지',icon:'⛰️',owned:'#77766e',locked:'#4c514d'},
     river:{name:'강',icon:'🌊',owned:'#3b91b0',locked:'#285d72'},
+    lake:{name:'호수',icon:'🏞️',owned:'#4198b5',locked:'#2a6173'},
   };
   const MAP_GRID = { columns: 28, rows: 16, minX: -672, minZ: -360, tile: 48 };
   function terrainHash(column,row,seed) {
@@ -187,9 +188,27 @@
     }
     return false;
   }
+  function lakeCluster(seed=0) {
+    const anchors=[[4,8],[23,8],[14,3],[14,12]], offset=terrainHash(9,13,seed)%anchors.length;
+    let best=null;
+    for(let index=0;index<anchors.length;index++) {
+      const anchor=anchors[(index+offset)%anchors.length], jitterX=(terrainHash(index,4,seed)%3)-1, jitterZ=(terrainHash(7,index,seed)%3)-1;
+      const x=Math.max(3,Math.min(MAP_GRID.columns-4,anchor[0]+jitterX)), z=Math.max(2,Math.min(MAP_GRID.rows-3,anchor[1]+jitterZ));
+      const candidate={x,z,rx:2.7+(terrainHash(index,2,seed)%5)*.12,rz:1.75+(terrainHash(3,index,seed)%4)*.12};
+      candidate.score=Math.abs(candidate.x-riverCenterColumn(candidate.z,seed));
+      if(!best||candidate.score>best.score) best=candidate;
+    }
+    return best;
+  }
+  function insideLake(column,row,seed=0) {
+    const lake=lakeCluster(seed), dx=(column-lake.x)/lake.rx, dz=(row-lake.z)/lake.rz;
+    const edgeWobble=((terrainHash(column,row,seed+29)%101)/100-.5)*.18;
+    return dx*dx+dz*dz<=1+edgeWobble;
+  }
   function terrainForCell(column,row,seed=0) {
     const riverColumn=riverColumnForRow(row,seed);
     if(column===riverColumn) return 'river';
+    if(insideLake(column,row,seed)) return 'lake';
     if(insideTerrainCluster(column,row,'forest',seed)) return 'forest';
     if(insideTerrainCluster(column,row,'mountain',seed)) return 'mountain';
     return 'plains';
@@ -575,7 +594,7 @@
 
   function drawLand(land) {
     const active = owned(land); const selected = selectedLand === land.id;
-    const surfaceTerrain=land.terrain==='river'?'plains':(land.terrain||'plains');
+    const surfaceTerrain=land.terrain==='river'||land.terrain==='lake'?'plains':(land.terrain||'plains');
     const terrainInfo=TERRAIN_INFO[surfaceTerrain], color=active?terrainInfo.owned:terrainInfo.locked;
     const surface = [
       {x:land.x-24,y:.5,z:land.z-24}, {x:land.x+24,y:.5,z:land.z-24},
@@ -625,6 +644,19 @@
       for(const side of [-1,1]) box({x:midpoint.x+normalX*6.3,y:.82,z:midpoint.z+normalZ*6.3},[length+5,.15,2.1],'#b8a475',angle);
     }
     points.forEach((point)=>box({x:point.x,y:.78,z:point.z},[11,.18,11],'#3185a8'));
+  }
+  function lakeOutlinePoints(scale=1,y=.78) {
+    const seed=state.terrainSeed||0, lake=lakeCluster(seed), centerX=MAP_GRID.minX+lake.x*MAP_GRID.tile, centerZ=MAP_GRID.minZ+lake.z*MAP_GRID.tile;
+    return Array.from({length:48},(_,index)=>{
+      const angle=index/48*Math.PI*2, wobble=1+Math.sin(angle*3+seed*.7)*.055+Math.sin(angle*7-seed*.4)*.025;
+      return {x:centerX+Math.cos(angle)*lake.rx*MAP_GRID.tile*scale*wobble,y,z:centerZ+Math.sin(angle)*lake.rz*MAP_GRID.tile*scale*wobble};
+    });
+  }
+  function drawLake() {
+    const shore=lakeOutlinePoints(1.08,.72), water=lakeOutlinePoints(1,.79);
+    addFace(shore,'#b8a475'); addFace(water,'#3a94b5');
+    const lake=lakeCluster(state.terrainSeed||0), centerX=MAP_GRID.minX+lake.x*MAP_GRID.tile, centerZ=MAP_GRID.minZ+lake.z*MAP_GRID.tile;
+    for(const [dx,dz] of [[-.45,-.22],[.18,.28],[.52,-.08]]) box({x:centerX+dx*lake.rx*MAP_GRID.tile,y:.87,z:centerZ+dz*lake.rz*MAP_GRID.tile},[13,.08,2.2],'#75c9d5',dx*.35,.72);
   }
   function drawCatalogDetail(item, local, r, w, h, d) {
     if (!item.catalog) return;
@@ -1193,7 +1225,7 @@
     faces.length = 0; hitTiles.length = 0;
     faceLayer = 0; LANDS.forEach(drawLand);
     faceLayer = 1; LANDS.forEach(drawTerrainFeatures); drawWorldArt(); drawDecorations();
-    faceLayer = 2; drawRiverPath();
+    faceLayer = 2; drawRiverPath(); drawLake();
     faceLayer = 3; LANDS.forEach(drawLandBorder);
     faceLayer = 4; state.buildings.forEach(drawBuilding);
     faceLayer = 5; drawRoadJunctions();
