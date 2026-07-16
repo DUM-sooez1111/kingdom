@@ -137,7 +137,7 @@
     { kicker:'제2장 · 카메라', title:'왕국을 자유롭게 둘러보기', lead:'높은 시점에서 영토 전체를 살펴보고 원하는 장소로 이동하세요.', tips:[['이동','<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>로 화면을 이동합니다.'],['회전','<kbd>Q</kbd>와 <kbd>E</kbd>로 카메라 방향을 회전합니다.'],['확대와 축소','게임 화면 위에서 마우스 휠을 돌려 가까이 또는 멀리 봅니다.'],['마우스 이동','마우스 오른쪽 버튼을 누른 채 드래그해 카메라를 움직입니다.']] },
     { kicker:'제3장 · 건설', title:'건물을 선택하고 배치하기', lead:'건설 메뉴에서 시대와 목적에 맞는 건물을 선택하세요.', tips:[['건물 찾기','건설 목록에서는 위아래로, 카테고리 줄에서는 좌우로 마우스 휠을 움직여 원하는 종류를 찾습니다.'],['배치','건물을 선택한 뒤 소유한 영토를 좌클릭하면 실루엣 위치에 실제 건물이 설치됩니다.'],['회전','<kbd>R</kbd>을 누르거나 회전 버튼을 사용합니다. 아래 각도 메뉴에서 15°·30°·45°·90°를 고릅니다.'],['철거','삭제 버튼을 켜고 건물을 선택하면 가격의 50%를 돌려받습니다.']] },
     { kicker:'제4장 · 길과 주민', title:'살아 움직이는 왕국 만들기', lead:'길을 연결하면 주민들이 왕국 전역의 길망을 따라 이동합니다.', tips:[['길 연결','10m 길 조각을 이어 놓으세요. X자와 T자 교차로는 자동으로 부드럽게 연결됩니다.'],['백수의 산책','직업이 없는 백수 주민은 낮에 길을 따라 천천히 산책하고, 교차로에서 무작위 방향을 고릅니다.'],['길이 없을 때','설치된 길이 하나도 없으면 주민은 자기 집 출입문 앞에서 기다립니다.'],['밤','밤이 되면 모든 주민이 집 안으로 돌아가 거리에서 보이지 않습니다.']] },
-    { kicker:'제5장 · 세금과 시간', title:'낮과 밤의 세금 관리', lead:'건물이 만든 세금은 쌓인 뒤 직접 또는 자동으로 수금됩니다.', tips:[['시간 속도','상단의 Ⅱ·▶·▶▶·▶▶▶ 버튼으로 일시정지와 1·2·4배속을 선택합니다.'],['달력','왕국력 옆에 현재 월과 주가 표시되며 한 달은 4주로 흐릅니다.'],['낮과 밤','낮에는 기본 세금 100%, 밤에는 50%를 획득하며 모든 세금 +% 보너스는 유지됩니다.'],['수입 증가','비싼 건물, 연구 토큰, 환생, 랜드마크를 활용하면 세금이 크게 증가합니다.']] },
+    { kicker:'제5장 · 세금과 시간', title:'낮과 밤의 세금 관리', lead:'건물이 만든 세금은 쌓인 뒤 직접 또는 자동으로 수금됩니다.', tips:[['시간 속도','기본은 일시정지와 1배속이며 환생 10회에 2배속, 환생 20회에 4배속이 해금됩니다.'],['달력','왕국력 옆에 현재 월과 주가 표시되며 한 달은 4주로 흐릅니다.'],['낮과 밤','낮에는 기본 세금 100%, 밤에는 50%를 획득하며 모든 세금 +% 보너스는 유지됩니다.'],['수입 증가','비싼 건물, 연구 토큰, 환생, 랜드마크를 활용하면 세금이 크게 증가합니다.']] },
     { kicker:'제6장 · 영토와 지형', title:'448칸의 왕국 확장', lead:'평원·숲·산·강·호수가 어우러진 영토를 확장하세요.', tips:[['영토 구입','영토 탭에서 잠긴 땅을 골드로 구입해 건설 공간을 넓힙니다.'],['지형 전용','지형 전용 카테고리에서 각 자연환경에 맞는 특별 건물을 확인합니다.'],['강과 호수','강은 한 줄의 자연스러운 물길로 이어지고, 호수는 여러 영토에 걸친 넓은 물 지형으로 생성됩니다.'],['자연 군락','숲·산·호수는 군락으로 모이며 환생할 때 위치와 모양이 달라집니다.']] },
     { kicker:'제7장 · 연구와 시대', title:'더 최신식인 왕국으로', lead:'연구를 완료해 토큰을 모으고 새로운 시대의 건물을 해금하세요.', tips:[['연구 시간','연구는 즉시 끝나지 않습니다. 연구 탭에서 남은 시간을 확인하세요.'],['연구 토큰','연구 토큰 1개마다 세금 수입이 50% 증가하며 최신 연구일수록 더 많은 토큰을 줍니다.'],['연도 해금','왕국력이 올라가면 석재·산업·현대·미래 건물이 차례로 해금됩니다.'],['비용','최신식 건물은 연구 토큰과 골드가 더 필요하지만 더 많은 세금을 생산합니다.']] },
     { kicker:'제8장 · 환생과 탐험', title:'새로운 왕국으로 다시 시작하기', lead:'충분히 성장했다면 환생해 더 강한 다음 왕국을 시작하세요.', tips:[['환생 조건','필요한 골드·주민·영토를 모두 확보해야 하며 환생할수록 조건이 증가합니다.'],['건물 보존','환생해도 설치한 건물과 보유 영토는 그대로 남고, 건물에 쌓인 세금만 초기화됩니다.'],['영구 보너스','환생 횟수마다 세금 수입이 영구적으로 증가하고 건물 외형이 발전합니다.'],['새 지도','환생하면 숲·산 군락과 자연스러운 강의 위치가 새롭게 바뀝니다.']] },
@@ -333,15 +333,23 @@
     els.productionStatus.textContent = daytime ? '세금 100%' : '야간 세금 50%';
     els.dayClock.closest('.resource').classList.toggle('night', !daytime);
   }
+  function maxTimeScaleForRebirth(rebirths=state.rebirths||0) { return rebirths>=20?4:rebirths>=10?2:1; }
   function updateTimeControls() {
     const speed=Number(state.timeScale)||0;
     $('#pauseTime').classList.toggle('active',speed===0);
-    document.querySelectorAll('.time-controls [data-speed]').forEach((button)=>button.classList.toggle('active',Number(button.dataset.speed)===speed));
+    const maximum=maxTimeScaleForRebirth();
+    document.querySelectorAll('.time-controls [data-speed]').forEach((button)=>{
+      const value=Number(button.dataset.speed), unlockAt=value===2?10:value===4?20:0, locked=value>maximum;
+      button.classList.toggle('active',value===speed); button.classList.toggle('locked',locked); button.disabled=locked;
+      button.title=locked?`환생 ${unlockAt}회에 ${value}배속 해금`:`${value}배속`;
+    });
     $('#pauseTime').textContent=speed===0?'▶':'Ⅱ';
     $('#pauseTime').title=speed===0?'시간 계속':'시간 일시정지';
   }
   function setTimeScale(speed) {
-    state.timeScale=[0,1,2,4].includes(Number(speed))?Number(speed):1;
+    const target=Number(speed);
+    if(target>maxTimeScaleForRebirth()) return toast(`${target}배속은 환생 ${target===2?10:20}회에 해금됩니다.`);
+    state.timeScale=[0,1,2,4].includes(target)?target:1;
     updateTimeControls(); save(true); toast(state.timeScale?`왕국 시간 ${state.timeScale}배속`:'왕국 시간이 멈췄습니다.');
   }
 
@@ -368,7 +376,7 @@
         const profile = { ...START, ...saved };
         if (!Number.isInteger(saved.missionIndex)) profile.missionIndex = saved.missionClaimed ? 1 : 0;
         if (!Number.isFinite(saved.year) || saved.year < 1) profile.year = Math.max(1, (saved.rebirths || 0) + 1);
-        if(![0,1,2,4].includes(Number(profile.timeScale))) profile.timeScale=1;
+        if(![0,1,2,4].includes(Number(profile.timeScale))||Number(profile.timeScale)>maxTimeScaleForRebirth(profile.rebirths||0)) profile.timeScale=1;
         return profile;
       }
     } catch (_) { /* start a new kingdom */ }
@@ -1435,7 +1443,8 @@
     applyTerrainLayout(state.terrainSeed);
     residentWalkers.clear(); roadNetworkCache={signature:'',nodes:[]};
     selectedBuilding = null; selectedPlacedBuilding=null; selectedLand = state.owned[0]||'core1'; deleteMode = false;
-    toast(`환생 완료! 건물 ${state.buildings.length}채와 영토 ${state.owned.length}곳 보존 · 왕국력 ${state.year}년 · 수입 +${rebirths * 10}%`); save(true); updateUI();
+    const speedUnlock=rebirths===10?' · 2배속 해금!':rebirths===20?' · 4배속 해금!':'';
+    toast(`환생 완료! 건물 ${state.buildings.length}채와 영토 ${state.owned.length}곳 보존 · 왕국력 ${state.year}년 · 수입 +${rebirths * 10}%${speedUnlock}`); save(true); updateUI(); updateTimeControls();
   }
   function purchaseLand(id) {
     const land = LANDS.find((entry) => entry.id === id); if (owned(land)) return;
