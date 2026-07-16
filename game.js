@@ -28,6 +28,13 @@
     mine: { name: '철광산', icon: '⛏️', category: 'production', price: 740, income: 74, people: 3, body: '#73777d', roof: '#4a4549', size: [14, 8, 12] },
     forge: { name: '왕실 대장간', icon: '⚒️', category: 'production', price: 660, income: 64, people: 4, body: '#8f5d43', roof: '#3e424d', size: [14, 7, 12] },
     ranch: { name: '목축 농장', icon: '🐄', category: 'production', price: 430, income: 42, people: 4, body: '#c59b62', roof: '#8a5b3d', size: [14, 6, 14] },
+    cafe: { name:'왕국 카페', icon:'☕', category:'production', buildGroup:'amenity', price:650, people:4, body:'#d7c5a0', roof:'#397566', trim:'#f0d7a1', size:[14,7,12], unlockYear:2, model:'cafe', leisure:true },
+    generalStore: { name:'왕국 상점', icon:'🎁', category:'production', buildGroup:'amenity', price:900, people:5, body:'#d0aa75', roof:'#3d7890', trim:'#f2b45c', size:[14,7,12], unlockYear:3, model:'generalStore', leisure:true },
+    bakery: { name:'왕실 베이커리', icon:'🍞', category:'production', buildGroup:'amenity', price:780, people:4, body:'#d9b77f', roof:'#9a5f45', trim:'#f0c477', size:[15,7,12], unlockYear:2, model:'bakery', leisure:true },
+    arcade: { name:'왕국 게임센터', icon:'🎮', category:'production', buildGroup:'amenity', price:1500, people:6, body:'#76568f', roof:'#403b68', trim:'#ef69b7', size:[16,8,14], unlockYear:5, model:'arcade', leisure:true },
+    royalCoaster: { name:'왕실 순환 열차', icon:'🎢', category:'production', buildGroup:'attraction', price:3600, people:10, body:'#496d70', roof:'#b24c50', trim:'#f2c84e', size:[22,12,20], unlockYear:6, model:'coaster', leisure:true, openAir:true },
+    townFountain: { name:'왕국 중앙 분수', icon:'⛲', category:'decoration', price:520, people:0, body:'#78b7c6', roof:'#d2d8d5', trim:'#8ce3ee', size:[14,4,14], model:'townFountain', leisure:true, openAir:true, noInterior:true },
+    flowerArch: { name:'왕실 꽃 아치', icon:'🌸', category:'decoration', price:750, people:0, body:'#65a267', roof:'#d8789d', trim:'#f2a9c4', size:[14,6,10], unlockYear:2, model:'flowerArch', leisure:true, openAir:true, noInterior:true },
     dirtRoad: { name: '흙길', icon: '🟫', category: 'road', price: 15, income: 0, people: 0, body: '#9a7048', trim: '#c19868', size: [10, .2, 4], roadStyle: 'dirt', noInterior: true },
     gravelRoad: { name: '자갈길', icon: '🪨', category: 'road', price: 30, income: 0, people: 0, body: '#8d8a82', trim: '#b9b4a9', size: [10, .2, 4], roadStyle: 'gravel', unlockYear: 2, noInterior: true },
     stoneRoad: { name: '석재 포장길', icon: '▦', category: 'road', price: 55, income: 0, people: 0, body: '#777a7d', trim: '#b8b3a8', size: [10, .2, 5], roadStyle: 'stone', unlockYear: 3, noInterior: true },
@@ -103,7 +110,7 @@
     item.income = item.category === 'road' ? 0 : Math.max(1, Math.round(item.price * (BUILDING_INCOME_RATE+categoryBonus)));
   });
   const CATALOG_BUILDING_COUNT = Object.values(BUILDINGS).filter((item) => item.catalog).length;
-  const CATEGORIES = [{ id: 'all', name: '전체' }, { id: 'terrain', name: '지형 전용' }, { id: 'residential', name: '주거' }, { id: 'production', name: '생산' }, { id: 'landmark', name: '랜드마크' }, { id: 'decoration', name: '장식' }, { id: 'road', name: '길' }];
+  const CATEGORIES = [{ id: 'all', name: '전체' }, { id: 'terrain', name: '지형 전용' }, { id:'amenity', name:'편의시설' }, { id:'attraction', name:'놀이기구' }, { id: 'residential', name: '주거' }, { id: 'production', name: '생산' }, { id: 'landmark', name: '랜드마크' }, { id: 'decoration', name: '장식' }, { id: 'road', name: '길' }];
   const MISSIONS = [
     { id: 'homes', title: '주거 건물 3채를 건설하세요', goal: 3, reward: 450 },
     { id: 'roads', title: '왕국에 길 5조각을 연결하세요', goal: 5, reward: 550 },
@@ -128,9 +135,9 @@
   const TUTORIAL_PAGES = [
     { kicker:'제1장 · 왕국의 시작', title:'Crownvale에 오신 것을 환영합니다', lead:'작은 영토를 거대한 시대 왕국으로 성장시키세요.', tips:[['첫 번째 목표','주거 건물을 지어 주민을 늘리고 생산 건물로 세금을 모으세요.'],['왕실 의뢰','왼쪽 의뢰를 완료하면 골드 보상을 받아 더 빠르게 확장할 수 있습니다.'],['저장','상단의 ▣ 버튼을 누르면 현재 왕국이 브라우저에 저장됩니다.'],['메뉴','오른쪽 메뉴는 ✕로 닫고 ☰ 버튼으로 언제든 다시 열 수 있습니다.']] },
     { kicker:'제2장 · 카메라', title:'왕국을 자유롭게 둘러보기', lead:'높은 시점에서 영토 전체를 살펴보고 원하는 장소로 이동하세요.', tips:[['이동','<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>로 화면을 이동합니다.'],['회전','<kbd>Q</kbd>와 <kbd>E</kbd>로 카메라 방향을 회전합니다.'],['확대와 축소','게임 화면 위에서 마우스 휠을 돌려 가까이 또는 멀리 봅니다.'],['마우스 이동','마우스 오른쪽 버튼을 누른 채 드래그해 카메라를 움직입니다.']] },
-    { kicker:'제3장 · 건설', title:'건물을 선택하고 배치하기', lead:'건설 메뉴에서 시대와 목적에 맞는 건물을 선택하세요.', tips:[['건물 찾기','건설 목록 위에서 마우스 휠을 돌리고 카테고리로 종류를 좁힙니다.'],['배치','건물을 선택한 뒤 소유한 영토를 좌클릭하면 실루엣 위치에 실제 건물이 설치됩니다.'],['회전','<kbd>R</kbd>을 누르거나 회전 버튼을 사용합니다. 아래 각도 메뉴에서 15°·30°·45°·90°를 고릅니다.'],['철거','삭제 버튼을 켜고 건물을 선택하면 가격의 50%를 돌려받습니다.']] },
+    { kicker:'제3장 · 건설', title:'건물을 선택하고 배치하기', lead:'건설 메뉴에서 시대와 목적에 맞는 건물을 선택하세요.', tips:[['건물 찾기','건설 목록에서는 위아래로, 카테고리 줄에서는 좌우로 마우스 휠을 움직여 원하는 종류를 찾습니다.'],['배치','건물을 선택한 뒤 소유한 영토를 좌클릭하면 실루엣 위치에 실제 건물이 설치됩니다.'],['회전','<kbd>R</kbd>을 누르거나 회전 버튼을 사용합니다. 아래 각도 메뉴에서 15°·30°·45°·90°를 고릅니다.'],['철거','삭제 버튼을 켜고 건물을 선택하면 가격의 50%를 돌려받습니다.']] },
     { kicker:'제4장 · 길과 주민', title:'살아 움직이는 왕국 만들기', lead:'길을 연결하면 주민들이 왕국 전역의 길망을 따라 이동합니다.', tips:[['길 연결','10m 길 조각을 이어 놓으세요. X자와 T자 교차로는 자동으로 부드럽게 연결됩니다.'],['백수의 산책','직업이 없는 백수 주민은 낮에 길을 따라 천천히 산책하고, 교차로에서 무작위 방향을 고릅니다.'],['길이 없을 때','설치된 길이 하나도 없으면 주민은 자기 집 출입문 앞에서 기다립니다.'],['밤','밤이 되면 모든 주민이 집 안으로 돌아가 거리에서 보이지 않습니다.']] },
-    { kicker:'제5장 · 세금과 시간', title:'낮과 밤의 세금 관리', lead:'건물이 만든 세금은 쌓인 뒤 직접 또는 자동으로 수금됩니다.', tips:[['낮 세금','낮에는 건물의 기본 세금을 100% 획득합니다.'],['밤 세금','밤에는 기본 세금의 50%를 획득하지만 모든 세금 +% 보너스는 유지됩니다.'],['세금 수집자','노동자를 고용하면 일정 수의 건물을 자동 수금하고 수입 보너스도 얻습니다.'],['수입 증가','비싼 건물, 연구 토큰, 환생, 랜드마크를 활용하면 세금이 크게 증가합니다.']] },
+    { kicker:'제5장 · 세금과 시간', title:'낮과 밤의 세금 관리', lead:'건물이 만든 세금은 쌓인 뒤 직접 또는 자동으로 수금됩니다.', tips:[['시간 속도','상단의 Ⅱ·▶·▶▶·▶▶▶ 버튼으로 일시정지와 1·2·4배속을 선택합니다.'],['달력','왕국력 옆에 현재 월과 주가 표시되며 한 달은 4주로 흐릅니다.'],['낮과 밤','낮에는 기본 세금 100%, 밤에는 50%를 획득하며 모든 세금 +% 보너스는 유지됩니다.'],['수입 증가','비싼 건물, 연구 토큰, 환생, 랜드마크를 활용하면 세금이 크게 증가합니다.']] },
     { kicker:'제6장 · 영토와 지형', title:'448칸의 왕국 확장', lead:'평원·숲·산·강·호수가 어우러진 영토를 확장하세요.', tips:[['영토 구입','영토 탭에서 잠긴 땅을 골드로 구입해 건설 공간을 넓힙니다.'],['지형 전용','지형 전용 카테고리에서 각 자연환경에 맞는 특별 건물을 확인합니다.'],['강과 호수','강은 한 줄의 자연스러운 물길로 이어지고, 호수는 여러 영토에 걸친 넓은 물 지형으로 생성됩니다.'],['자연 군락','숲·산·호수는 군락으로 모이며 환생할 때 위치와 모양이 달라집니다.']] },
     { kicker:'제7장 · 연구와 시대', title:'더 최신식인 왕국으로', lead:'연구를 완료해 토큰을 모으고 새로운 시대의 건물을 해금하세요.', tips:[['연구 시간','연구는 즉시 끝나지 않습니다. 연구 탭에서 남은 시간을 확인하세요.'],['연구 토큰','연구 토큰 1개마다 세금 수입이 50% 증가하며 최신 연구일수록 더 많은 토큰을 줍니다.'],['연도 해금','왕국력이 올라가면 석재·산업·현대·미래 건물이 차례로 해금됩니다.'],['비용','최신식 건물은 연구 토큰과 골드가 더 필요하지만 더 많은 세금을 생산합니다.']] },
     { kicker:'제8장 · 환생과 탐험', title:'새로운 왕국으로 다시 시작하기', lead:'충분히 성장했다면 환생해 더 강한 다음 왕국을 시작하세요.', tips:[['환생 조건','필요한 골드·주민·영토를 모두 확보해야 하며 환생할수록 조건이 증가합니다.'],['건물 보존','환생해도 설치한 건물과 보유 영토는 그대로 남고, 건물에 쌓인 세금만 초기화됩니다.'],['영구 보너스','환생 횟수마다 세금 수입이 영구적으로 증가하고 건물 외형이 발전합니다.'],['새 지도','환생하면 숲·산 군락과 자연스러운 강의 위치가 새롭게 바뀝니다.']] },
@@ -227,7 +234,7 @@
       LANDS.push({ id: `realm_${column + 1}_${row + 1}`, name: `${terrainInfo.name} 영토 ${column + 1}-${row + 1}`, x, z, terrain, price: 700 + Math.floor(distance * 140), owned: false });
     }
   }
-  const START = { cash: 1000, owned: ['core1', 'core2', 'core3'], buildings: [], workers: 0, autoCollect: false, rotation: 0, rotationStep: 45, missionIndex: 0, rebirths: 0, terrainSeed: 0, year: 1, researchTokens: 0, researchCount: 0, researchStartedAt: 0, researchEndsAt: 0, researchDuration: 0, researchPendingReward: 0 };
+  const START = { cash: 1000, owned: ['core1', 'core2', 'core3'], buildings: [], workers: 0, autoCollect: false, rotation: 0, rotationStep: 45, missionIndex: 0, rebirths: 0, terrainSeed: 0, year: 1, timeScale: 1, researchTokens: 0, researchCount: 0, researchStartedAt: 0, researchEndsAt: 0, researchDuration: 0, researchPendingReward: 0 };
   const storageKey = 'crownvale-browser-v1';
   let state = load();
   function applyTerrainLayout(seed=0) {
@@ -272,6 +279,11 @@
     ranch: { name: '목동', icon: '🐑', outdoor: true, color: '#a9c66d' },
     harbor: { name: '항구 노동자', icon: '⚓', outdoor: true, color: '#5aa9c4' },
     market: { name: '상인', icon: '🪙', outdoor: true, color: '#d98755' },
+    cafe: { name:'카페 종업원', icon:'☕', outdoor:false, color:'#5d9b87' },
+    generalStore: { name:'상점 직원', icon:'🎁', outdoor:false, color:'#d39a52' },
+    bakery: { name:'제빵사', icon:'🍞', outdoor:false, color:'#c7895f' },
+    arcade: { name:'게임센터 직원', icon:'🎮', outdoor:false, color:'#a06db5' },
+    coaster: { name:'놀이기구 관리인', icon:'🎢', outdoor:true, color:'#e1a84f' },
     mine: { name: '광부', icon: '⛏', outdoor: false, color: '#7f8791' },
     forge: { name: '대장장이', icon: '⚒', outdoor: false, color: '#b76b46' },
     warehouse: { name: '창고 노동자', icon: '📦', outdoor: false, color: '#9b7658' },
@@ -314,10 +326,23 @@
   function updateClockUI() {
     const hour = clockHour(), hours = Math.floor(hour), minutes = Math.floor((hour - hours) * 60);
     const daytime = isDaytime();
+    const elapsedWeeks=Math.floor(worldTime/DAY_CYCLE_SECONDS), month=Math.floor(elapsedWeeks/4)%12+1, week=elapsedWeeks%4+1;
+    els.year.textContent=`${kingdomYear()}년 ${month}월 ${week}주`;
     els.dayIcon.textContent = daytime ? '☀' : '☾';
     els.dayClock.textContent = `${daytime ? '낮' : '밤'} ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
     els.productionStatus.textContent = daytime ? '세금 100%' : '야간 세금 50%';
     els.dayClock.closest('.resource').classList.toggle('night', !daytime);
+  }
+  function updateTimeControls() {
+    const speed=Number(state.timeScale)||0;
+    $('#pauseTime').classList.toggle('active',speed===0);
+    document.querySelectorAll('.time-controls [data-speed]').forEach((button)=>button.classList.toggle('active',Number(button.dataset.speed)===speed));
+    $('#pauseTime').textContent=speed===0?'▶':'Ⅱ';
+    $('#pauseTime').title=speed===0?'시간 계속':'시간 일시정지';
+  }
+  function setTimeScale(speed) {
+    state.timeScale=[0,1,2,4].includes(Number(speed))?Number(speed):1;
+    updateTimeControls(); save(true); toast(state.timeScale?`왕국 시간 ${state.timeScale}배속`:'왕국 시간이 멈췄습니다.');
   }
 
   function cameraMovementScale() {
@@ -343,6 +368,7 @@
         const profile = { ...START, ...saved };
         if (!Number.isInteger(saved.missionIndex)) profile.missionIndex = saved.missionClaimed ? 1 : 0;
         if (!Number.isFinite(saved.year) || saved.year < 1) profile.year = Math.max(1, (saved.rebirths || 0) + 1);
+        if(![0,1,2,4].includes(Number(profile.timeScale))) profile.timeScale=1;
         return profile;
       }
     } catch (_) { /* start a new kingdom */ }
@@ -698,6 +724,34 @@
     if (item.tier >= 6) box(local(0, d*.44, h + 2.7), [w*.58, .18, .9], glow, r);
     if (item.tier >= 8) box(local(w*.34, d*.28, h + 4.1), [.24, 5.2, .24], glow, r);
   }
+  function drawLeisureBuildingDetail(item,local,r,w,h,d) {
+    if(!item.leisure)return;
+    const accent=item.trim||'#efc86d';
+    if(item.model==='cafe') {
+      for(let index=-3;index<=3;index++) box(local(index*w*.11,-d*.55,h*.5+1.5),[w*.11,.24,2.2],index%2?accent:'#f4eee0',r);
+      box(local(0,-d*.6,h+3.1),[4.4,.55,.25],'#6b4935',r); box(local(0,-d*.62,h+3.2),[1.5,.2,.2],accent,r);
+      for(const x of [-w*.38,w*.38]) { box(local(x,d*.62,1.1),[3.1,.25,3.1],'#8f6a49',r); box(local(x,d*.62,2),[.3,1.7,.3],'#5f4939',r); }
+    } else if(item.model==='generalStore') {
+      for(let index=-3;index<=3;index++) box(local(index*w*.105,-d*.55,h*.52+1.4),[w*.105,.24,2.3],index%2?'#f3efe2':accent,r);
+      box(local(0,-d*.62,h+3.2),[6,.7,.3],accent,r); box(local(-1,-d*.65,h+3.25),[.45,.28,.18],'#fff0a8',r); box(local(1,-d*.65,h+3.25),[.45,.28,.18],'#fff0a8',r);
+    } else if(item.model==='bakery') {
+      for(let index=-3;index<=3;index++) box(local(index*w*.11,-d*.55,h*.48+1.55),[w*.11,.24,2.1],index%2?'#f7e6d0':'#d96966',r);
+      box(local(0,0,h+4.25),[4.8,1.2,2.4],'#c68a4e',r); for(const x of [-1.45,0,1.45]) box(local(x,-.15,h+4.8),[1.1,.25,1.5],'#efc374',r);
+    } else if(item.model==='arcade') {
+      box(local(0,-d*.56,h*.68+1.6),[w*.78,.45,.3],'#f05cae',r); box(local(0,-d*.58,h*.68+1.65),[w*.48,.18,.15],'#72e7f1',r);
+      for(const x of [-w*.26,0,w*.26]) { box(local(x,-d*.58,3.2),[2.5,3.5,.25],'#27344f',r); box(local(x,-d*.61,3.65),[1.7,1.3,.16],x?accent:'#66e5ef',r); }
+      box(local(-1.2,0,h+4.7),[2.1,.55,.55],'#f3f3ed',r); box(local(1.2,0,h+4.7),[2.1,.55,.55],'#f3f3ed',r);
+    } else if(item.model==='coaster') {
+      const track=[]; for(let index=0;index<9;index++){const x=-w*.44+index*w*.11,y=4.2+Math.sin(index/8*Math.PI*2)*3.1+index*.42;track.push([x,y]);}
+      track.forEach(([x,y],index)=>{box(local(x,0,y/2+1),[.38,y,.38],'#59636a',r);box(local(x,0,y+1),[w*.115,.38,1.2],index%2?accent:'#e17942',r);});
+      box(local(-w*.1,0,6.2),[4.4,1.2,2.1],'#c94f52',r); for(const x of [-w*.18,-w*.1,-w*.02]) box(local(x,-.65,6.1),[.55,.55,.55],'#2d3948',r);
+    } else if(item.model==='townFountain') {
+      octagonalPad(local(0,0,1.05),w*.46,.42,'#c9d0ce'); octagonalPad(local(0,0,1.34),w*.34,.22,'#56b8d0'); box(local(0,0,3.1),[1.2,3.8,1.2],'#d9ddda',r); octagonalPad(local(0,0,5.05),2.2,.3,accent);
+    } else if(item.model==='flowerArch') {
+      for(const x of [-w*.34,w*.34]) { box(local(x,0,3.6),[1.1,6.2,1.1],'#4f8150',r); for(const y of [2,3.6,5.2,6.5]) box(local(x,0,y),[1.7,.65,1.7],y%2?accent:'#e77fa5',r); }
+      box(local(0,0,6.6),[w*.68,1.1,1.1],'#4f8150',r); for(let index=-3;index<=3;index++) box(local(index*w*.09,0,6.8),[1.2,.8,1.2],index%2?accent:'#e77fa5',r);
+    }
+  }
   function drawTerrainBuildingDetail(item,local,r,w,h,d) {
     if(!item.requiredTerrain)return;
     const model=item.terrainModel,accent=item.trim||({plains:'#e0c267',river:'#64c6db',lake:'#76d4df',forest:'#79ad62',mountain:'#c4c8c6'}[item.requiredTerrain]);
@@ -853,7 +907,7 @@
     if(item.category==='road') { drawRoadSegment(building); return; }
     // The placement preview uses the same solid model as the finished building
     // so overlapping translucent roof faces never make it look broken.
-    const alpha = 1, r = (building.rotation || 0) * Math.PI / 180, isPark = item.model === 'park';
+    const alpha = 1, r = (building.rotation || 0) * Math.PI / 180, isPark = item.model === 'park' || item.openAir;
     box({ x: position.x, y: 1.45, z: position.z }, [w, .8, d], '#68717c', r, alpha);
     if (isPark) {
       box({ x: position.x, y: 1.8, z: position.z }, [w-.55,.55,d-.55], item.body, r, alpha);
@@ -869,8 +923,9 @@
       for (const x of [-w*.25,w*.25]) box(local(x,-d/2-.12,h*.68+1), [1.25,1.3,.13], '#ffd16e', r, alpha);
     }
     drawCatalogDetail(item, local, r, w, h, d);
+    drawLeisureBuildingDetail(item,local,r,w,h,d);
     drawTerrainBuildingDetail(item,local,r,w,h,d);
-    drawUniqueExterior(item, building.type, local, r, w, h, d);
+    if(!item.openAir) drawUniqueExterior(item, building.type, local, r, w, h, d);
     if (isGhost) return;
     if (building.type === 'farm') {
       box(local(0, .2, h + 3.2), [.55, 5.4, .55], '#8c6544', r);
@@ -1086,6 +1141,11 @@
     ranch:{label:'목축 관리실',signature:'haystack',display:'#d9c58a',kinds:['haystack','trough','barrel','toolrack','bench','sack']},
     harbor:{label:'항만 작업실',signature:'fishnet',display:'#9bcbd4',kinds:['fishnet','barrel','crate','crane','rope','desk']},
     market:{label:'상인 판매실',signature:'marketstall',display:'#dfb28e',kinds:['marketstall','counter','scale','barrel','shelf','crate']},
+    cafe:{label:'왕국 카페 홀',signature:'counter',display:'#b5d4bd',kinds:['counter','dining','shelf','basket','stove','sofa']},
+    generalStore:{label:'왕국 상점 매장',signature:'marketstall',display:'#d8bd91',kinds:['marketstall','counter','shelf','basket','crate','scale']},
+    bakery:{label:'왕실 제빵실',signature:'stove',display:'#e0c69d',kinds:['stove','counter','workbench','basket','sack','shelf']},
+    arcade:{label:'왕국 게임 홀',signature:'console',display:'#c697d8',kinds:['console','machine','sofa','counter','lamp','server']},
+    coaster:{label:'놀이기구 관제실',signature:'console',display:'#e5bd68',kinds:['console','desk','machine','server','shelf','lamp']},
     mine:{label:'광산 작업소',signature:'crusher',display:'#aeb7c2',kinds:['ore','cart','crusher','toolrack','lantern','crate']},
     forge:{label:'대장장이 공방',signature:'bellows',display:'#d69a78',kinds:['forge','anvil','bellows','workbench','toolrack','barrel']},
     hall:{label:'왕국 행정실',signature:'throne',display:'#d8c4e1',kinds:['throne','writingdesk','bookcase','banner','statue','candelabra']},
@@ -1355,7 +1415,7 @@
       button.onclick = () => { selectedCategory = category.id; els.buildingList.scrollTop=0; updateUI(); }; els.categoryList.append(button);
     });
     const buildingEntries = Object.entries(BUILDINGS)
-      .filter(([, item]) => selectedCategory === 'all' || (selectedCategory==='terrain'?!!item.requiredTerrain:item.category === selectedCategory))
+      .filter(([, item]) => selectedCategory === 'all' || (selectedCategory==='terrain'?!!item.requiredTerrain:selectedCategory==='amenity'||selectedCategory==='attraction'?item.buildGroup===selectedCategory:item.category === selectedCategory))
       .sort(([, a], [, b]) => Number(isBuildingUnlocked(b)) - Number(isBuildingUnlocked(a)) || unlockYear(a) - unlockYear(b) || a.price - b.price);
     const previousBuildingScroll=els.buildingList.scrollTop;
     els.buildingList.innerHTML = ''; buildingEntries.forEach(([id,item]) => {
@@ -1443,6 +1503,10 @@
     event.preventDefault(); event.stopPropagation();
     els.buildingList.scrollTop+=event.deltaY;
   },{passive:false});
+  els.categoryList.addEventListener('wheel',(event)=>{
+    event.preventDefault(); event.stopPropagation();
+    els.categoryList.scrollLeft+=event.deltaY||event.deltaX;
+  },{passive:false});
   document.querySelectorAll('.tab').forEach((tab) => tab.onclick = () => { activeTab = tab.dataset.tab; document.querySelectorAll('.tab').forEach((button)=>button.classList.toggle('active',button===tab)); document.querySelectorAll('.panel').forEach((panel)=>panel.classList.toggle('active',panel.id===`${activeTab}Panel`)); });
   $('#rotateButton').onclick = () => { if (!selectedBuilding) return toast('먼저 건물을 선택하세요.'); state.rotation = (state.rotation + (state.rotationStep || 45)) % 360; updateUI(); };
   $('#rotationStep').onchange = (event) => { state.rotationStep = Number(event.target.value); save(true); updateUI(); };
@@ -1450,6 +1514,8 @@
   $('#rebirthButton').onclick = rebirth;
   $('#cancelButton').onclick = () => { selectedBuilding = null; selectedPlacedBuilding=null; deleteMode = false; updateUI(); };
   $('#saveButton').onclick = () => save();
+  $('#pauseTime').onclick=()=>setTimeScale(Number(state.timeScale)===0?1:0);
+  document.querySelectorAll('.time-controls [data-speed]').forEach((button)=>button.onclick=()=>setTimeScale(button.dataset.speed));
   $('#tutorialButton').onclick=openTutorial;
   $('#closeTutorial').onclick=closeTutorial;
   $('#tutorialPrev').onclick=()=>showTutorialPage(tutorialPageIndex-1);
@@ -1581,7 +1647,7 @@
   function pointInPolygon(x,y,points) { let inside=false; for(let i=0,j=points.length-1;i<points.length;j=i++) { const a=points[i],b=points[j]; if (((a.y>y)!==(b.y>y)) && (x < (b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x)) inside=!inside; } return inside; }
 
   function tick(now) {
-    const dt = Math.min(.25,(now-lastTime)/1000); lastTime=now;
+    const realDt = Math.min(.25,(now-lastTime)/1000), dt=realDt*(Number(state.timeScale)||0); lastTime=now;
     worldTime += dt;
     updateClockUI();
     const wallClock = Date.now();
@@ -1595,7 +1661,7 @@
     }
     els.storedTax.textContent = formatTax(storedTax());
     autoTimer += dt;
-    const move = CAMERA_KEYBOARD_SPEED * dt * cameraMovementScale(), c = Math.cos(camera.yaw), s = Math.sin(camera.yaw);
+    const move = CAMERA_KEYBOARD_SPEED * realDt * cameraMovementScale(), c = Math.cos(camera.yaw), s = Math.sin(camera.yaw);
     if (pressedKeys.has('w')) { camera.x += s * move; camera.z += c * move; }
     if (pressedKeys.has('s')) { camera.x -= s * move; camera.z -= c * move; }
     if (pressedKeys.has('a')) { camera.x -= c * move; camera.z += s * move; }
@@ -1604,5 +1670,5 @@
     if (autoTimer >= 10) { autoTimer = 0; if (state.autoCollect) collectTax(false); else if (state.workers > 0) { const targets=state.buildings.slice(0,state.workers); const amount=takeTax(targets); if (amount) state.cash += amount; } save(true); updateUI(); }
     requestAnimationFrame(tick);
   }
-  updateUI(); updateClockUI(); render(); requestAnimationFrame(tick);
+  updateUI(); updateClockUI(); updateTimeControls(); render(); requestAnimationFrame(tick);
 })();
