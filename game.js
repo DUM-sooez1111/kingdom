@@ -1241,6 +1241,43 @@
     else if (kind === 'robot') { b(-.4,-.34,.3,.8,.68,.9,'#7d929e'); b(-.32,-.28,1.2,.64,.56,.55,'#a9bdc5'); b(-.2,-.35,1.38,.14,.08,.12,accent); b(.08,-.35,1.38,.14,.08,.12,accent); for(const dx of [-.32,.22]) b(dx,-.2,0,.18,.18,.38,'#586771'); }
     else { b(-.15,-.12,0,.3,.3,.75,'#6c4b32'); b(-.6,-.55,.75,1.2,1.1,.9,'#4e8b55'); }
   }
+  function drawInteriorArchitecture(item,era,palette,accent,width,height,seed) {
+    const modern=era>=7, future=era>=9, amenity=item.buildGroup==='amenity', production=item.category==='production', residential=item.category==='residential';
+    const seam=shiftHexColor(palette.floor,modern?16:-14);
+    if(modern) {
+      for(let x=1;x<10;x+=1.25) interiorBox(x,.28,.185,.045,6.4,.025,seam,width,height);
+      for(let z=1.05;z<7;z+=1.15) interiorBox(.28,z,.187,9.45,.045,.025,seam,width,height);
+    } else {
+      for(let x=.85;x<10;x+=.72) interiorBox(x,.28,.185,.035,6.42,.022,seam,width,height);
+      for(const z of [2.45,4.65]) interiorBox(.28,z,.187,9.45,.035,.022,shiftHexColor(seam,8),width,height);
+    }
+    const rugColor=future?'#397d91':amenity?shiftHexColor(accent,-4):residential?shiftHexColor(accent,-12):'#48545b';
+    if(residential||amenity) {
+      interiorBox(3.05,2.65,.205,3.9,2.05,.055,shiftHexColor(rugColor,-18),width,height);
+      interiorBox(3.28,2.86,.262,3.44,1.63,.035,rugColor,width,height);
+      for(const x of [3.45,6.35]) interiorBox(x,3.02,.3,.18,1.28,.035,shiftHexColor(rugColor,20),width,height);
+    } else if(production) {
+      for(const x of [1.15,4.35,7.55]) { interiorBox(x,4.72,.205,2.15,1.22,.045,'#3f4b51',width,height); interiorBox(x+.18,4.9,.25,1.79,.12,.025,accent,width,height); }
+    } else {
+      interiorBox(4.05,.45,.205,1.9,5.95,.05,shiftHexColor(accent,-22),width,height);
+      interiorBox(4.35,.45,.258,1.3,5.95,.025,accent,width,height);
+    }
+    // A real entrance, skirting, curtains and ceiling lights make the room
+    // read as a furnished space instead of furniture placed on an empty box.
+    interiorBox(.28,5.2,.25,.09,1.35,2.65,'#543b31',width,height);
+    interiorBox(.39,5.34,.48,.05,1.07,2.2,shiftHexColor(palette.wall,-20),width,height);
+    interiorBox(.4,5.82,1.42,.045,.1,.14,accent,width,height);
+    if(residential||amenity) {
+      interiorBox(5.28,.36,1.2,.18,.08,2.1,shiftHexColor(accent,-8),width,height);
+      interiorBox(8.82,.36,1.2,.18,.08,2.1,shiftHexColor(accent,-8),width,height);
+      interiorBox(5.16,.35,3.08,3.86,.08,.16,accent,width,height);
+    }
+    for(const x of future?[3.2,6.8]:[5]) {
+      interiorBox(x-.04,3.45,3.25,.08,.08,.72,'#4d5960',width,height);
+      interiorBox(x-.34,3.15,3.08,.68,.68,.24,future?'#77eaf1':isDaytime()?'#f0c979':'#ffd58a',width,height);
+    }
+    if(seed%2===0) interiorBox(.38,.34,3.62,2.55,.08,.12,accent,width,height);
+  }
   function drawInteriorScene() {
     if (!interiorBuilding || els.interiorModal.hidden) return;
     const rect = interiorCanvas.getBoundingClientRect(), ratio = Math.min(window.devicePixelRatio || 1, 2), width = Math.max(1,rect.width), height = Math.max(1,rect.height);
@@ -1268,10 +1305,13 @@
       interiorBox(.39,1.18+i*1.35,1.5+(i%2)*.45,.05,.74,.6,palette.floor,width,height);
     }
     const stripeCount=1+(seed%3); for(let i=0;i<stripeCount;i++) interiorBox(.4,.28,3.45-i*.32,4.4,.08,.1,accent,width,height);
+    drawInteriorArchitecture(item,era,palette,accent,width,height,seed);
     queueInteriorFaces=true;
     const kinds=[...interiorKinds(item,interiorBuilding.type)]; if(era>=7) kinds.push('console','lamp'); if(era>=9) kinds.push('holo');
     const slots=[{x:1.45,z:1.15,rotation:Math.PI},{x:4.85,z:1.15,rotation:Math.PI},{x:8.15,z:1.15,rotation:Math.PI},{x:1.45,z:5.75,rotation:0},{x:4.85,z:5.75,rotation:0},{x:8.15,z:5.75,rotation:0}], count=item.category==='residential'?6:5+(seed%2);
-    const mandatory=[theme.signature]; if(item.catalog) mandatory.push(ERA_INTERIOR_FURNITURE[Math.max(0,Math.min(9,(item.tier||1)-1))]);
+    const mandatory=[theme.signature];
+    if(item.category==='residential') { const bed=kinds.find((kind)=>kind==='bed'||kind==='canopybed'); if(bed&&!mandatory.includes(bed)) mandatory.unshift(bed); }
+    if(item.catalog) mandatory.push(ERA_INTERIOR_FURNITURE[Math.max(0,Math.min(9,(item.tier||1)-1))]);
     // Furniture is anchored to the room, so rotating the camera never rotates
     // or slides the furniture itself. Every item keeps its assigned wall-facing
     // direction while the room is being inspected.
@@ -1281,7 +1321,7 @@
     let insideWorkers=0;
     if(item.category==='production'&&isDaytime()&&!workProfile.outdoor) insideWorkers=Math.min(3,item.people);
     else if(item.category==='residential') insideWorkers=Math.min(6,residentHomeCounts().get(interiorBuilding.id)||item.people||0);
-    const walkingLoop=[[2.25,2.35],[4.9,2.2],[7.5,2.45],[7.35,4.35],[5.05,4.7],[2.4,4.3]];
+    const walkingLoop=[[3.15,3.05],[4.35,2.72],[5.7,2.82],[6.65,3.38],[5.75,4.12],[4.3,4.18],[3.18,3.72]];
     for(let i=0;i<insideWorkers;i++) {
       let x,z;
       if(item.category==='residential') {
