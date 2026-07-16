@@ -1188,6 +1188,15 @@
     for(const kind of theme.kinds) if(!kinds.includes(kind)) kinds.push(kind);
     return kinds;
   }
+  function furnitureFamily(kind) {
+    const groups={
+      sleep:['bed','canopybed'], table:['table','dining','map'], desk:['desk','writingdesk'], seating:['sofa','bench','throne'],
+      shelving:['shelf','bookcase'], storage:['chest','crate','sack','barrel','grainbin','basket'], heat:['hearth','forge','stove'],
+      rack:['toolrack','weaponrack','fishnet','trellis'], light:['lamp','lantern','candle','candelabra','lamppost'], technology:['console','holo','server','appliance','solar'],
+    };
+    for(const [family,kinds] of Object.entries(groups)) if(kinds.includes(kind)) return family;
+    return kind;
+  }
   function drawInteriorFurniture(kind,x,z,accent,width,height,rotation=0) {
     const c=Math.cos(rotation),s=Math.sin(rotation);
     const b = (dx,dz,y,sx,sz,sy,color) => {
@@ -1195,14 +1204,14 @@
       interiorBox(x+rotatedX-sx/2,z+rotatedZ-sz/2,y,sx,sz,sy,color,width,height,rotation);
     };
     if (kind === 'bed') { b(-.88,-.47,0,2.08,1.14,.18,'#5c4035'); b(-.8,-.4,.18,1.92,1,.38,'#80584a'); b(-.71,-.31,.56,1.74,.82,.22,accent); b(-.62,-.23,.78,.58,.66,.2,'#f1dfbd'); b(.08,-.23,.76,.78,.66,.08,'#d9c8aa'); }
-    else if (kind === 'canopybed') { b(-.85,-.5,0,2.05,1.18,.48,'#765246'); b(-.75,-.4,.48,1.85,.98,.3,accent); for(const dx of [-.82,.92]) for(const dz of [-.47,.55]) b(dx,dz,.1,.12,.12,2.1,'#6a4937'); b(-.82,.46,1.75,1.86,.12,.25,accent); }
+    else if (kind === 'canopybed') { b(-.9,-.5,0,2.08,1.14,.2,'#573d31'); b(-.82,-.42,.2,1.92,.98,.38,'#765246'); b(-.73,-.33,.58,1.74,.8,.22,accent); b(-.64,-.24,.8,.58,.64,.18,'#f0ddb7'); for(const dx of [-.84,.98]) for(const dz of [-.44,.5]) b(dx,dz,.08,.1,.1,1.7,'#62432f'); b(-.82,.43,1.65,1.86,.1,.16,'#d3ad65'); b(-.76,.39,1.1,1.74,.07,.5,shiftHexColor(accent,18)); }
     else if (kind === 'table' || kind === 'dining' || kind === 'map') { const long=kind==='dining'; b(long?-1:-.75,long?-.5:-.53,.79,long?2.1:1.6,long?1.05:1.1,.2,kind==='map'?'#547f94':'#895f3f'); b(long?-.9:-.65,long?-.4:-.43,.99,long?1.9:1.4,long?.85:.9,.07,accent); for(const [dx,dz] of [[long?-.82:-.57,-.39],[long?.66:.43,-.39],[long?-.82:-.57,.28],[long?.66:.43,.28]]) b(dx,dz,0,.16,.16,.82,'#563a2a'); if(kind==='map') { b(-.5,-.3,1.07,1.1,.62,.05,'#ead7a0'); b(-.38,-.32,1.13,.08,.5,.04,'#b67851'); } }
     else if (kind === 'desk' || kind === 'writingdesk') { b(-.82,-.44,.72,1.7,.9,.22,'#7f573b'); b(-.72,-.34,0,.2,.2,.75,'#513728'); b(.54,-.34,0,.2,.2,.75,'#513728'); b(-.52,-.34,.95,.82,.52,.07,kind==='writingdesk'?'#f1dfb2':accent); b(.34,-.26,.92,.36,.34,.22,'#554234'); b(-.7,.18,.25,1.45,.1,.32,'#67452f'); }
     else if (kind === 'sofa') { b(-.98,-.5,.1,2.06,1.02,.22,'#59434a'); b(-.86,-.4,.32,1.82,.78,.42,accent); b(-.78,-.31,.73,.78,.57,.16,shiftHexColor(accent,18)); b(.08,-.31,.73,.78,.57,.16,shiftHexColor(accent,8)); b(-.86,.24,.45,1.82,.22,.92,'#735966'); b(-1.05,-.37,.38,.24,.72,.62,'#735966'); b(.96,-.37,.38,.24,.72,.62,'#735966'); }
     else if (kind === 'wardrobe') { b(-.78,-.39,0,1.6,.78,2.28,'#6f4c36'); b(-.69,-.46,.14,.72,.1,1.96,'#9a6c48'); b(.04,-.46,.14,.72,.1,1.96,'#8c6042'); b(-.66,-.5,1.18,1.38,.06,.08,'#d2aa62'); b(-.1,-.54,1.02,.1,.08,.14,'#ead084'); b(.22,-.54,1.02,.1,.08,.14,'#ead084'); b(-.72,-.34,2.28,1.48,.66,.13,accent); }
     else if (kind === 'chest' || kind === 'crate' || kind === 'sack') { const sack=kind==='sack'; b(-.56,-.5,0,1.12,1,sack?.7:1,sack?'#b99a67':'#845a38'); if(!sack) { b(-.54,-.48,.48,1.08,.96,.16,accent); b(-.08,-.54,.22,.16,.08,.52,'#d5b15e'); } else { b(-.4,-.34,.7,.8,.68,.14,'#d7bc83'); b(-.2,-.38,.82,.4,.08,.12,accent); } }
     else if (kind === 'hearth' || kind === 'forge' || kind === 'stove') { const compact=kind==='stove'; b(compact?-.48:-.6,compact?-.4:-.5,0,compact?.95:1.2,compact?.8:1,compact?1:1.25,'#4b4a4c'); b(compact?-.28:-.35,compact?-.42:-.52,.35,compact?.55:.7,.12,.45,'#e77835'); b(compact?.18:.2,.1,compact?.85:1.1,.28,.28,compact?1.35:1.8,'#565b61'); }
-    else if (kind === 'shelf' || kind === 'bookcase') { b(-.65,-.24,0,1.3,.45,2,kind==='bookcase'?'#594235':'#6c4d36'); for(const y of [.55,1.15,1.75]) { b(-.58,-.29,y,1.16,.55,.12,accent); if(kind==='bookcase') for(let i=0;i<4;i++) b(-.5+i*.28,-.34,y+.12,.18,.12,.32,['#8e4d42','#52728b','#9b7a43','#6f5b88'][i]); } }
+    else if (kind === 'shelf' || kind === 'bookcase') { b(-.62,-.2,0,1.24,.4,1.9,kind==='bookcase'?'#594235':'#6c4d36'); for(const y of [.5,1.08,1.66]) { b(-.56,-.25,y,1.12,.48,.1,accent); if(kind==='bookcase') for(let i=0;i<4;i++) b(-.48+i*.26,-.29,y+.1,.16,.1,.28,['#8e4d42','#52728b','#9b7a43','#6f5b88'][i]); } b(-.58,-.18,1.9,1.16,.34,.12,'#7c5a3e'); }
     else if (kind === 'anvil') { b(-.45,-.35,0,.9,.7,.65,'#565c65'); b(-.7,-.48,.65,1.4,.95,.35,'#747c86'); }
     else if (kind === 'crop') { for(let i=-1;i<=1;i++) { b(i*.35,-.4,0,.16,.16,.8,'#568948'); b(i*.35-.08,-.48,.8,.32,.32,.25,'#8ebc59'); } }
     else if (kind === 'counter') { b(-.85,-.35,0,1.7,.7,1.05,'#855c3d'); b(-.95,-.43,1.05,1.9,.86,.18,accent); }
@@ -1308,20 +1317,26 @@
     drawInteriorArchitecture(item,era,palette,accent,width,height,seed);
     queueInteriorFaces=true;
     const kinds=[...interiorKinds(item,interiorBuilding.type)]; if(era>=7) kinds.push('console','lamp'); if(era>=9) kinds.push('holo');
-    const slots=[{x:1.45,z:1.15,rotation:Math.PI},{x:4.85,z:1.15,rotation:Math.PI},{x:8.15,z:1.15,rotation:Math.PI},{x:1.45,z:5.75,rotation:0},{x:4.85,z:5.75,rotation:0},{x:8.15,z:5.75,rotation:0}], count=item.category==='residential'?6:5+(seed%2);
-    const mandatory=[theme.signature];
-    if(item.category==='residential') { const bed=kinds.find((kind)=>kind==='bed'||kind==='canopybed'); if(bed&&!mandatory.includes(bed)) mandatory.unshift(bed); }
+    // Five staggered zones keep large furniture from sharing the same
+    // isometric sight-line. Back and front rows deliberately use different x
+    // positions so furniture stays visually separate at the default angle.
+    const slots=[{x:1.2,z:1.02,rotation:Math.PI},{x:4.75,z:.98,rotation:Math.PI},{x:8.35,z:1.04,rotation:Math.PI},{x:1.8,z:5.78,rotation:0},{x:7.35,z:5.82,rotation:0}], count=5;
+    const mandatory=[];
+    if(item.category==='residential') { const bed=kinds.find((kind)=>kind==='bed'||kind==='canopybed'); if(bed) mandatory.push(bed); }
+    mandatory.push(theme.signature);
     if(item.catalog) mandatory.push(ERA_INTERIOR_FURNITURE[Math.max(0,Math.min(9,(item.tier||1)-1))]);
     // Furniture is anchored to the room, so rotating the camera never rotates
     // or slides the furniture itself. Every item keeps its assigned wall-facing
     // direction while the room is being inspected.
-    const furniture=[]; for(let i=0;i<count;i++) { const slot=slots[i%slots.length], kind=i<mandatory.length?mandatory[i]:kinds[(i+seed)%kinds.length]; furniture.push({kind,x:slot.x,z:slot.z,rotation:slot.rotation}); }
+    const candidates=[...mandatory,...kinds.slice(seed%Math.max(1,kinds.length)),...kinds.slice(0,seed%Math.max(1,kinds.length))], chosen=[], usedFamilies=new Set();
+    for(const kind of candidates) { const family=furnitureFamily(kind); if(usedFamilies.has(family)) continue; usedFamilies.add(family); chosen.push(kind); if(chosen.length===count) break; }
+    const furniture=chosen.map((kind,index)=>({kind,x:slots[index].x,z:slots[index].z,rotation:slots[index].rotation}));
     furniture.sort((a,b)=>interiorDepth(a.x,a.z)-interiorDepth(b.x,b.z)); furniture.forEach((entry)=>drawInteriorFurniture(entry.kind,entry.x,entry.z,accent,width,height,entry.rotation));
     const workProfile=item.category==='residential'?homeJobProfile(item):jobProfile(interiorBuilding);
     let insideWorkers=0;
     if(item.category==='production'&&isDaytime()&&!workProfile.outdoor) insideWorkers=Math.min(3,item.people);
     else if(item.category==='residential') insideWorkers=Math.min(6,residentHomeCounts().get(interiorBuilding.id)||item.people||0);
-    const walkingLoop=[[3.15,3.05],[4.35,2.72],[5.7,2.82],[6.65,3.38],[5.75,4.12],[4.3,4.18],[3.18,3.72]];
+    const walkingLoop=[[3.45,3.12],[4.35,2.82],[5.45,2.88],[6.25,3.4],[5.45,3.98],[4.3,4.05],[3.48,3.68]];
     for(let i=0;i<insideWorkers;i++) {
       let x,z;
       if(item.category==='residential') {
