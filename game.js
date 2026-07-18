@@ -32,7 +32,12 @@
     generalStore: { name:'왕국 상점', icon:'🎁', category:'production', buildGroup:'amenity', price:900, people:5, body:'#d0aa75', roof:'#3d7890', trim:'#f2b45c', size:[14,7,12], unlockYear:3, model:'generalStore', leisure:true },
     bakery: { name:'왕실 베이커리', icon:'🍞', category:'production', buildGroup:'amenity', price:780, people:4, body:'#d9b77f', roof:'#9a5f45', trim:'#f0c477', size:[15,7,12], unlockYear:2, model:'bakery', leisure:true },
     arcade: { name:'왕국 게임센터', icon:'🎮', category:'production', buildGroup:'amenity', price:1500, people:6, body:'#76568f', roof:'#403b68', trim:'#ef69b7', size:[16,8,14], unlockYear:5, model:'arcade', leisure:true },
-    royalCoaster: { name:'왕실 순환 열차', icon:'🎢', category:'production', buildGroup:'attraction', price:3600, people:10, body:'#496d70', roof:'#b24c50', trim:'#f2c84e', size:[22,12,20], unlockYear:6, model:'coaster', leisure:true, openAir:true },
+    royalCarousel: { name:'왕실 회전목마', icon:'🎠', category:'production', buildGroup:'attraction', price:1200, people:4, body:'#7a9b68', roof:'#b9505d', trim:'#f4d06f', size:[42,9,42], unlockYear:2, model:'carousel', leisure:true, openAir:true, fullTile:true },
+    bumperCars: { name:'왕국 범퍼카', icon:'🚗', category:'production', buildGroup:'attraction', price:2100, people:6, body:'#547c83', roof:'#76548e', trim:'#72e7f1', size:[42,8,42], unlockYear:4, model:'bumperCars', leisure:true, openAir:true, fullTile:true },
+    ferrisWheel: { name:'왕실 대관람차', icon:'🎡', category:'production', buildGroup:'attraction', price:2800, people:8, body:'#527f72', roof:'#42658b', trim:'#ffd568', size:[42,22,42], unlockYear:5, model:'ferrisWheel', leisure:true, openAir:true, fullTile:true },
+    royalCoaster: { name:'왕실 순환 열차', icon:'🎢', category:'production', buildGroup:'attraction', price:3600, people:10, body:'#496d70', roof:'#b24c50', trim:'#f2c84e', size:[42,12,42], unlockYear:6, model:'coaster', leisure:true, openAir:true, fullTile:true },
+    dropTower: { name:'왕국 낙하 탑', icon:'🗼', category:'production', buildGroup:'attraction', price:4800, people:12, body:'#405f72', roof:'#713f66', trim:'#ff9c55', size:[42,26,42], unlockYear:7, researchCost:2, model:'dropTower', leisure:true, openAir:true, fullTile:true },
+    royalWaterRide: { name:'왕실 급류타기', icon:'🌊', category:'production', buildGroup:'attraction', price:6500, people:15, body:'#3e788b', roof:'#315879', trim:'#82e6f2', size:[42,14,42], unlockYear:9, researchCost:5, model:'waterRide', leisure:true, openAir:true, fullTile:true },
     townFountain: { name:'왕국 중앙 분수', icon:'⛲', category:'decoration', price:520, people:0, body:'#78b7c6', roof:'#d2d8d5', trim:'#8ce3ee', size:[14,4,14], model:'townFountain', leisure:true, openAir:true, noInterior:true },
     flowerArch: { name:'왕실 꽃 아치', icon:'🌸', category:'decoration', price:750, people:0, body:'#65a267', roof:'#d8789d', trim:'#f2a9c4', size:[14,6,10], unlockYear:2, model:'flowerArch', leisure:true, openAir:true, noInterior:true },
     dirtRoad: { name: '흙길', icon: '🟫', category: 'road', price: 15, income: 0, people: 0, body: '#9a7048', trim: '#c19868', size: [10, .2, 4], roadStyle: 'dirt', noInterior: true },
@@ -139,7 +144,7 @@
   const TUTORIAL_PAGES = [
     { kicker:'제1장 · 왕국의 시작', title:'Crownvale에 오신 것을 환영합니다', lead:'작은 영토를 거대한 시대 왕국으로 성장시키세요.', tips:[['첫 번째 목표','주거 건물을 지어 주민을 늘리고 생산 건물로 세금을 모으세요.'],['왕실 의뢰','왼쪽 의뢰를 완료하면 골드 보상을 받아 더 빠르게 확장할 수 있습니다.'],['저장','상단의 ▣ 버튼을 누르면 현재 왕국이 브라우저에 저장됩니다.'],['메뉴','오른쪽 메뉴는 ✕로 닫고 ☰ 버튼으로 언제든 다시 열 수 있습니다.']] },
     { kicker:'제2장 · 카메라', title:'왕국을 자유롭게 둘러보기', lead:'높은 시점에서 영토 전체를 살펴보고 원하는 장소로 이동하세요.', tips:[['이동','<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>로 화면을 이동합니다.'],['회전','<kbd>Q</kbd>와 <kbd>E</kbd>로 카메라 방향을 회전합니다.'],['확대와 축소','게임 화면 위에서 마우스 휠을 돌려 가까이 또는 멀리 봅니다.'],['마우스 이동','마우스 오른쪽 버튼을 누른 채 드래그해 카메라를 움직입니다.']] },
-    { kicker:'제3장 · 건설', title:'건물을 선택하고 배치하기', lead:'건설 메뉴에서 시대와 목적에 맞는 건물을 선택하세요.', tips:[['건물 찾기','건설 목록에서는 위아래로, 카테고리 줄에서는 좌우로 마우스 휠을 움직여 원하는 종류를 찾습니다.'],['배치','건물을 선택한 뒤 소유한 영토를 좌클릭하면 실루엣 위치에 실제 건물이 설치됩니다.'],['회전','<kbd>R</kbd>을 누르거나 회전 버튼을 사용합니다. 아래 각도 메뉴에서 15°·30°·45°·90°를 고릅니다.'],['철거','삭제 버튼을 켜고 건물을 선택하면 가격의 50%를 돌려받습니다.']] },
+    { kicker:'제3장 · 건설', title:'건물을 선택하고 배치하기', lead:'건설 메뉴에서 시대와 목적에 맞는 건물을 선택하세요.', tips:[['건물 찾기','건설 목록에서는 위아래로, 카테고리 줄에서는 좌우로 마우스 휠을 움직여 원하는 종류를 찾습니다.'],['배치','건물을 선택한 뒤 소유한 영토를 좌클릭하면 실루엣 위치에 실제 건물이 설치됩니다.'],['놀이기구','놀이기구는 영토 한 칸의 중앙에 설치되며 그 칸 전체를 사용합니다. 빈 영토를 준비하세요.'],['철거','삭제 버튼을 켜고 건물을 선택하면 가격의 50%를 돌려받습니다.']] },
     { kicker:'제4장 · 길과 주민', title:'살아 움직이는 왕국 만들기', lead:'길을 연결하면 주민들이 왕국 전역의 길망을 따라 이동합니다.', tips:[['길 연결','10m 길 조각을 이어 놓으세요. X자와 T자 교차로는 자동으로 부드럽게 연결됩니다.'],['백수의 산책','직업이 없는 백수 주민은 낮에 길을 따라 천천히 산책하고, 교차로에서 무작위 방향을 고릅니다.'],['길이 없을 때','설치된 길이 하나도 없으면 주민은 자기 집 출입문 앞에서 기다립니다.'],['밤','밤이 되면 모든 주민이 집 안으로 돌아가 거리에서 보이지 않습니다.']] },
     { kicker:'제5장 · 세금과 시간', title:'낮과 밤의 세금 관리', lead:'건물이 만든 세금은 쌓인 뒤 직접 또는 자동으로 수금됩니다.', tips:[['시간 속도','기본은 일시정지와 1배속이며 환생 10회에 2배속, 환생 20회에 4배속이 해금됩니다.'],['인기도','편의시설·놀이기구·장식은 인기도를 높입니다. 인기도 1점마다 모든 세금이 0.5% 증가합니다.'],['낮과 밤','낮에는 기본 세금 100%, 밤에는 50%를 획득하며 모든 세금 +% 보너스는 유지됩니다.'],['수입 증가','비싼 건물, 연구 토큰, 환생, 랜드마크와 인기도를 활용하면 세금이 크게 증가합니다.']] },
     { kicker:'제6장 · 영토와 지형', title:'448칸의 왕국 확장', lead:'평원·숲·산·강·호수가 어우러진 영토를 확장하세요.', tips:[['영토 구입','영토 탭에서 잠긴 땅을 골드로 구입해 건설 공간을 넓힙니다.'],['지형 전용','지형 전용 카테고리에서 각 자연환경에 맞는 특별 건물을 확인합니다.'],['강과 호수','강은 한 줄의 자연스러운 물길로 이어지고, 호수는 여러 영토에 걸친 넓은 물 지형으로 생성됩니다.'],['자연 군락','숲·산·호수는 군락으로 모이며 환생할 때 위치와 모양이 달라집니다.']] },
@@ -248,6 +253,13 @@
     });
   }
   applyTerrainLayout(state.terrainSeed||0);
+  // Attractions always occupy their entire saved land, including rides that
+  // were placed before the full-tile attraction rule was introduced.
+  state.buildings.forEach((building)=>{
+    if(!BUILDINGS[building.type]?.fullTile) return;
+    const land=LANDS.find((entry)=>entry.id===building.landId);
+    if(land) { building.x=land.x; building.z=land.z; }
+  });
   let selectedBuilding = null;
   let tutorialPageIndex = Math.max(0,Math.min(TUTORIAL_PAGES.length-1,Number(localStorage.getItem('crownvale-tutorial-page'))||0));
   let selectedPlacedBuilding = null;
@@ -288,6 +300,11 @@
     bakery: { name:'제빵사', icon:'🍞', outdoor:false, color:'#c7895f' },
     arcade: { name:'게임센터 직원', icon:'🎮', outdoor:false, color:'#a06db5' },
     coaster: { name:'놀이기구 관리인', icon:'🎢', outdoor:true, color:'#e1a84f' },
+    carousel: { name:'회전목마 관리인', icon:'🎠', outdoor:true, color:'#e0b95b' },
+    bumperCars: { name:'범퍼카 안전요원', icon:'🚗', outdoor:true, color:'#8acdd7' },
+    ferrisWheel: { name:'대관람차 안내원', icon:'🎡', outdoor:true, color:'#e7c965' },
+    dropTower: { name:'낙하 탑 안전요원', icon:'🗼', outdoor:true, color:'#e88d58' },
+    waterRide: { name:'급류타기 안전요원', icon:'🌊', outdoor:true, color:'#6fcddd' },
     mine: { name: '광부', icon: '⛏', outdoor: false, color: '#7f8791' },
     forge: { name: '대장장이', icon: '⚒', outdoor: false, color: '#b76b46' },
     warehouse: { name: '창고 노동자', icon: '📦', outdoor: false, color: '#9b7658' },
@@ -555,6 +572,7 @@
     return LANDS.find((land) => Math.abs(position.x - land.x) <= 24 && Math.abs(position.z - land.z) <= 24);
   }
   function footprint(item, rotation) {
+    if (item.fullTile) return [42, 42];
     const angle = (rotation || 0) * Math.PI / 180, c = Math.abs(Math.cos(angle)), s = Math.abs(Math.sin(angle));
     return [item.size[0] * c + item.size[2] * s, item.size[0] * s + item.size[2] * c];
   }
@@ -569,6 +587,7 @@
     const margin = 1;
     let x = Math.max(land.x - 24 + width * .5 + margin, Math.min(land.x + 24 - width * .5 - margin, snap(world.x)));
     let z = Math.max(land.z - 24 + depth * .5 + margin, Math.min(land.z + 24 - depth * .5 - margin, snap(world.z)));
+    if(item.fullTile) { x=land.x; z=land.z; }
     if(item.bridgeStyle) {
       const row=Math.round((land.z-MAP_GRID.minZ)/MAP_GRID.tile);
       x=MAP_GRID.minX+riverCenterColumn(row,state.terrainSeed||0)*MAP_GRID.tile; z=land.z;
@@ -582,6 +601,7 @@
     const occupied = state.buildings.some((building) => {
       if (building.landId !== land.id) return false;
       const otherItem=BUILDINGS[building.type], [otherWidth, otherDepth] = footprint(otherItem, building.rotation);
+      if(item.fullTile||otherItem.fullTile) return true;
       let padding=.6;
       if(item.category==='road'&&otherItem.category==='road') {
         const directionDifference=Math.abs(((state.rotation-(building.rotation||0))%180+180)%180);
@@ -664,6 +684,7 @@
   }
   function drawTerrainFeatures(land) {
     const terrain=land.terrain||'plains', seed=designSeed(land.id), occupiedPoints=state.buildings.filter((building)=>building.landId===land.id);
+    if(occupiedPoints.some((building)=>BUILDINGS[building.type].fullTile)) return;
     const clearAt=(x,z)=>!occupiedPoints.some((building)=>Math.hypot(building.x-x,building.z-z)<10);
     if(terrain==='forest') {
       const points=[[-15,-14],[14,13],[(seed%11)-5,15]];
@@ -756,9 +777,26 @@
       for(const x of [-w*.26,0,w*.26]) { box(local(x,-d*.58,3.2),[2.5,3.5,.25],'#27344f',r); box(local(x,-d*.61,3.65),[1.7,1.3,.16],x?accent:'#66e5ef',r); }
       box(local(-1.2,0,h+4.7),[2.1,.55,.55],'#f3f3ed',r); box(local(1.2,0,h+4.7),[2.1,.55,.55],'#f3f3ed',r);
     } else if(item.model==='coaster') {
-      const track=[]; for(let index=0;index<9;index++){const x=-w*.44+index*w*.11,y=4.2+Math.sin(index/8*Math.PI*2)*3.1+index*.42;track.push([x,y]);}
-      track.forEach(([x,y],index)=>{box(local(x,0,y/2+1),[.38,y,.38],'#59636a',r);box(local(x,0,y+1),[w*.115,.38,1.2],index%2?accent:'#e17942',r);});
-      box(local(-w*.1,0,6.2),[4.4,1.2,2.1],'#c94f52',r); for(const x of [-w*.18,-w*.1,-w*.02]) box(local(x,-.65,6.1),[.55,.55,.55],'#2d3948',r);
+      const track=[]; for(let index=0;index<11;index++){const x=-w*.4+index*w*.08,y=5+Math.sin(index/10*Math.PI*2)*3.8+index*.38;track.push([x,y]);}
+      track.forEach(([x,y],index)=>{box(local(x,0,y/2+1),[.38,y,.38],'#59636a',r);box(local(x,0,y+1),[w*.085,.38,1.2],index%2?accent:'#e17942',r);});
+      box(local(-w*.1,0,7),[4.4,1.2,2.1],'#c94f52',r); for(const x of [-w*.18,-w*.1,-w*.02]) box(local(x,-.65,6.9),[.55,.55,.55],'#2d3948',r);
+    } else if(item.model==='carousel') {
+      octagonalPad(local(0,0,2.15),13,.55,'#d7b666'); box(local(0,0,7.2),[1.1,10.5,1.1],accent,r);
+      prism(local(0,0,0),29,29,10.2,15.5,item.roof,r);
+      for(let index=0;index<10;index++) { const angle=index/10*Math.PI*2,x=Math.cos(angle)*9,z=Math.sin(angle)*9; box(local(x,z,6),[.25,7,.25],accent,r); box(local(x,z,3.25),[2.3,1.2,.9],index%2?'#f0e2b4':'#d66f75',r+angle); }
+    } else if(item.model==='bumperCars') {
+      box(local(0,0,2.25),[34,.45,30],'#354750',r); for(const z of [-15,15]) box(local(0,z,3.2),[36,2,.5],accent,r); for(const x of [-18,18]) box(local(x,0,3.2),[.5,2,30],accent,r);
+      [[-11,-8,'#e65f59'],[-3,6,'#f0c94c'],[8,-5,'#5fc5df'],[11,8,'#a978d1'],[-12,9,'#71bd74'],[2,-8,'#f28f55']].forEach(([x,z,color],index)=>{ box(local(x,z,3),[4,1.2,2.6],color,r+(index%3-1)*.35); box(local(x,z,3.9),[1.7,.75,1.5],'#d6f2f5',r+(index%3-1)*.35); });
+    } else if(item.model==='ferrisWheel') {
+      for(const x of [-6,6]) box(local(x,0,10),[1,17,1],'#53636d',r+(x<0?-.28:.28)); box(local(0,0,11),[2.4,2.4,2.4],accent,r);
+      for(let index=0;index<12;index++) { const angle=index/12*Math.PI*2,x=Math.cos(angle)*13,y=11+Math.sin(angle)*13; box(local(x,0,y),[3.2,2.2,2.5],index%2?'#df6b64':'#f1ca58',r); }
+      box(local(0,0,11),[27,.55,.55],accent,r); box(local(0,0,11),[.55,27,.55],accent,r);
+    } else if(item.model==='dropTower') {
+      box(local(0,0,14.5),[2.8,27,2.8],'#58646e',r); box(local(0,0,28.5),[5.5,1.2,5.5],accent,r); octagonalPad(local(0,0,11.5),8,1.4,item.roof);
+      for(let index=0;index<8;index++){const angle=index/8*Math.PI*2;box(local(Math.cos(angle)*6,Math.sin(angle)*6,10.5),[1.7,2,1.7],index%2?accent:'#e66958',r+angle);}
+    } else if(item.model==='waterRide') {
+      box(local(0,0,2.2),[35,.5,32],'#397f9b',r); for(const z of [-12,0,12]) { box(local(0,z,3),[31,.65,4.2],z?accent:'#a9eef2',r); box(local(z>0?12:-12,z,4.25),[5,2.1,3.1],z?'#e28255':'#e5c457',r); }
+      for(const x of [-17,17]) box(local(x,0,3.4),[1,2.8,33],'#d4bc84',r);
     } else if(item.model==='townFountain') {
       octagonalPad(local(0,0,1.05),w*.46,.42,'#c9d0ce'); octagonalPad(local(0,0,1.34),w*.34,.22,'#56b8d0'); box(local(0,0,3.1),[1.2,3.8,1.2],'#d9ddda',r); octagonalPad(local(0,0,5.05),2.2,.3,accent);
     } else if(item.model==='flowerArch') {
@@ -922,9 +960,10 @@
     // The placement preview uses the same solid model as the finished building
     // so overlapping translucent roof faces never make it look broken.
     const alpha = 1, r = (building.rotation || 0) * Math.PI / 180, isPark = item.model === 'park' || item.openAir;
-    box({ x: position.x, y: 1.45, z: position.z }, [w, .8, d], '#68717c', r, alpha);
+    const platformRotation=item.fullTile?0:r;
+    box({ x: position.x, y: 1.45, z: position.z }, [w, .8, d], '#68717c', platformRotation, alpha);
     if (isPark) {
-      box({ x: position.x, y: 1.8, z: position.z }, [w-.55,.55,d-.55], item.body, r, alpha);
+      box({ x: position.x, y: 1.8, z: position.z }, [w-.55,.55,d-.55], item.body, platformRotation, alpha);
     } else {
       box({ x: position.x, y: 1.8 + h/2, z: position.z }, [w-.55,h,d-.55], item.body, r, alpha);
       prism(position, w+1, d+1, h+1.55, h+4, item.roof, r, alpha);
@@ -1160,6 +1199,11 @@
     bakery:{label:'왕실 제빵실',signature:'stove',display:'#e0c69d',kinds:['stove','counter','workbench','basket','sack','shelf']},
     arcade:{label:'왕국 게임 홀',signature:'console',display:'#c697d8',kinds:['console','machine','sofa','counter','lamp','server']},
     coaster:{label:'놀이기구 관제실',signature:'console',display:'#e5bd68',kinds:['console','desk','machine','server','shelf','lamp']},
+    carousel:{label:'회전목마 운영실',signature:'console',display:'#e9c681',kinds:['console','desk','machine','shelf','lamp','server']},
+    bumperCars:{label:'범퍼카 안전실',signature:'console',display:'#8fd4dc',kinds:['console','desk','machine','server','shelf','lamp']},
+    ferrisWheel:{label:'대관람차 안내실',signature:'console',display:'#e6c868',kinds:['console','desk','machine','server','shelf','lamp']},
+    dropTower:{label:'낙하 탑 관제실',signature:'console',display:'#dc936c',kinds:['console','desk','machine','server','shelf','lamp']},
+    waterRide:{label:'급류타기 안전실',signature:'console',display:'#79cad7',kinds:['console','desk','machine','server','shelf','lamp']},
     mine:{label:'광산 작업소',signature:'crusher',display:'#aeb7c2',kinds:['ore','cart','crusher','toolrack','lantern','crate']},
     forge:{label:'대장장이 공방',signature:'bellows',display:'#d69a78',kinds:['forge','anvil','bellows','workbench','toolrack','barrel']},
     hall:{label:'왕국 행정실',signature:'throne',display:'#d8c4e1',kinds:['throne','writingdesk','bookcase','banner','statue','candelabra']},
@@ -1500,7 +1544,7 @@
         if(landmarkPlaced) detail='왕국에 이미 설치됨 · 종류별 1개 제한';
         else if(item.category==='road') detail=item.bridgeStyle?`강을 건너는 ${item.size[0]}m 다리 · 강 지형 전용 · 회전 배치 가능`:`길 조각 ${item.size[0]}m · 회전 배치 가능`;
         else if(item.category==='residential') detail=`세금 +${item.income} / 10초 · 주민 +${item.people}`;
-        else if(item.category==='production') detail=`세금 +${item.income} / 10초 · 가격의 1% 추가 · 일자리 ${item.people}${productionNote}${item.popularity?` · 인기도 +${item.popularity}`:''}`;
+        else if(item.category==='production') detail=`세금 +${item.income} / 10초 · 가격의 1% 추가 · 일자리 ${item.people}${productionNote}${item.popularity?` · 인기도 +${item.popularity}`:''}${item.fullTile?' · 영토 한 칸 전체 사용':''}`;
         else if(item.category==='decoration') detail=`세금 +${item.income} / 10초 · 가격의 0.5% 추가 · 인기도 +${item.popularity}`;
         else if(item.category==='landmark') detail='왕국 수입 +30% · 종류별 1개 · 다른 랜드마크와 5칸 거리';
         else detail=`세금 +${item.income} / 10초`;
@@ -1554,7 +1598,7 @@
     els.researchInfo.textContent += ` · 토큰 세금 보너스 +${format((state.researchTokens || 0) * 50)}%`;
     updateResearchTimerUI();
     $('#rotationStep').value = String(state.rotationStep || 45);
-    const item = selectedBuilding && BUILDINGS[selectedBuilding]; els.selectionName.textContent = deleteMode ? '삭제 모드' : (item ? item.name : '건물을 선택하세요'); els.selectionMeta.textContent = deleteMode ? '토지를 클릭하면 마지막 건물을 50% 환불로 철거합니다.' : (item ? (item.category==='road'?`${format(item.price)} 골드 · ${item.bridgeStyle?'다리':'길 조각'} · 회전 ${state.rotation}° · R로 회전`:`${format(item.price)} 골드 · 연구 ${item.researchCost || 0} · 세금 ${item.income}/10초 · 회전 ${state.rotation}°`) : `건설 메뉴에서 건물을 선택 · 환생 발전 ${Math.min(3, state.rebirths || 0)}단계`);
+    const item = selectedBuilding && BUILDINGS[selectedBuilding]; els.selectionName.textContent = deleteMode ? '삭제 모드' : (item ? item.name : '건물을 선택하세요'); els.selectionMeta.textContent = deleteMode ? '토지를 클릭하면 마지막 건물을 50% 환불로 철거합니다.' : (item ? (item.fullTile?`${format(item.price)} 골드 · 영토 한 칸 전체 사용 · 인기도 +${item.popularity}`:item.category==='road'?`${format(item.price)} 골드 · ${item.bridgeStyle?'다리':'길 조각'} · 회전 ${state.rotation}° · R로 회전`:`${format(item.price)} 골드 · 연구 ${item.researchCost || 0} · 세금 ${item.income}/10초 · 회전 ${state.rotation}°`) : `건설 메뉴에서 건물을 선택 · 환생 발전 ${Math.min(3, state.rebirths || 0)}단계`);
     if(item?.requiredTerrain) { const terrain=TERRAIN_INFO[item.requiredTerrain]; els.selectionMeta.textContent+=` · ${terrain.icon} ${terrain.name} 지형 전용`; }
     let placedSelection=selectedPlacedBuilding&&state.buildings.find((building)=>building.id===selectedPlacedBuilding);
     if(selectedPlacedBuilding&&!placedSelection) selectedPlacedBuilding=null;
