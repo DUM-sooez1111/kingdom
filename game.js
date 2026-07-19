@@ -143,7 +143,7 @@
   ];
   const TUTORIAL_PAGES = [
     { kicker:'제1장 · 왕국의 시작', title:'Crownvale에 오신 것을 환영합니다', lead:'작은 영토를 거대한 시대 왕국으로 성장시키세요.', tips:[['첫 번째 목표','주거 건물을 지어 주민을 늘리고 생산 건물로 세금을 모으세요.'],['왕실 의뢰','왼쪽 의뢰를 완료하면 골드 보상을 받아 더 빠르게 확장할 수 있습니다.'],['저장','상단의 ▣ 버튼을 누르면 현재 왕국이 브라우저에 저장됩니다.'],['메뉴','오른쪽 메뉴는 ✕로 닫고 ☰ 버튼으로 언제든 다시 열 수 있습니다.']] },
-    { kicker:'제2장 · 카메라', title:'왕국을 자유롭게 둘러보기', lead:'높은 시점에서 영토 전체를 살펴보고 원하는 장소로 이동하세요.', tips:[['이동','<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>로 화면을 이동합니다.'],['회전','<kbd>Q</kbd>와 <kbd>E</kbd>로 카메라 방향을 회전합니다.'],['확대와 축소','게임 화면 위에서 마우스 휠을 돌려 가까이 또는 멀리 봅니다.'],['마우스 이동','마우스 오른쪽 버튼을 누른 채 드래그해 카메라를 움직입니다.']] },
+    { kicker:'제2장 · 카메라', title:'왕국을 자유롭게 둘러보기', lead:'높은 시점에서 영토 전체를 살펴보고 원하는 장소로 이동하세요.', tips:[['이동','<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>로 화면을 이동합니다.'],['회전과 내려보기','<kbd>Q</kbd>와 <kbd>E</kbd>로 좌우 회전하고 <kbd>F</kbd>로 지면을 더 내려다봅니다. <kbd>Shift</kbd>+<kbd>F</kbd>는 반대 방향입니다.'],['확대와 축소','게임 화면 위에서 마우스 휠을 돌려 가까이 또는 멀리 봅니다.'],['마우스 이동','마우스 오른쪽 버튼을 누른 채 드래그해 카메라를 움직입니다.']] },
     { kicker:'제3장 · 건설', title:'건물을 선택하고 배치하기', lead:'건설 메뉴에서 시대와 목적에 맞는 건물을 선택하세요.', tips:[['건물 찾기','건설 목록에서는 위아래로, 카테고리 줄에서는 좌우로 마우스 휠을 움직여 원하는 종류를 찾습니다.'],['배치','건물을 선택한 뒤 소유한 영토를 좌클릭하면 실루엣 위치에 실제 건물이 설치됩니다.'],['놀이기구','놀이기구는 영토 한 칸의 중앙에 설치되며 그 칸 전체를 사용합니다. 빈 영토를 준비하세요.'],['철거','삭제 버튼을 켜고 건물을 선택하면 가격의 50%를 돌려받습니다.']] },
     { kicker:'제4장 · 길과 주민', title:'살아 움직이는 왕국 만들기', lead:'길을 연결하면 주민들이 왕국 전역의 길망을 따라 이동합니다.', tips:[['길 연결','10m 길 조각을 이어 놓으세요. X자와 T자 교차로는 자동으로 부드럽게 연결됩니다.'],['백수의 산책','직업이 없는 백수 주민은 낮에 길을 따라 천천히 산책하고, 교차로에서 무작위 방향을 고릅니다.'],['길이 없을 때','설치된 길이 하나도 없으면 주민은 자기 집 출입문 앞에서 기다립니다.'],['밤','밤이 되면 모든 주민이 집 안으로 돌아가 거리에서 보이지 않습니다.']] },
     { kicker:'제5장 · 세금과 시간', title:'낮과 밤의 세금 관리', lead:'건물이 만든 세금은 쌓인 뒤 직접 또는 자동으로 수금됩니다.', tips:[['시간 속도','기본은 일시정지와 1배속이며 환생 10회에 2배속, 환생 20회에 4배속이 해금됩니다.'],['인기도','편의시설·놀이기구·장식은 인기도를 높입니다. 인기도 1점마다 모든 세금이 0.5% 증가합니다.'],['낮과 밤','낮에는 기본 세금 100%, 밤에는 50%를 획득하며 모든 세금 +% 보너스는 유지됩니다.'],['수입 증가','비싼 건물, 연구 토큰, 환생, 랜드마크와 인기도를 활용하면 세금이 크게 증가합니다.']] },
@@ -287,6 +287,9 @@
   const CAMERA_MIN_ZOOM = 180;
   const CAMERA_MAX_ZOOM = 3600;
   const CAMERA_ZOOM_STEP = 1.2;
+  const CAMERA_MIN_PITCH = .72;
+  const CAMERA_MAX_PITCH = 1.48;
+  const CAMERA_PITCH_STEP = .08;
   const DAY_CYCLE_SECONDS = 120;
   const MAX_VISIBLE_RESIDENTS = 120;
   const JOB_PROFILES = {
@@ -1752,6 +1755,10 @@
     }
     if (key === 'q') camera.yaw -= .08;
     if (key === 'e') camera.yaw += .08;
+    if (key === 'f') {
+      camera.pitch=Math.max(CAMERA_MIN_PITCH,Math.min(CAMERA_MAX_PITCH,camera.pitch+(event.shiftKey?-CAMERA_PITCH_STEP:CAMERA_PITCH_STEP)));
+      event.preventDefault();
+    }
     if (key === 'r' && selectedBuilding) { state.rotation = (state.rotation + (state.rotationStep || 45)) % 360; updateUI(); }
     if (['w', 'a', 's', 'd'].includes(key) && !event.repeat) { pressedKeys.add(key); event.preventDefault(); }
     if (event.key === 'Escape') { selectedBuilding = null; deleteMode = false; updateUI(); }
