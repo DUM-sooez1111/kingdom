@@ -10,7 +10,7 @@
     cash: $('#cash'), population: $('#population'), popularity: $('#popularity'), popularityResource: $('#popularityResource'), rebirths: $('#rebirths'), year: $('#year'), researchTokens: $('#researchTokens'), dayIcon: $('#dayIcon'), dayClock: $('#dayClock'), productionStatus: $('#productionStatus'), categoryList: $('#categoryList'), buildingList: $('#buildingList'), landList: $('#landList'),
     selectionName: $('#selectionName'), selectionMeta: $('#selectionMeta'), workerInfo: $('#workerInfo'), employmentInfo: $('#employmentInfo'), jobList: $('#jobList'),
     storedTax: $('#storedTax'), missionTitle: $('#missionTitle'), missionText: $('#missionText'), unlockInfo: $('#unlockInfo'), researchInfo: $('#researchInfo'), researchTimer: $('#researchTimer'), researchProgress: $('#researchProgress'),
-    missionProgress: $('#missionProgress'), claimMission: $('#claimMission'), toast: $('#toast'), interiorModal: $('#interiorModal'), interiorTitle: $('#interiorTitle'), interiorMeta: $('#interiorMeta'), interiorButton: $('#interiorButton'), tutorialModal: $('#tutorialModal'), tutorialKicker: $('#tutorialKicker'), tutorialTitle: $('#tutorialTitle'), tutorialContent: $('#tutorialContent'), tutorialPage: $('#tutorialPage'), tutorialDots: $('#tutorialDots'),
+    missionProgress: $('#missionProgress'), claimMission: $('#claimMission'), warEnemy:$('#warEnemy'), warInfo:$('#warInfo'), warProgress:$('#warProgress'), warStatus:$('#warStatus'), warHistory:$('#warHistory'), launchWar:$('#launchWar'), toast: $('#toast'), interiorModal: $('#interiorModal'), interiorTitle: $('#interiorTitle'), interiorMeta: $('#interiorMeta'), interiorButton: $('#interiorButton'), tutorialModal: $('#tutorialModal'), tutorialKicker: $('#tutorialKicker'), tutorialTitle: $('#tutorialTitle'), tutorialContent: $('#tutorialContent'), tutorialPage: $('#tutorialPage'), tutorialDots: $('#tutorialDots'),
   };
 
   const BUILDINGS = {
@@ -122,6 +122,7 @@
     if(item.category==='landmark') item.price=Math.max(5000,Math.round(item.price*6/100)*100);
     const categoryBonus=item.category==='production'?.01:item.category==='decoration'?.005:0;
     item.income = item.category === 'road' ? 0 : Math.max(1, Math.round(item.price * (BUILDING_INCOME_RATE+categoryBonus)));
+    item.militaryPower = item.category === 'military' ? Math.max(10, Math.round(item.price / 20)) : 0;
     item.popularity = item.buildGroup === 'attraction' ? Math.max(15, Math.round(item.price / 180))
       : item.buildGroup === 'amenity' ? Math.max(5, Math.round(item.price / 250))
       : item.category === 'decoration' ? Math.max(3, Math.round(item.price / 300))
@@ -129,6 +130,10 @@
   });
   const CATALOG_BUILDING_COUNT = Object.values(BUILDINGS).filter((item) => item.catalog).length;
   const CATEGORIES = [{ id: 'all', name: '전체' }, { id: 'terrain', name: '지형 전용' }, { id:'amenity', name:'편의시설' }, { id:'attraction', name:'놀이기구' }, { id: 'residential', name: '주거' }, { id: 'production', name: '생산' }, { id:'military', name:'군사' }, { id: 'landmark', name: '랜드마크' }, { id: 'decoration', name: '장식' }, { id: 'road', name: '길' }];
+  const WAR_ENEMIES = [
+    ['🏴','잿빛 약탈단'],['🐺','북부 늑대 부족'],['🏹','붉은 활 연맹'],['🐎','황야 기병국'],['🏰','철벽 공국'],
+    ['💣','화약 제국'],['⚙️','강철 군단'],['📡','하늘 감시국'],['🛸','네온 드론 연합'],['👑','황금 제국'],
+  ];
   const MISSIONS = [
     { id: 'homes', title: '주거 건물 3채를 건설하세요', goal: 3, reward: 450 },
     { id: 'roads', title: '왕국에 길 5조각을 연결하세요', goal: 5, reward: 550 },
@@ -151,6 +156,9 @@
     { id: 'lands', title: '대왕국 영토 30곳을 확보하세요', goal: 30, reward: 12000 },
     { id: 'military', title: '군사 건물 3채로 수비대를 만드세요', goal: 3, reward: 8500 },
     { id: 'military', title: '군사 건물 7채로 왕국을 요새화하세요', goal: 7, reward: 18000 },
+    { id: 'war', title: '첫 전쟁에서 승리하세요', goal: 1, reward: 5000 },
+    { id: 'war', title: '전쟁에서 5번 승리하세요', goal: 5, reward: 15000 },
+    { id: 'war', title: '전쟁에서 10번 승리해 정복왕이 되세요', goal: 10, reward: 35000 },
   ];
   const TUTORIAL_PAGES = [
     { kicker:'제1장 · 왕국의 시작', title:'Crownvale에 오신 것을 환영합니다', lead:'작은 영토를 거대한 시대 왕국으로 성장시키세요.', tips:[['첫 번째 목표','주거 건물을 지어 주민을 늘리고 생산 건물로 세금을 모으세요.'],['왕실 의뢰','왼쪽 의뢰를 완료하면 골드 보상을 받아 더 빠르게 확장할 수 있습니다.'],['저장','상단의 ▣ 버튼을 누르면 현재 왕국이 브라우저에 저장됩니다.'],['메뉴','오른쪽 메뉴는 ✕로 닫고 ☰ 버튼으로 언제든 다시 열 수 있습니다.']] },
@@ -162,6 +170,7 @@
     { kicker:'제7장 · 연구와 시대', title:'더 최신식인 왕국으로', lead:'연구를 완료해 토큰을 모으고 새로운 시대의 건물을 해금하세요.', tips:[['연구 시간','연구는 즉시 끝나지 않습니다. 연구 탭에서 남은 시간을 확인하세요.'],['연구 토큰','연구 토큰 1개마다 세금 수입이 50% 증가하며 최신 연구일수록 더 많은 토큰을 줍니다.'],['연도 해금','왕국력이 올라가면 석재·산업·현대·미래 건물이 차례로 해금됩니다.'],['비용','최신식 건물은 연구 토큰과 골드가 더 필요하지만 더 많은 세금을 생산합니다.']] },
     { kicker:'제8장 · 환생과 탐험', title:'새로운 왕국으로 다시 시작하기', lead:'충분히 성장했다면 환생해 더 강한 다음 왕국을 시작하세요.', tips:[['환생 조건','필요한 골드·주민·영토를 모두 확보해야 하며 환생할수록 조건이 증가합니다.'],['건물 보존','환생해도 설치한 건물과 보유 영토는 그대로 남고, 건물에 쌓인 세금만 초기화됩니다.'],['영구 보너스','환생 횟수마다 세금 수입이 영구적으로 증가하고 건물 외형이 발전합니다.'],['새 지도','환생하면 숲·산 군락과 자연스러운 강의 위치가 새롭게 바뀝니다.']] },
     { kicker:'제9장 · 왕국 군사', title:'시대에 맞는 수비군 만들기', lead:'군사 카테고리에서 병사들의 주둔지와 훈련 시설을 건설하세요.', tips:[['시대 발전','경비 초소에서 시작해 병영·기병대·요새·방공 기지·드론 지휘소까지 해금됩니다.'],['군인 직업','군사 건물은 주민에게 병사·궁수·기사·포병·드론 조종사 등의 일자리를 제공합니다.'],['세금','군사 시설도 유지되는 동안 건물 가격에 비례한 세금을 생산합니다.'],['내부 보기','설치한 군사 건물을 선택해 무기 거치대·작전 지도·통제 장비가 있는 내부를 확인하세요.']] },
+    { kicker:'제10장 · 전쟁', title:'적 왕국으로 출정하기', lead:'군사 건물의 전투력을 모아 점점 강해지는 적 왕국을 정복하세요.', tips:[['출정 조건','아군 전투력이 적 전투력 이상이면 전쟁 본부에서 출정할 수 있습니다.'],['전투 시간','출정 후 현실 시간이 지나면 전투가 자동으로 끝납니다. 게임을 닫아도 진행 시간은 유지됩니다.'],['승리 보상','승리하면 골드를 받고 캠페인 단계가 오릅니다. 세 번째 승리마다 연구 토큰도 획득합니다.'],['영구 기록','전쟁 승리 횟수와 캠페인 단계는 환생해도 유지되며 다음 적은 더욱 강해집니다.']] },
   ];
   const LANDS = [
     { id: 'core1', name: '왕실 들판', x: -96, z: -24, price: 0, owned: true },
@@ -255,7 +264,7 @@
       LANDS.push({ id: `realm_${column + 1}_${row + 1}`, name: `${terrainInfo.name} 영토 ${column + 1}-${row + 1}`, x, z, terrain, price: 700 + Math.floor(distance * 140), owned: false });
     }
   }
-  const START = { cash: 1000, owned: ['core1', 'core2', 'core3'], buildings: [], workers: 0, autoCollect: false, rotation: 0, rotationStep: 45, missionIndex: 0, rebirths: 0, terrainSeed: 0, year: 1, timeScale: 1, researchTokens: 0, researchCount: 0, researchStartedAt: 0, researchEndsAt: 0, researchDuration: 0, researchPendingReward: 0 };
+  const START = { cash: 1000, owned: ['core1', 'core2', 'core3'], buildings: [], workers: 0, autoCollect: false, rotation: 0, rotationStep: 45, missionIndex: 0, rebirths: 0, terrainSeed: 0, year: 1, timeScale: 1, researchTokens: 0, researchCount: 0, researchStartedAt: 0, researchEndsAt: 0, researchDuration: 0, researchPendingReward: 0, warLevel:0, warVictories:0, warStartedAt:0, warEndsAt:0, warDuration:0, warEnemyPower:0, warArmyPower:0, warPendingReward:0 };
   const storageKey = 'crownvale-browser-v1';
   let state = load();
   function applyTerrainLayout(seed=0) {
@@ -543,6 +552,52 @@
     state.researchStartedAt = now; state.researchEndsAt = now + duration; state.researchDuration = duration; state.researchPendingReward = reward;
     toast(`연구를 시작했습니다. ${formatDuration(duration)} 뒤 연구 토큰 ${reward}개를 획득합니다.`); save(true); updateUI();
   }
+  function militaryPower() { return state.buildings.reduce((sum,building)=>sum+(BUILDINGS[building.type].militaryPower||0),0); }
+  function warOpponent(level=state.warLevel||0) { const enemy=WAR_ENEMIES[level%WAR_ENEMIES.length], tier=Math.floor(level/WAR_ENEMIES.length)+1; return {icon:enemy[0],name:`${enemy[1]}${tier>1?` ${tier}군단`:''}`}; }
+  function warRequiredPower(level=state.warLevel||0) { return Math.round(30*Math.pow(1.55,level)); }
+  function warReward(level=state.warLevel||0) { return warRequiredPower(level)*20; }
+  function warDurationMilliseconds(level=state.warLevel||0) { return Math.min(90,20+level*4)*1000; }
+  function warInProgress() { return Number(state.warEndsAt)>0; }
+  function finishWarIfReady(now=Date.now()) {
+    if(!warInProgress()||now<Number(state.warEndsAt)) return false;
+    const army=Math.max(0,Number(state.warArmyPower)||0), enemy=Math.max(1,Number(state.warEnemyPower)||warRequiredPower()), reward=Math.max(0,Number(state.warPendingReward)||warReward());
+    state.warStartedAt=0; state.warEndsAt=0; state.warDuration=0; state.warEnemyPower=0; state.warArmyPower=0; state.warPendingReward=0;
+    if(army>=enemy) {
+      state.cash+=reward; state.warVictories=(state.warVictories||0)+1; state.warLevel=(state.warLevel||0)+1;
+      const tokenBonus=state.warVictories%3===0?1+Math.floor(state.warVictories/9):0;
+      if(tokenBonus) state.researchTokens=(state.researchTokens||0)+tokenBonus;
+      state.lastWarResult=`승리 ${state.warVictories}회 · 전리품 ${format(reward)} 골드${tokenBonus?` · 연구 토큰 ${tokenBonus}개`:''}`;
+      toast(`전쟁 승리! ${format(reward)} 골드${tokenBonus?`와 연구 토큰 ${tokenBonus}개`:''}를 획득했습니다.`);
+    } else {
+      state.lastWarResult='패배 · 군사 건물을 보강한 뒤 다시 도전하세요.';
+      toast('전쟁에서 패배했습니다. 건물과 영토 피해는 없습니다.');
+    }
+    save(true); updateUI(); return true;
+  }
+  function updateWarUI(now=Date.now()) {
+    const level=state.warLevel||0, enemy=warOpponent(level), required=warRequiredPower(level), power=militaryPower(), reward=warReward(level), active=warInProgress();
+    els.warEnemy.textContent=`${enemy.icon} ${enemy.name} · 적 전투력 ${format(required)}`;
+    els.warInfo.textContent=`아군 전투력 ${format(power)} · 승리 ${format(state.warVictories||0)}회 · 캠페인 ${level+1}`;
+    if(active) {
+      const remaining=Math.max(0,Number(state.warEndsAt)-now), duration=Math.max(1,Number(state.warDuration)||Number(state.warEndsAt)-Number(state.warStartedAt||now));
+      els.warProgress.style.width=`${Math.max(0,Math.min(100,(1-remaining/duration)*100))}%`;
+      els.warStatus.textContent=`전투 진행 중 · ${formatDuration(remaining)} 남음 · 출정 전투력 ${format(state.warArmyPower||0)}`;
+      els.launchWar.disabled=true; els.launchWar.innerHTML=`전투 진행 중 <span>${formatDuration(remaining)}</span>`;
+    } else {
+      els.warProgress.style.width=`${Math.min(100,power/required*100)}%`;
+      els.warStatus.textContent=power>=required?'출정 준비 완료 · 전투는 자동으로 진행됩니다.':`전투력 ${format(required-power)}이 더 필요합니다.`;
+      els.launchWar.disabled=power<required; els.launchWar.innerHTML=`전쟁 출정 <span>보상 ${format(reward)} 골드</span>`;
+    }
+    els.warHistory.textContent=state.lastWarResult||'아직 전쟁 기록이 없습니다.';
+  }
+  function launchWar() {
+    if(warInProgress()) return toast('이미 전쟁이 진행 중입니다.');
+    const level=state.warLevel||0, power=militaryPower(), required=warRequiredPower(level);
+    if(power<required) return toast(`출정하려면 전투력 ${format(required)}이 필요합니다.`);
+    const duration=warDurationMilliseconds(level), now=Date.now(), enemy=warOpponent(level);
+    state.warStartedAt=now; state.warEndsAt=now+duration; state.warDuration=duration; state.warEnemyPower=required; state.warArmyPower=power; state.warPendingReward=warReward(level);
+    toast(`${enemy.name}과의 전쟁이 시작됐습니다. ${formatDuration(duration)} 뒤 결과가 나옵니다.`); save(true); updateWarUI(now);
+  }
   function countCategory(category) { return state.buildings.filter((building) => BUILDINGS[building.type].category === category).length; }
   function incomePerTick() { return state.buildings.reduce((total, building) => total + BUILDINGS[building.type].income, 0) * timeIncomeRate() * totalIncomeMultiplier(); }
   function missionProgress(mission) {
@@ -557,6 +612,7 @@
     if (mission.id === 'income') return incomePerTick();
     if (mission.id === 'landmarks') return countCategory('landmark');
     if (mission.id === 'military') return countCategory('military');
+    if (mission.id === 'war') return state.warVictories||0;
     if (mission.id === 'population') return population();
     return 0;
   }
@@ -1560,7 +1616,7 @@
     const rebirths = (state.rebirths || 0) + 1;
     const preservedBuildings=state.buildings.map((building)=>({ ...building, tax:0 }));
     const preservedOwned=[...state.owned], preservedRotationStep=state.rotationStep||45;
-    state = { ...structuredClone(START), buildings:preservedBuildings, owned:preservedOwned, rotationStep:preservedRotationStep, rebirths, terrainSeed: rebirths, year: (state.year || 1) + 1, researchTokens: state.researchTokens || 0 };
+    state = { ...structuredClone(START), buildings:preservedBuildings, owned:preservedOwned, rotationStep:preservedRotationStep, rebirths, terrainSeed: rebirths, year: (state.year || 1) + 1, researchTokens: state.researchTokens || 0, warLevel:state.warLevel||0, warVictories:state.warVictories||0, lastWarResult:state.lastWarResult||'' };
     applyTerrainLayout(state.terrainSeed);
     residentWalkers.clear(); roadNetworkCache={signature:'',nodes:[]};
     selectedBuilding = null; selectedPlacedBuilding=null; selectedLand = state.owned[0]||'core1'; deleteMode = false;
@@ -1616,7 +1672,7 @@
         else if(item.category==='road') detail=item.bridgeStyle?`강을 건너는 ${item.size[0]}m 다리 · 강 지형 전용 · 회전 배치 가능`:`길 조각 ${item.size[0]}m · 회전 배치 가능`;
         else if(item.category==='residential') detail=`세금 +${item.income} / 10초 · 주민 +${item.people}`;
         else if(item.category==='production') detail=`세금 +${item.income} / 10초 · 가격의 1% 추가 · 일자리 ${item.people}${productionNote}${item.popularity?` · 인기도 +${item.popularity}`:''}${item.fullTile?' · 영토 한 칸 전체 사용':''}`;
-        else if(item.category==='military') detail=`세금 +${item.income} / 10초 · 군인 일자리 ${item.people} · 낮 경계·훈련`;
+        else if(item.category==='military') detail=`세금 +${item.income} / 10초 · 전투력 ${item.militaryPower} · 군인 일자리 ${item.people} · 낮 경계·훈련`;
         else if(item.category==='decoration') detail=`세금 +${item.income} / 10초 · 가격의 0.5% 추가 · 인기도 +${item.popularity}`;
         else if(item.category==='landmark') detail='왕국 수입 +30% · 종류별 1개 · 다른 랜드마크와 5칸 거리';
         else detail=`세금 +${item.income} / 10초`;
@@ -1669,6 +1725,7 @@
     els.researchInfo.textContent = `보유 연구 토큰 ${format(state.researchTokens || 0)}개 · 왕국력 ${kingdomYear()}년 연구 보상 ${researchReward()}개`;
     els.researchInfo.textContent += ` · 토큰 세금 보너스 +${format((state.researchTokens || 0) * 50)}%`;
     updateResearchTimerUI();
+    updateWarUI();
     $('#rotationStep').value = String(state.rotationStep || 45);
     const item = selectedBuilding && BUILDINGS[selectedBuilding]; els.selectionName.textContent = deleteMode ? '삭제 모드' : (item ? item.name : '건물을 선택하세요'); els.selectionMeta.textContent = deleteMode ? '토지를 클릭하면 마지막 건물을 50% 환불로 철거합니다.' : (item ? (item.fullTile?`${format(item.price)} 골드 · 영토 한 칸 전체 사용 · 인기도 +${item.popularity}`:item.category==='road'?`${format(item.price)} 골드 · ${item.bridgeStyle?'다리':'길 조각'} · 회전 ${state.rotation}° · T로 회전`:`${format(item.price)} 골드 · 연구 ${item.researchCost || 0} · 세금 ${item.income}/10초 · 회전 ${state.rotation}° · T로 회전`) : `건설 메뉴에서 건물을 선택 · 환생 발전 ${Math.min(3, state.rebirths || 0)}단계`);
     if(item?.requiredTerrain) { const terrain=TERRAIN_INFO[item.requiredTerrain]; els.selectionMeta.textContent+=` · ${terrain.icon} ${terrain.name} 지형 전용`; }
@@ -1719,6 +1776,7 @@
   interiorCanvas.addEventListener('wheel',(event)=>{ event.preventDefault(); interiorView.zoom*=Math.exp(-event.deltaY*.001); clampInteriorView(); },{passive:false});
   $('#collectTax').onclick = () => collectTax();
   $('#conductResearch').onclick = conductResearch;
+  els.launchWar.onclick = launchWar;
   $('#hireWorker').onclick = () => { const cost = workerCost(); if (state.workers >= 20) return toast('수집자는 최대 20명입니다.'); if (state.cash < cost) return toast('골드가 부족합니다.'); state.cash -= cost; state.workers++; toast(`새 세금 수집자가 도착했습니다. 세금 수입 +0.5%`); save(true); updateUI(); };
   $('#unlockAuto').onclick = () => { if (state.autoCollect) return toast('이미 왕실 자동 수금이 활성화되어 있습니다.'); if (state.cash < 1200) return toast('골드가 부족합니다.'); state.cash -= 1200; state.autoCollect = true; toast('왕실 자동 수금이 시작되었습니다.'); save(true); updateUI(); };
   els.claimMission.onclick = () => {
@@ -1848,6 +1906,8 @@
     const wallClock = Date.now();
     finishResearchIfReady(wallClock);
     updateResearchTimerUI(wallClock);
+    finishWarIfReady(wallClock);
+    updateWarUI(wallClock);
     const multiplier = totalIncomeMultiplier();
     const timeRate = timeIncomeRate();
     for (const building of state.buildings) {
