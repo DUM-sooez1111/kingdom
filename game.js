@@ -38,6 +38,15 @@
     royalCoaster: { name:'왕실 순환 열차', icon:'🎢', category:'production', buildGroup:'attraction', price:3600, people:10, body:'#496d70', roof:'#b24c50', trim:'#f2c84e', size:[42,12,42], unlockYear:6, model:'coaster', leisure:true, openAir:true, fullTile:true },
     dropTower: { name:'왕국 낙하 탑', icon:'🗼', category:'production', buildGroup:'attraction', price:4800, people:12, body:'#405f72', roof:'#713f66', trim:'#ff9c55', size:[42,26,42], unlockYear:7, researchCost:2, model:'dropTower', leisure:true, openAir:true, fullTile:true },
     royalWaterRide: { name:'왕실 급류타기', icon:'🌊', category:'production', buildGroup:'attraction', price:6500, people:15, body:'#3e788b', roof:'#315879', trim:'#82e6f2', size:[42,14,42], unlockYear:9, researchCost:5, model:'waterRide', leisure:true, openAir:true, fullTile:true },
+    guardPost: { name:'왕국 경비 초소', icon:'🛡️', category:'military', price:350, people:3, body:'#9b8667', roof:'#6f4d45', trim:'#e2c36d', size:[10,7,10], model:'guardPost', militaryModel:'guardPost' },
+    barracks: { name:'왕실 병영', icon:'⚔️', category:'military', price:800, people:8, body:'#96785e', roof:'#79434a', trim:'#d9bd70', size:[17,8,14], unlockYear:2, model:'barracks', militaryModel:'barracks' },
+    archeryRange: { name:'왕국 궁술 훈련장', icon:'🏹', category:'military', price:1100, people:6, body:'#668260', roof:'#76533f', trim:'#e2c574', size:[20,5,17], unlockYear:3, model:'archeryRange', militaryModel:'archeryRange', openAir:true },
+    royalStable: { name:'왕실 기병대', icon:'🐎', category:'military', price:1600, people:10, body:'#a47c55', roof:'#633f3d', trim:'#e1bd67', size:[19,8,16], unlockYear:4, model:'royalStable', militaryModel:'royalStable' },
+    armory: { name:'왕국 무기고', icon:'🗡️', category:'military', price:2300, people:12, body:'#777b78', roof:'#474e57', trim:'#d2b969', size:[17,10,15], unlockYear:5, model:'armory', militaryModel:'armory' },
+    stoneFort: { name:'왕실 석조 요새', icon:'🏰', category:'military', price:4000, people:18, body:'#7e8585', roof:'#4d5262', trim:'#d4bc74', size:[21,14,19], unlockYear:6, model:'stoneFort', militaryModel:'stoneFort' },
+    cannonBattery: { name:'왕국 대포 포대', icon:'💣', category:'military', price:6500, people:14, body:'#686f68', roof:'#42494d', trim:'#d19a54', size:[21,7,18], unlockYear:7, researchCost:2, model:'cannonBattery', militaryModel:'cannonBattery', openAir:true },
+    airDefense: { name:'왕실 방공 기지', icon:'📡', category:'military', price:9000, people:16, body:'#596b72', roof:'#394b5d', trim:'#75d8df', size:[22,12,19], unlockYear:8, researchCost:4, model:'airDefense', militaryModel:'airDefense' },
+    droneCommand: { name:'미래 드론 지휘소', icon:'🛸', category:'military', price:14000, people:20, body:'#40566d', roof:'#302f59', trim:'#73eff2', glow:'#9ffcff', size:[23,14,20], unlockYear:10, researchCost:8, model:'droneCommand', militaryModel:'droneCommand' },
     townFountain: { name:'왕국 중앙 분수', icon:'⛲', category:'decoration', price:520, people:0, body:'#78b7c6', roof:'#d2d8d5', trim:'#8ce3ee', size:[14,4,14], model:'townFountain', leisure:true, openAir:true, noInterior:true },
     flowerArch: { name:'왕실 꽃 아치', icon:'🌸', category:'decoration', price:750, people:0, body:'#65a267', roof:'#d8789d', trim:'#f2a9c4', size:[14,6,10], unlockYear:2, model:'flowerArch', leisure:true, openAir:true, noInterior:true },
     dirtRoad: { name: '흙길', icon: '🟫', category: 'road', price: 15, income: 0, people: 0, body: '#9a7048', trim: '#c19868', size: [10, .2, 4], roadStyle: 'dirt', noInterior: true },
@@ -119,7 +128,7 @@
       : 0;
   });
   const CATALOG_BUILDING_COUNT = Object.values(BUILDINGS).filter((item) => item.catalog).length;
-  const CATEGORIES = [{ id: 'all', name: '전체' }, { id: 'terrain', name: '지형 전용' }, { id:'amenity', name:'편의시설' }, { id:'attraction', name:'놀이기구' }, { id: 'residential', name: '주거' }, { id: 'production', name: '생산' }, { id: 'landmark', name: '랜드마크' }, { id: 'decoration', name: '장식' }, { id: 'road', name: '길' }];
+  const CATEGORIES = [{ id: 'all', name: '전체' }, { id: 'terrain', name: '지형 전용' }, { id:'amenity', name:'편의시설' }, { id:'attraction', name:'놀이기구' }, { id: 'residential', name: '주거' }, { id: 'production', name: '생산' }, { id:'military', name:'군사' }, { id: 'landmark', name: '랜드마크' }, { id: 'decoration', name: '장식' }, { id: 'road', name: '길' }];
   const MISSIONS = [
     { id: 'homes', title: '주거 건물 3채를 건설하세요', goal: 3, reward: 450 },
     { id: 'roads', title: '왕국에 길 5조각을 연결하세요', goal: 5, reward: 550 },
@@ -140,6 +149,8 @@
     { id: 'population', title: '주민 60명을 달성하세요', goal: 60, reward: 7200 },
     { id: 'landmarks', title: '5칸 간격으로 랜드마크 2개를 세우세요', goal: 2, reward: 10000 },
     { id: 'lands', title: '대왕국 영토 30곳을 확보하세요', goal: 30, reward: 12000 },
+    { id: 'military', title: '군사 건물 3채로 수비대를 만드세요', goal: 3, reward: 8500 },
+    { id: 'military', title: '군사 건물 7채로 왕국을 요새화하세요', goal: 7, reward: 18000 },
   ];
   const TUTORIAL_PAGES = [
     { kicker:'제1장 · 왕국의 시작', title:'Crownvale에 오신 것을 환영합니다', lead:'작은 영토를 거대한 시대 왕국으로 성장시키세요.', tips:[['첫 번째 목표','주거 건물을 지어 주민을 늘리고 생산 건물로 세금을 모으세요.'],['왕실 의뢰','왼쪽 의뢰를 완료하면 골드 보상을 받아 더 빠르게 확장할 수 있습니다.'],['저장','상단의 ▣ 버튼을 누르면 현재 왕국이 브라우저에 저장됩니다.'],['메뉴','오른쪽 메뉴는 ✕로 닫고 ☰ 버튼으로 언제든 다시 열 수 있습니다.']] },
@@ -150,6 +161,7 @@
     { kicker:'제6장 · 영토와 지형', title:'448칸의 왕국 확장', lead:'평원·숲·산·강·호수가 어우러진 영토를 확장하세요.', tips:[['영토 구입','영토 탭에서 잠긴 땅을 골드로 구입해 건설 공간을 넓힙니다.'],['지형 전용','지형 전용 카테고리에서 각 자연환경에 맞는 특별 건물을 확인합니다.'],['강과 호수','강은 한 줄의 자연스러운 물길로 이어지고, 호수는 여러 영토에 걸친 넓은 물 지형으로 생성됩니다.'],['자연 군락','숲·산·호수는 군락으로 모이며 환생할 때 위치와 모양이 달라집니다.']] },
     { kicker:'제7장 · 연구와 시대', title:'더 최신식인 왕국으로', lead:'연구를 완료해 토큰을 모으고 새로운 시대의 건물을 해금하세요.', tips:[['연구 시간','연구는 즉시 끝나지 않습니다. 연구 탭에서 남은 시간을 확인하세요.'],['연구 토큰','연구 토큰 1개마다 세금 수입이 50% 증가하며 최신 연구일수록 더 많은 토큰을 줍니다.'],['연도 해금','왕국력이 올라가면 석재·산업·현대·미래 건물이 차례로 해금됩니다.'],['비용','최신식 건물은 연구 토큰과 골드가 더 필요하지만 더 많은 세금을 생산합니다.']] },
     { kicker:'제8장 · 환생과 탐험', title:'새로운 왕국으로 다시 시작하기', lead:'충분히 성장했다면 환생해 더 강한 다음 왕국을 시작하세요.', tips:[['환생 조건','필요한 골드·주민·영토를 모두 확보해야 하며 환생할수록 조건이 증가합니다.'],['건물 보존','환생해도 설치한 건물과 보유 영토는 그대로 남고, 건물에 쌓인 세금만 초기화됩니다.'],['영구 보너스','환생 횟수마다 세금 수입이 영구적으로 증가하고 건물 외형이 발전합니다.'],['새 지도','환생하면 숲·산 군락과 자연스러운 강의 위치가 새롭게 바뀝니다.']] },
+    { kicker:'제9장 · 왕국 군사', title:'시대에 맞는 수비군 만들기', lead:'군사 카테고리에서 병사들의 주둔지와 훈련 시설을 건설하세요.', tips:[['시대 발전','경비 초소에서 시작해 병영·기병대·요새·방공 기지·드론 지휘소까지 해금됩니다.'],['군인 직업','군사 건물은 주민에게 병사·궁수·기사·포병·드론 조종사 등의 일자리를 제공합니다.'],['세금','군사 시설도 유지되는 동안 건물 가격에 비례한 세금을 생산합니다.'],['내부 보기','설치한 군사 건물을 선택해 무기 거치대·작전 지도·통제 장비가 있는 내부를 확인하세요.']] },
   ];
   const LANDS = [
     { id: 'core1', name: '왕실 들판', x: -96, z: -24, price: 0, owned: true },
@@ -308,6 +320,15 @@
     ferrisWheel: { name:'대관람차 안내원', icon:'🎡', outdoor:true, color:'#e7c965' },
     dropTower: { name:'낙하 탑 안전요원', icon:'🗼', outdoor:true, color:'#e88d58' },
     waterRide: { name:'급류타기 안전요원', icon:'🌊', outdoor:true, color:'#6fcddd' },
+    guardPost: { name:'경비병', icon:'🛡️', outdoor:true, color:'#bd985c' },
+    barracks: { name:'왕국 병사', icon:'⚔️', outdoor:true, color:'#b76b61' },
+    archeryRange: { name:'궁수', icon:'🏹', outdoor:true, color:'#72985f' },
+    royalStable: { name:'왕실 기사', icon:'🐎', outdoor:true, color:'#c19a58' },
+    armory: { name:'병기 장인', icon:'🗡️', outdoor:false, color:'#8e9695' },
+    stoneFort: { name:'요새 수비병', icon:'🏰', outdoor:true, color:'#788997' },
+    cannonBattery: { name:'포병', icon:'💣', outdoor:true, color:'#a9784d' },
+    airDefense: { name:'방공 관제사', icon:'📡', outdoor:false, color:'#6db7bf' },
+    droneCommand: { name:'드론 조종사', icon:'🛸', outdoor:false, color:'#76dce2' },
     mine: { name: '광부', icon: '⛏', outdoor: false, color: '#7f8791' },
     forge: { name: '대장장이', icon: '⚒', outdoor: false, color: '#b76b46' },
     warehouse: { name: '창고 노동자', icon: '📦', outdoor: false, color: '#9b7658' },
@@ -433,7 +454,7 @@
     const workplaces=[];
     for (const building of state.buildings) {
       const item=BUILDINGS[building.type];
-      if (item.category === 'production') workplaces.push({building,profile:jobProfile(building),capacity:Math.max(1,item.people||1)});
+      if (item.category === 'production' || item.category === 'military') workplaces.push({building,profile:jobProfile(building),capacity:Math.max(1,item.people||1)});
       else if (item.category === 'residential') workplaces.push({building,profile:homeJobProfile(item),capacity:homeJobCapacity(item)});
     }
     return workplaces;
@@ -535,6 +556,7 @@
     if (mission.id === 'research') return state.researchTokens||0;
     if (mission.id === 'income') return incomePerTick();
     if (mission.id === 'landmarks') return countCategory('landmark');
+    if (mission.id === 'military') return countCategory('military');
     if (mission.id === 'population') return population();
     return 0;
   }
@@ -957,6 +979,41 @@
       for(const x of [-w*.36,-w*.12,w*.12,w*.36]) box(local(x,0,1.62),[.35,.16,d*.72],'#67ecff',r);
     }
   }
+  function drawMilitaryBuildingDetail(item,local,r,w,h,d) {
+    const model=item.militaryModel;
+    if(!model) return;
+    const accent=item.trim||'#d8bd70';
+    if(model==='guardPost') {
+      box(local(w*.34,0,h+4),[.3,6,.3],'#5f4937',r); box(local(w*.34-.95,0,h+5.3),[2,.9,.16],'#a7464e',r);
+      for(const x of [-w*.34,0,w*.34]) box(local(x,-d*.52,h+1.8),[1.5,1.2,1.2],accent,r);
+    } else if(model==='barracks') {
+      for(const x of [-w*.32,w*.32]) { box(local(x,-d*.55,h*.62+1.8),[2.5,3.5,.24],'#8e3f48',r); box(local(x,-d*.58,h*.62+2.1),[.3,2.2,.14],accent,r); }
+      for(const x of [-w*.42,0,w*.42]) box(local(x,d*.58,2),[.35,3.2,.35],'#5f4937',r);
+    } else if(model==='archeryRange') {
+      for(const x of [-w*.32,0,w*.32]) { box(local(x,d*.32,2.6),[.35,3.6,.35],'#6a4a30',r); box(local(x,d*.32,4.15),[3.2,3.2,.35],x?'#e9d99d':'#d9b75c',r); box(local(x,d*.28,4.15),[1.35,1.35,.18],'#a84e4e',r); }
+      for(const x of [-w*.38,w*.38]) box(local(x,-d*.28,2),[5,.35,1.4],'#87613f',r);
+    } else if(model==='royalStable') {
+      for(const x of [-w*.48,0,w*.48]) box(local(x,d*.62,1.8),[.35,2.5,.35],'#6e4a31',r); box(local(0,d*.62,2.65),[w+1,.28,.28],'#6e4a31',r);
+      for(const [x,color] of [[-w*.28,'#b77b4e'],[w*.28,'#e1d2ad']]) { box(local(x,d*.35,1.65),[3.4,1.5,1.5],color,r); box(local(x-1.15,d*.35,2.65),[1.1,1.4,1.1],color,r); }
+      box(local(0,-d*.54,h+2.7),[5,.5,.2],accent,r);
+    } else if(model==='armory') {
+      for(const x of [-w*.3,0,w*.3]) { box(local(x,-d*.55,3.8),[2.6,3.4,.24],'#47515a',r); box(local(x,-d*.59,3.8),[1.1,1.1,.15],accent,r); }
+      for(const x of [-w*.34,w*.34]) box(local(x,d*.42,h+3.1),[.32,4.3,.32],'#b9c2c5',r);
+    } else if(model==='stoneFort') {
+      for(const x of [-w*.42,w*.42]) for(const z of [-d*.4,d*.4]) { box(local(x,z,h*.65+2.2),[4.2,h*.72,4.2],'#697174',r); for(const dx of [-1.4,0,1.4]) box(local(x+dx,z,h+3),[.7,1.5,.7],accent,r); }
+      box(local(0,-d*.53,5),[5.5,7,.5],'#303943',r); box(local(0,-d*.56,9),[6.5,.45,.45],accent,r);
+    } else if(model==='cannonBattery') {
+      for(const x of [-w*.3,0,w*.3]) { box(local(x,0,2.6),[3.5,1.1,2.8],'#3f4749',r); box(local(x,-3,3.2),[1,1,7],'#252b2e',r); for(const dx of [-1.2,1.2]) box(local(x+dx,0,2.15),[1.2,1.2,1.2],'#1f2528',r); }
+      box(local(0,d*.43,2),[w*.8,.35,1.4],'#8a6845',r);
+    } else if(model==='airDefense') {
+      box(local(0,d*.12,h+5),[.7,7,.7],'#4d5961',r); octagonalPad(local(0,d*.12,h+8.6),4.6,.45,accent);
+      for(const x of [-w*.34,w*.34]) { box(local(x,-d*.32,4.4),[2.6,6,2.6],'#45545a',r); box(local(x,-d*.42,7.5),[1.2,4.2,1.2],'#d5dce0',r); }
+      box(local(0,-d*.55,h*.55+2),[w*.5,.3,.18],'#78e2e9',r);
+    } else if(model==='droneCommand') {
+      for(const x of [-w*.34,w*.34]) for(const z of [-d*.3,d*.3]) { octagonalPad(local(x,z,h+3),3.5,.35,'#31566d'); box(local(x,z,h+3.35),[4.5,.18,.45],accent,r); box(local(x,z,h+3.35),[.45,.18,4.5],accent,r); }
+      box(local(0,0,h+6),[.45,5,.45],accent,r); octagonalPad(local(0,0,h+8.6),2.4,.35,'#9ffcff');
+    }
+  }
   function drawBuilding(building, isGhost = false) {
     const item = BUILDINGS[building.type]; const [w,h,d] = item.size; const position = { x: building.x, y: 1, z: building.z };
     if(item.bridgeStyle) { drawBridgeSegment(building); return; }
@@ -982,7 +1039,8 @@
     drawCatalogDetail(item, local, r, w, h, d);
     drawLeisureBuildingDetail(item,local,r,w,h,d);
     drawTerrainBuildingDetail(item,local,r,w,h,d);
-    if(!item.openAir) drawUniqueExterior(item, building.type, local, r, w, h, d);
+    drawMilitaryBuildingDetail(item,local,r,w,h,d);
+    if(!item.openAir&&item.category!=='military') drawUniqueExterior(item, building.type, local, r, w, h, d);
     if (isGhost) return;
     if (building.type === 'farm') {
       box(local(0, .2, h + 3.2), [.55, 5.4, .55], '#8c6544', r);
@@ -1208,6 +1266,15 @@
     ferrisWheel:{label:'대관람차 안내실',signature:'console',display:'#e6c868',kinds:['console','desk','machine','server','shelf','lamp']},
     dropTower:{label:'낙하 탑 관제실',signature:'console',display:'#dc936c',kinds:['console','desk','machine','server','shelf','lamp']},
     waterRide:{label:'급류타기 안전실',signature:'console',display:'#79cad7',kinds:['console','desk','machine','server','shelf','lamp']},
+    guardPost:{label:'경비 초소 내부',signature:'weaponrack',display:'#c6ad7c',kinds:['weaponrack','map','bench','lantern','chest','banner']},
+    barracks:{label:'왕실 병영 생활관',signature:'weaponrack',display:'#c39a7c',kinds:['bed','weaponrack','wardrobe','map','bench','chest']},
+    archeryRange:{label:'궁술 훈련 준비실',signature:'weaponrack',display:'#a8be85',kinds:['weaponrack','bench','toolrack','shelf','chest','lantern']},
+    royalStable:{label:'왕실 기병대 마구실',signature:'weaponrack',display:'#c8a875',kinds:['weaponrack','haystack','trough','shelf','chest','bench']},
+    armory:{label:'왕국 무기고 내부',signature:'weaponrack',display:'#aab1ad',kinds:['weaponrack','anvil','workbench','shelf','chest','lantern']},
+    stoneFort:{label:'석조 요새 작전실',signature:'map',display:'#a7b0b1',kinds:['map','weaponrack','writingdesk','banner','telescope','chest']},
+    cannonBattery:{label:'포병 탄약 관리실',signature:'weaponrack',display:'#b09b78',kinds:['weaponrack','barrel','crate','map','toolrack','lantern']},
+    airDefense:{label:'방공 관제실',signature:'console',display:'#87bdc3',kinds:['console','telescope','map','server','desk','machine']},
+    droneCommand:{label:'미래 드론 통제실',signature:'holo',display:'#78d9e0',kinds:['holo','console','server','robot','desk','machine']},
     mine:{label:'광산 작업소',signature:'crusher',display:'#aeb7c2',kinds:['ore','cart','crusher','toolrack','lantern','crate']},
     forge:{label:'대장장이 공방',signature:'bellows',display:'#d69a78',kinds:['forge','anvil','bellows','workbench','toolrack','barrel']},
     hall:{label:'왕국 행정실',signature:'throne',display:'#d8c4e1',kinds:['throne','writingdesk','bookcase','banner','statue','candelabra']},
@@ -1549,6 +1616,7 @@
         else if(item.category==='road') detail=item.bridgeStyle?`강을 건너는 ${item.size[0]}m 다리 · 강 지형 전용 · 회전 배치 가능`:`길 조각 ${item.size[0]}m · 회전 배치 가능`;
         else if(item.category==='residential') detail=`세금 +${item.income} / 10초 · 주민 +${item.people}`;
         else if(item.category==='production') detail=`세금 +${item.income} / 10초 · 가격의 1% 추가 · 일자리 ${item.people}${productionNote}${item.popularity?` · 인기도 +${item.popularity}`:''}${item.fullTile?' · 영토 한 칸 전체 사용':''}`;
+        else if(item.category==='military') detail=`세금 +${item.income} / 10초 · 군인 일자리 ${item.people} · 낮 경계·훈련`;
         else if(item.category==='decoration') detail=`세금 +${item.income} / 10초 · 가격의 0.5% 추가 · 인기도 +${item.popularity}`;
         else if(item.category==='landmark') detail='왕국 수입 +30% · 종류별 1개 · 다른 랜드마크와 5칸 거리';
         else detail=`세금 +${item.income} / 10초`;
