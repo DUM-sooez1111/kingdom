@@ -1883,7 +1883,9 @@
     if (key === 'q') camera.yaw -= .08;
     if (key === 'e') camera.yaw += .08;
     if (key === 'f' || key === 'r') {
-      camera.pitch=Math.max(CAMERA_MIN_PITCH,Math.min(CAMERA_MAX_PITCH,camera.pitch+(key==='f'?CAMERA_PITCH_STEP:-CAMERA_PITCH_STEP)));
+      // In this projection a smaller pitch lowers the camera toward the map,
+      // while a larger pitch raises it back toward the overhead view.
+      camera.pitch=Math.max(CAMERA_MIN_PITCH,Math.min(CAMERA_MAX_PITCH,camera.pitch+(key==='f'?-CAMERA_PITCH_STEP:CAMERA_PITCH_STEP)));
       event.preventDefault();
     }
     if (key === 'o') {
