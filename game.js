@@ -1727,7 +1727,7 @@
     updateResearchTimerUI();
     updateWarUI();
     $('#rotationStep').value = String(state.rotationStep || 45);
-    const item = selectedBuilding && BUILDINGS[selectedBuilding]; els.selectionName.textContent = deleteMode ? '삭제 모드' : (item ? item.name : '건물을 선택하세요'); els.selectionMeta.textContent = deleteMode ? '토지를 클릭하면 마지막 건물을 50% 환불로 철거합니다.' : (item ? (item.fullTile?`${format(item.price)} 골드 · 영토 한 칸 전체 사용 · 인기도 +${item.popularity}`:item.category==='road'?`${format(item.price)} 골드 · ${item.bridgeStyle?'다리':'길 조각'} · 회전 ${state.rotation}° · T로 회전`:`${format(item.price)} 골드 · 연구 ${item.researchCost || 0} · 세금 ${item.income}/10초 · 회전 ${state.rotation}° · T로 회전`) : `건설 메뉴에서 건물을 선택 · 환생 발전 ${Math.min(3, state.rebirths || 0)}단계`);
+    const item = selectedBuilding && BUILDINGS[selectedBuilding]; els.selectionName.textContent = deleteMode ? '삭제 모드' : (item ? item.name : '건물을 선택하세요'); els.selectionMeta.textContent = deleteMode ? '토지를 클릭하면 마지막 건물을 50% 환불로 철거합니다.' : (item ? (item.fullTile?`${format(item.price)} 골드 · 영토 한 칸 전체 사용 · 인기도 +${item.popularity}`:item.category==='road'?`${format(item.price)} 골드 · ${item.bridgeStyle?'다리':'길 조각'} · 회전 ${state.rotation}° · Z/X로 양방향 회전`:`${format(item.price)} 골드 · 연구 ${item.researchCost || 0} · 세금 ${item.income}/10초 · 회전 ${state.rotation}° · Z/X로 양방향 회전`) : `건설 메뉴에서 건물을 선택 · 환생 발전 ${Math.min(3, state.rebirths || 0)}단계`);
     if(item?.requiredTerrain) { const terrain=TERRAIN_INFO[item.requiredTerrain]; els.selectionMeta.textContent+=` · ${terrain.icon} ${terrain.name} 지형 전용`; }
     let placedSelection=selectedPlacedBuilding&&state.buildings.find((building)=>building.id===selectedPlacedBuilding);
     if(selectedPlacedBuilding&&!placedSelection) selectedPlacedBuilding=null;
@@ -1752,7 +1752,14 @@
     els.categoryList.scrollLeft+=event.deltaY||event.deltaX;
   },{passive:false});
   document.querySelectorAll('.tab').forEach((tab) => tab.onclick = () => { activeTab = tab.dataset.tab; document.querySelectorAll('.tab').forEach((button)=>button.classList.toggle('active',button===tab)); document.querySelectorAll('.panel').forEach((panel)=>panel.classList.toggle('active',panel.id===`${activeTab}Panel`)); });
-  $('#rotateButton').onclick = () => { if (!selectedBuilding) return toast('먼저 건물을 선택하세요.'); state.rotation = (state.rotation + (state.rotationStep || 45)) % 360; updateUI(); };
+  function rotateSelectedBuilding(direction=1) {
+    if (!selectedBuilding) return false;
+    const step=state.rotationStep||45;
+    state.rotation=((state.rotation+direction*step)%360+360)%360;
+    updateUI();
+    return true;
+  }
+  $('#rotateButton').onclick = () => { if (!rotateSelectedBuilding(1)) toast('먼저 건물을 선택하세요.'); };
   $('#rotationStep').onchange = (event) => { state.rotationStep = Number(event.target.value); save(true); updateUI(); };
   $('#deleteButton').onclick = () => { deleteMode = !deleteMode; if (deleteMode) { selectedBuilding = null; selectedPlacedBuilding=null; } updateUI(); };
   $('#rebirthButton').onclick = rebirth;
@@ -1892,7 +1899,7 @@
       Object.assign(camera,DEFAULT_CAMERA); pressedKeys.clear(); cameraDrag=null; hoveredLand=null; hoveredPlacement=null;
       toast('카메라 시점을 처음 위치로 되돌렸습니다.'); event.preventDefault();
     }
-    if (key === 't' && selectedBuilding) { state.rotation = (state.rotation + (state.rotationStep || 45)) % 360; updateUI(); }
+    if ((key === 'z' || key === 'x') && rotateSelectedBuilding(key === 'z' ? 1 : -1)) event.preventDefault();
     if (['w', 'a', 's', 'd'].includes(key) && !event.repeat) { pressedKeys.add(key); event.preventDefault(); }
     if (event.key === 'Escape') { selectedBuilding = null; deleteMode = false; updateUI(); }
   });
