@@ -1899,7 +1899,8 @@
       Object.assign(camera,DEFAULT_CAMERA); pressedKeys.clear(); cameraDrag=null; hoveredLand=null; hoveredPlacement=null;
       toast('카메라 시점을 처음 위치로 되돌렸습니다.'); event.preventDefault();
     }
-    if ((key === 'z' || key === 'x') && rotateSelectedBuilding(key === 'z' ? 1 : -1)) event.preventDefault();
+    const buildingRotationDirection=event.code==='KeyZ'||key==='z'?1:event.code==='KeyX'||key==='x'?-1:0;
+    if (buildingRotationDirection && rotateSelectedBuilding(buildingRotationDirection)) event.preventDefault();
     if (['w', 'a', 's', 'd'].includes(key) && !event.repeat) { pressedKeys.add(key); event.preventDefault(); }
     if (event.key === 'Escape') { selectedBuilding = null; deleteMode = false; updateUI(); }
   });
