@@ -166,7 +166,7 @@
     { kicker:'제3장 · 건설', title:'건물을 선택하고 배치하기', lead:'건설 메뉴에서 시대와 목적에 맞는 건물을 선택하세요.', tips:[['건물 찾기','건설 목록에서는 위아래로, 카테고리 줄에서는 좌우로 마우스 휠을 움직여 원하는 종류를 찾습니다.'],['배치','건물을 선택한 뒤 소유한 영토를 좌클릭하면 실루엣 위치에 실제 건물이 설치됩니다.'],['놀이기구','놀이기구는 영토 한 칸의 중앙에 설치되며 그 칸 전체를 사용합니다. 빈 영토를 준비하세요.'],['철거','삭제 버튼을 켜고 건물을 선택하면 가격의 50%를 돌려받습니다.']] },
     { kicker:'제4장 · 길과 주민', title:'살아 움직이는 왕국 만들기', lead:'길을 연결하면 주민들이 왕국 전역의 길망을 따라 이동합니다.', tips:[['길 연결','10m 길 조각을 이어 놓으세요. X자와 T자 교차로는 자동으로 부드럽게 연결됩니다.'],['백수의 산책','직업이 없는 백수 주민은 낮에 길을 따라 천천히 산책하고, 교차로에서 무작위 방향을 고릅니다.'],['길이 없을 때','설치된 길이 하나도 없으면 주민은 자기 집 출입문 앞에서 기다립니다.'],['밤','밤이 되면 모든 주민이 집 안으로 돌아가 거리에서 보이지 않습니다.']] },
     { kicker:'제5장 · 세금과 시간', title:'낮과 밤의 세금 관리', lead:'건물이 만든 세금은 쌓인 뒤 직접 또는 자동으로 수금됩니다.', tips:[['시간 속도','기본은 일시정지와 1배속이며 환생 10회에 2배속, 환생 20회에 4배속이 해금됩니다.'],['인기도','편의시설·놀이기구·장식은 인기도를 높입니다. 인기도 1점마다 모든 세금이 0.5% 증가합니다.'],['낮과 밤','낮에는 기본 세금 100%, 밤에는 50%를 획득하며 모든 세금 +% 보너스는 유지됩니다.'],['수입 증가','비싼 건물, 연구 토큰, 환생, 랜드마크와 인기도를 활용하면 세금이 크게 증가합니다.']] },
-    { kicker:'제6장 · 영토와 지형', title:'448칸의 왕국 확장', lead:'평원·숲·산·강·호수가 어우러진 영토를 확장하세요.', tips:[['영토 구입','영토 탭에서 잠긴 땅을 골드로 구입해 건설 공간을 넓힙니다.'],['지형 전용','지형 전용 카테고리에서 각 자연환경에 맞는 특별 건물을 확인합니다.'],['강과 호수','강은 한 줄의 자연스러운 물길로 이어지고, 호수는 여러 영토에 걸친 넓은 물 지형으로 생성됩니다.'],['자연 군락','숲·산·호수는 군락으로 모이며 환생할 때 위치와 모양이 달라집니다.']] },
+  { kicker:'제6장 · 영토와 지형', title:'880칸의 왕국 확장', lead:'평원·숲·산·강·호수가 어우러진 영토를 확장하세요.', tips:[['영토 구입','영토 탭에서 잠긴 땅을 골드로 구입해 건설 공간을 넓힙니다.'],['왕실 성','왕실 성은 기존 영토 한 칸 전체를 사용하며 다른 건물을 함께 설치할 수 없습니다.'],['강과 호수','강은 한 줄의 자연스러운 물길로 이어지고, 호수는 여러 영토에 걸친 넓은 물 지형으로 생성됩니다.'],['자연 군락','숲·산·호수는 군락으로 모이며 환생할 때 위치와 모양이 달라집니다.']] },
     { kicker:'제7장 · 연구와 시대', title:'더 최신식인 왕국으로', lead:'연구를 완료해 토큰을 모으고 새로운 시대의 건물을 해금하세요.', tips:[['연구 시간','연구는 즉시 끝나지 않습니다. 연구 탭에서 남은 시간을 확인하세요.'],['연구 토큰','연구 토큰 1개마다 세금 수입이 50% 증가하며 최신 연구일수록 더 많은 토큰을 줍니다.'],['연도 해금','왕국력이 올라가면 석재·산업·현대·미래 건물이 차례로 해금됩니다.'],['비용','최신식 건물은 연구 토큰과 골드가 더 필요하지만 더 많은 세금을 생산합니다.']] },
     { kicker:'제8장 · 환생과 탐험', title:'새로운 왕국으로 다시 시작하기', lead:'충분히 성장했다면 환생해 더 강한 다음 왕국을 시작하세요.', tips:[['환생 조건','필요한 골드·주민·영토를 모두 확보해야 하며 환생할수록 조건이 증가합니다.'],['건물 보존','환생해도 설치한 건물과 보유 영토는 그대로 남고, 건물에 쌓인 세금만 초기화됩니다.'],['영구 보너스','환생 횟수마다 세금 수입이 영구적으로 증가하고 건물 외형이 발전합니다.'],['새 지도','환생하면 숲·산 군락과 자연스러운 강의 위치가 새롭게 바뀝니다.']] },
     { kicker:'제9장 · 왕국 군사', title:'시대에 맞는 수비군 만들기', lead:'군사 카테고리에서 병사들의 주둔지와 훈련 시설을 건설하세요.', tips:[['시대 발전','경비 초소에서 시작해 병영·기병대·요새·방공 기지·드론 지휘소까지 해금됩니다.'],['군인 직업','군사 건물은 주민에게 병사·궁수·기사·포병·드론 조종사 등의 일자리를 제공합니다.'],['세금','군사 시설도 유지되는 동안 건물 가격에 비례한 세금을 생산합니다.'],['내부 보기','설치한 군사 건물을 선택해 무기 거치대·작전 지도·통제 장비가 있는 내부를 확인하세요.']] },
@@ -273,7 +273,7 @@
       LANDS.push({ id, name, x, z, terrain, price: 700 + Math.floor(distance * 140), owned: false });
     }
   }
-  const START = { cash: 1000, owned: ['core1', 'core2', 'core3'], buildings: [], workers: 0, autoCollect: false, rotation: 0, rotationStep: 45, missionIndex: 0, rebirths: 0, terrainSeed: 0, year: 1, timeScale: 1, researchTokens: 0, researchCount: 0, researchStartedAt: 0, researchEndsAt: 0, researchDuration: 0, researchPendingReward: 0, warLevel:0, warVictories:0, warStartedAt:0, warEndsAt:0, warDuration:0, warEnemyPower:0, warArmyPower:0, warPendingReward:0 };
+  const START = { cash: 1000, owned: ['core1', 'core2', 'core3'], buildings: [], workers: 0, autoCollect: false, rotation: 0, rotationStep: 45, missionIndex: 0, rebirths: 0, terrainSeed: 0, year: 1, timeScale: 1, researchTokens: 0, researchCount: 0, researchStartedAt: 0, researchEndsAt: 0, researchDuration: 0, researchPendingReward: 0, warLevel:0, warVictories:0, warStartedAt:0, warEndsAt:0, warDuration:0, warEnemyPower:0, warArmyPower:0, warPendingReward:0, castleLandId:'core5' };
   const storageKey = 'crownvale-browser-v1';
   let state = load();
   function applyTerrainLayout(seed=0) {
@@ -283,6 +283,18 @@
     });
   }
   applyTerrainLayout(state.terrainSeed||0);
+  function ensureRoyalCastleLand() {
+    const occupiedIds=new Set(state.buildings.map((building)=>building.landId));
+    let castleLand=LANDS.find((land)=>land.id===state.castleLandId);
+    if(!castleLand||occupiedIds.has(castleLand.id)||castleLand.terrain!=='plains') {
+      const preferredIds=['core5','pass4','north5','south5','core4','pass3'];
+      castleLand=preferredIds.map((id)=>LANDS.find((land)=>land.id===id)).find((land)=>land&&!occupiedIds.has(land.id)&&land.terrain==='plains')
+        ||LANDS.find((land)=>!occupiedIds.has(land.id)&&land.terrain==='plains');
+      state.castleLandId=castleLand?.id||'core5';
+    }
+    if(castleLand&&!state.owned.includes(castleLand.id)) state.owned.push(castleLand.id);
+  }
+  ensureRoyalCastleLand();
   // Attractions always occupy their entire saved land, including rides that
   // were placed before the full-tile attraction rule was introduced.
   state.buildings.forEach((building)=>{
@@ -454,7 +466,7 @@
   function isBuildingUnlocked(item) { return !!item && kingdomYear() >= unlockYear(item); }
   function toast(message) { clearTimeout(toastTimer); els.toast.textContent = message; els.toast.classList.add('show'); toastTimer = setTimeout(() => els.toast.classList.remove('show'), 2600); }
   function owned(land) { return state.owned.includes(land.id); }
-  function buildingCount(landId) { return state.buildings.filter((building) => building.landId === landId).length; }
+  function buildingCount(landId) { return state.buildings.filter((building) => building.landId === landId).length+(state.castleLandId===landId?1:0); }
   function population() { return state.buildings.reduce((total, building) => { const item=BUILDINGS[building.type]; return total+(item.category==='residential'?item.people:0); }, 0); }
   function jobProfile(building) {
     const item = BUILDINGS[building.type], key = item.model || building.type;
@@ -673,6 +685,7 @@
     if (!isBuildingUnlocked(item)) return null;
     const land = world && landAtWorld(world);
     if (!land || !owned(land)) return null;
+    if(land.id===state.castleLandId) return {landId:land.id,x:land.x,z:land.z,valid:false,reason:'royal-castle'};
     const [width, depth] = footprint(item, state.rotation);
     const snapStep=item.category==='road'?2:4, snap = (value) => Math.round(value / snapStep) * snapStep;
     const margin = 1;
@@ -1166,15 +1179,26 @@
       const x = MAP_GRID.minX + (column - .5) * MAP_GRID.tile;
       box({x,y:.65,z:centerZ}, [4,.18,mapRows * MAP_GRID.tile], '#ad8e68');
     }
-    box({x:153,y:8,z:0}, [62,16,14], '#535e70');
-    for (const x of [123,183]) { box({x,y:11,z:-8}, [12,22,12], '#657183'); prism({x,y:0,z:-8}, 16,16,22,29,'#693f56'); }
-    box({x:153,y:5.5,z:-7.3}, [10,11,.5], '#513322');
+    const castleLand=LANDS.find((land)=>land.id===state.castleLandId);
+    if(castleLand) {
+      const x=castleLand.x,z=castleLand.z;
+      box({x,y:.92,z},[42,.35,42],'#8d877b');
+      box({x,y:7.2,z},[24,12.5,17],'#596374');
+      prism({x,y:0,z},28,21,13.5,19.5,'#6b4058');
+      for(const [dx,dz] of [[-15,-15],[15,-15],[-15,15],[15,15]]) {
+        box({x:x+dx,y:8.5,z:z+dz},[7.5,15.5,7.5],'#687487');
+        prism({x:x+dx,y:0,z:z+dz},10,10,16.2,21.5,'#74435c');
+      }
+      for(const dz of [-17,17]) box({x,y:4,z:z+dz},[31,6.2,3],'#596374');
+      for(const dx of [-17,17]) box({x:x+dx,y:4,z},[3,6.2,31],'#596374');
+      box({x,y:4.2,z:z+18.6},[7,7.2,.6],'#513322');
+    }
     for (const [x,z,size] of [[-132,-65,6],[-132,63,6],[132,-64,6],[132,63,6],[0,74,5],[-109,63,4],[113,69,4]]) { box({x,y:size*.9,z}, [1.2,size*1.8,1.2], '#63422a'); pyramid({x,y:size*1.7,z}, size, '#3d7d4f'); }
     box({x:126,y:1,z:0}, [13,2,13], '#aeb8c3'); box({x:126,y:2.12,z:0}, [10,.25,10], '#5db7dc'); box({x:126,y:4,z:0}, [1.4,4,1.4], '#c9d3dd');
   }
   function drawDecorations() {
     const ornaments = [[-19, 18], [19, -18], [-18, -19], [18, 19]];
-    LANDS.filter(owned).forEach((land, index) => {
+    LANDS.filter((land)=>owned(land)&&land.id!==state.castleLandId).forEach((land, index) => {
       const [ox, oz] = ornaments[index % ornaments.length];
       const x = land.x + ox, z = land.z + oz;
       if (index % 2 === 0) {
@@ -1599,6 +1623,7 @@
     if (!isBuildingUnlocked(item)) { selectedBuilding = null; updateUI(); return toast(`이 건물은 왕국력 ${unlockYear(item)}년에 해금됩니다.`); }
     if(placement?.reason==='landmark-unique') return toast('같은 랜드마크는 왕국에 하나만 설치할 수 있습니다.');
     if(placement?.reason==='landmark-radius') return toast('다른 랜드마크의 원형 영향 범위 5칸 밖에 설치하세요.');
+    if(placement?.reason==='royal-castle') return toast('이 영토는 왕실 성이 한 칸 전체를 사용하고 있습니다.');
     if(placement?.reason==='residential-water') return toast('주거 건물은 강이나 호수 위에 설치할 수 없습니다.');
     if(placement?.reason==='terrain') { const terrain=TERRAIN_INFO[placement.requiredTerrain]; return toast(`${item.name}은(는) ${terrain.icon} ${terrain.name} 지형에만 설치할 수 있습니다.`); }
     if (!placement || !land || !placement.valid) return toast('소유한 토지의 빈 위치를 선택하세요.');
@@ -1629,8 +1654,9 @@
     const rebirths = (state.rebirths || 0) + 1;
     const preservedBuildings=state.buildings.map((building)=>({ ...building, tax:0 }));
     const preservedOwned=[...state.owned], preservedRotationStep=state.rotationStep||45;
-    state = { ...structuredClone(START), buildings:preservedBuildings, owned:preservedOwned, rotationStep:preservedRotationStep, autoCollect:false, rebirths, terrainSeed: rebirths, year: (state.year || 1) + 1, researchTokens: state.researchTokens || 0, warLevel:state.warLevel||0, warVictories:state.warVictories||0, lastWarResult:state.lastWarResult||'' };
+    state = { ...structuredClone(START), buildings:preservedBuildings, owned:preservedOwned, rotationStep:preservedRotationStep, autoCollect:false, castleLandId:state.castleLandId, rebirths, terrainSeed: rebirths, year: (state.year || 1) + 1, researchTokens: state.researchTokens || 0, warLevel:state.warLevel||0, warVictories:state.warVictories||0, lastWarResult:state.lastWarResult||'' };
     applyTerrainLayout(state.terrainSeed);
+    ensureRoyalCastleLand();
     residentWalkers.clear(); roadNetworkCache={signature:'',nodes:[]};
     selectedBuilding = null; selectedPlacedBuilding=null; selectedLand = state.owned[0]||'core1'; deleteMode = false;
     const speedUnlock=rebirths===10?' · 2배속 해금!':rebirths===20?' · 4배속 해금!':'';
