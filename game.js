@@ -305,12 +305,14 @@
     if(castleLand&&!state.owned.includes(castleLand.id)) state.owned.push(castleLand.id);
   }
   ensureRoyalCastleLand();
-  // Attractions always occupy their entire saved land, including rides that
-  // were placed before the full-tile attraction rule was introduced.
+  // Keep saved buildings inside their land so the four-metre map corridors
+  // never cut through roofs or platforms after loading an older kingdom.
   state.buildings.forEach((building)=>{
-    if(!BUILDINGS[building.type]?.fullTile) return;
+    const item=BUILDINGS[building.type];
     const land=LANDS.find((entry)=>entry.id===building.landId);
-    if(land) { building.x=land.x; building.z=land.z; }
+    if(!item||!land)return;
+    const position=constrainPlacementToLand(land,item,building.rotation||0,building.x,building.z);
+    building.x=position.x; building.z=position.z;
   });
   let selectedBuilding = null;
   let tutorialPageIndex = Math.max(0,Math.min(TUTORIAL_PAGES.length-1,Number(localStorage.getItem('crownvale-tutorial-page'))||0));
@@ -709,6 +711,16 @@
     const angle = (rotation || 0) * Math.PI / 180, c = Math.abs(Math.cos(angle)), s = Math.abs(Math.sin(angle));
     return [item.size[0] * c + item.size[2] * s, item.size[0] * s + item.size[2] * c];
   }
+  function constrainPlacementToLand(land,item,rotation,x,z) {
+    if(item.fullTile) return {x:land.x,z:land.z};
+    if(item.bridgeStyle) return {x,z};
+    const [width,depth]=footprint(item,rotation);
+    const margin=item.category==='road'?1:4;
+    return {
+      x:Math.max(land.x-24+width*.5+margin,Math.min(land.x+24-width*.5-margin,x)),
+      z:Math.max(land.z-24+depth*.5+margin,Math.min(land.z+24-depth*.5-margin,z)),
+    };
+  }
   function placementFromScreen(screenX, screenY) {
     if (!selectedBuilding) return null;
     const world = screenToGround(screenX, screenY), item = BUILDINGS[selectedBuilding];
@@ -716,11 +728,8 @@
     const land = world && landAtWorld(world);
     if (!land || !owned(land)) return null;
     if(land.id===state.castleLandId) return {landId:land.id,x:land.x,z:land.z,valid:false,reason:'royal-castle'};
-    const [width, depth] = footprint(item, state.rotation);
     const snapStep=item.category==='road'?2:4, snap = (value) => Math.round(value / snapStep) * snapStep;
-    const margin = 1;
-    let x = Math.max(land.x - 24 + width * .5 + margin, Math.min(land.x + 24 - width * .5 - margin, snap(world.x)));
-    let z = Math.max(land.z - 24 + depth * .5 + margin, Math.min(land.z + 24 - depth * .5 - margin, snap(world.z)));
+    let {x,z}=constrainPlacementToLand(land,item,state.rotation,snap(world.x),snap(world.z));
     let connectedBridgeId=null;
     if(item.fullTile) { x=land.x; z=land.z; }
     if(item.bridgeStyle) {
@@ -735,6 +744,7 @@
         x=bridge.x+normalX*side*14; z=bridge.z+normalZ*side*14; connectedBridgeId=bridge.id;
       }
     }
+    if(!item.bridgeStyle) ({x,z}=constrainPlacementToLand(land,item,state.rotation,x,z));
     if(item.category==='residential'&&(land.terrain==='river'||land.terrain==='lake')&&!item.requiredTerrain) return {landId:land.id,x,z,valid:false,reason:'residential-water'};
     if(item.requiredTerrain&&land.terrain!==item.requiredTerrain) return {landId:land.id,x,z,valid:false,reason:'terrain',requiredTerrain:item.requiredTerrain};
     if(item.category==='landmark') {
