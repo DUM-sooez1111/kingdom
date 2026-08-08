@@ -1030,6 +1030,26 @@
       for(const x of [-w*.42,w*.42]) { box(local(x,0,h*.55+2),[3.8,h+1,3.8],'#777d82',r); prism(local(x,0,h+2.2),4.6,4.6,h+2,h+5,item.roof,r); } box(local(0,-d*.55,5.2),[5.5,7,.6],'#3e4149',r);
     }
   }
+  function footprintSupport(item,rotation,directionX,directionZ,padding=0) {
+    const angle=(rotation||0)*Math.PI/180,c=Math.cos(angle),s=Math.sin(angle);
+    const localX=directionX*c+directionZ*s,localZ=-directionX*s+directionZ*c;
+    return Math.abs(localX)*(item.size[0]*.5+padding)+Math.abs(localZ)*(item.size[2]*.5+padding);
+  }
+  function segmentCrossesBuilding(start,end,building,padding=1.35) {
+    const item=BUILDINGS[building.type];
+    if(!item||item.category==='road')return false;
+    const angle=-(building.rotation||0)*Math.PI/180,c=Math.cos(angle),s=Math.sin(angle);
+    const local=(point)=>{const dx=point.x-building.x,dz=point.z-building.z;return{x:dx*c-dz*s,z:dx*s+dz*c};};
+    const a=local(start),b=local(end),dx=b.x-a.x,dz=b.z-a.z,halfX=item.size[0]*.5+padding,halfZ=item.size[2]*.5+padding;
+    let near=0,far=1;
+    for(const [origin,delta,half] of [[a.x,dx,halfX],[a.z,dz,halfZ]]) {
+      if(Math.abs(delta)<.0001) { if(Math.abs(origin)>half)return false; continue; }
+      const first=(-half-origin)/delta,second=(half-origin)/delta,entry=Math.min(first,second),exit=Math.max(first,second);
+      near=Math.max(near,entry);far=Math.min(far,exit);
+      if(near>far)return false;
+    }
+    return far>=0&&near<=1;
+  }
   function drawBridgeHomeConnection(building,item) {
     if(item.category!=='residential'||item.requiredTerrain!=='river'||!building.landId)return;
     const bridge=state.buildings.find((candidate)=>candidate.id===building.connectedBridgeId)
@@ -1037,8 +1057,17 @@
     if(!bridge)return;
     const dx=bridge.x-building.x,dz=bridge.z-building.z,length=Math.hypot(dx,dz);
     if(length<2||length>25)return;
-    const angle=Math.atan2(dz,dx),midpoint={x:(bridge.x+building.x)/2,y:1.72,z:(bridge.z+building.z)/2};
-    box(midpoint,[length+.8,.3,2.4],'#a77a4c',angle); box({ ...midpoint, y:1.92 },[length+.4,.1,.3],'#e1bf78',angle);
+    const directionX=dx/length,directionZ=dz/length,bridgeItem=BUILDINGS[bridge.type];
+    const homeClearance=footprintSupport(item,building.rotation||0,directionX,directionZ,.45);
+    const bridgeClearance=footprintSupport(bridgeItem,bridge.rotation||0,-directionX,-directionZ,.25);
+    const connectorLength=length-homeClearance-bridgeClearance;
+    if(connectorLength<1)return;
+    const start={x:building.x+directionX*homeClearance,z:building.z+directionZ*homeClearance};
+    const end={x:bridge.x-directionX*bridgeClearance,z:bridge.z-directionZ*bridgeClearance};
+    const blocked=state.buildings.some((candidate)=>candidate.id!==building.id&&candidate.id!==bridge.id&&segmentCrossesBuilding(start,end,candidate));
+    if(blocked)return;
+    const angle=Math.atan2(end.z-start.z,end.x-start.x),midpoint={x:(start.x+end.x)/2,y:1.72,z:(start.z+end.z)/2};
+    box(midpoint,[connectorLength+.3,.3,2.4],'#a77a4c',angle); box({ ...midpoint, y:1.92 },[connectorLength,.1,.3],'#e1bf78',angle);
   }
   function designSeed(text) {
     let hash = 2166136261;
