@@ -180,7 +180,7 @@
     { kicker:'제7장 · 연구와 시대', title:'더 최신식인 왕국으로', lead:'연구를 완료해 토큰을 모으고 새로운 시대의 건물을 해금하세요.', tips:[['연구 시간','연구는 즉시 끝나지 않습니다. 연구 탭에서 남은 시간을 확인하세요.'],['연구 토큰','연구 토큰 1개마다 세금 수입이 50% 증가하며 최신 연구일수록 더 많은 토큰을 줍니다.'],['연도 해금','왕국력이 올라가면 석재·산업·현대·미래 건물이 차례로 해금됩니다.'],['비용','최신식 건물은 연구 토큰과 골드가 더 필요하지만 더 많은 세금을 생산합니다.']] },
     { kicker:'제8장 · 환생과 탐험', title:'새로운 왕국으로 다시 시작하기', lead:'충분히 성장했다면 환생해 더 강한 다음 왕국을 시작하세요.', tips:[['환생 조건','필요한 골드·주민·영토를 모두 확보해야 하며 환생할수록 조건이 증가합니다.'],['건물 보존','환생해도 설치한 건물과 보유 영토는 그대로 남고, 건물에 쌓인 세금만 초기화됩니다.'],['영구 보너스','환생 횟수마다 세금 수입이 영구적으로 증가하고 건물 외형이 발전합니다.'],['새 지도','환생하면 숲·산 군락과 자연스러운 강의 위치가 새롭게 바뀝니다.']] },
     { kicker:'제9장 · 왕국 군사', title:'시대에 맞는 수비군 만들기', lead:'군사 카테고리에서 병사들의 주둔지와 훈련 시설을 건설하세요.', tips:[['시대 발전','경비 초소에서 시작해 병영·기병대·요새·방공 기지·드론 지휘소까지 해금됩니다.'],['군인 직업','군사 건물은 주민에게 병사·궁수·기사·포병·드론 조종사 등의 일자리를 제공합니다.'],['세금','군사 시설도 유지되는 동안 건물 가격에 비례한 세금을 생산합니다.'],['내부 보기','설치한 군사 건물을 선택해 무기 거치대·작전 지도·통제 장비가 있는 내부를 확인하세요.']] },
-    { kicker:'제10장 · 전쟁', title:'적 왕국으로 출정하기', lead:'군사 건물의 전투력을 모아 점점 강해지는 적 왕국을 정복하세요.', tips:[['출정 조건','아군 전투력이 적 전투력 이상이면 전쟁 본부에서 출정할 수 있습니다.'],['전투 시간','출정 후 현실 시간이 지나면 전투가 자동으로 끝납니다. 게임을 닫아도 진행 시간은 유지됩니다.'],['승리 보상','승리하면 골드를 받고 캠페인 단계가 오릅니다. 세 번째 승리마다 연구 토큰도 획득합니다.'],['영구 기록','전쟁 승리 횟수와 캠페인 단계는 환생해도 유지되며 다음 적은 더욱 강해집니다.']] },
+    { kicker:'제10장 · 전쟁', title:'적 왕국으로 출정하기', lead:'군사 건물의 전투력을 모아 점점 강해지는 적 왕국을 정복하세요.', tips:[['출정 조건','아군 전투력이 적 전투력 이상이면 전쟁 본부에서 출정할 수 있습니다.'],['전투 시간','출정 후 현실 시간이 지나면 전투가 자동으로 끝납니다. 게임을 닫아도 진행 시간은 유지됩니다.'],['승패','승리하면 골드와 연구 토큰을 얻지만, 패배하면 현재 보유 골드의 70%를 잃습니다.'],['영구 기록','전쟁 승리 횟수와 캠페인 단계는 환생해도 유지되며 다음 적은 더욱 강해집니다.']] },
   ];
   const LANDS = [
     { id: 'core1', name: '왕실 들판', x: -96, z: -24, price: 0, owned: true },
@@ -588,6 +588,7 @@
   function warRequiredPower(level=state.warLevel||0) { return Math.round(30*Math.pow(1.55,level)); }
   function warReward(level=state.warLevel||0) { return warRequiredPower(level)*20; }
   function warDurationMilliseconds(level=state.warLevel||0) { return Math.min(90,20+level*4)*1000; }
+  const WAR_DEFEAT_GOLD_LOSS_RATE=.7;
   function warInProgress() { return Number(state.warEndsAt)>0; }
   function finishWarIfReady(now=Date.now()) {
     if(!warInProgress()||now<Number(state.warEndsAt)) return false;
@@ -600,8 +601,10 @@
       state.lastWarResult=`승리 ${state.warVictories}회 · 전리품 ${format(reward)} 골드${tokenBonus?` · 연구 토큰 ${tokenBonus}개`:''}`;
       toast(`전쟁 승리! ${format(reward)} 골드${tokenBonus?`와 연구 토큰 ${tokenBonus}개`:''}를 획득했습니다.`);
     } else {
-      state.lastWarResult='패배 · 군사 건물을 보강한 뒤 다시 도전하세요.';
-      toast('전쟁에서 패배했습니다. 건물과 영토 피해는 없습니다.');
+      const goldLost=Math.floor(Math.max(0,state.cash)*WAR_DEFEAT_GOLD_LOSS_RATE);
+      state.cash=Math.max(0,state.cash-goldLost);
+      state.lastWarResult=`패배 · 보유 골드 70% 손실 (${format(goldLost)} 골드) · 군사 건물을 보강하세요.`;
+      toast(`전쟁 패배! 보유 골드의 70%인 ${format(goldLost)} 골드를 잃었습니다.`);
     }
     save(true); updateUI(); return true;
   }
@@ -616,15 +619,16 @@
       els.launchWar.disabled=true; els.launchWar.innerHTML=`전투 진행 중 <span>${formatDuration(remaining)}</span>`;
     } else {
       els.warProgress.style.width=`${Math.min(100,power/required*100)}%`;
-      els.warStatus.textContent=power>=required?'출정 준비 완료 · 전투는 자동으로 진행됩니다.':`전투력 ${format(required-power)}이 더 필요합니다.`;
-      els.launchWar.disabled=power<required; els.launchWar.innerHTML=`전쟁 출정 <span>보상 ${format(reward)} 골드</span>`;
+      els.warStatus.textContent=power>=required?'출정 준비 완료 · 전투는 자동으로 진행됩니다.':power>0?`전투력 ${format(required-power)} 부족 · 패배하면 보유 골드 70% 손실`:'군사 건물을 지어 전투력을 확보하세요.';
+      els.launchWar.disabled=power<=0; els.launchWar.innerHTML=`${power>=required?'전쟁 출정':'⚠ 위험 출정'} <span>보상 ${format(reward)} 골드</span>`;
     }
     els.warHistory.textContent=state.lastWarResult||'아직 전쟁 기록이 없습니다.';
   }
   function launchWar() {
     if(warInProgress()) return toast('이미 전쟁이 진행 중입니다.');
     const level=state.warLevel||0, power=militaryPower(), required=warRequiredPower(level);
-    if(power<required) return toast(`출정하려면 전투력 ${format(required)}이 필요합니다.`);
+    if(power<=0) return toast('출정하려면 군사 건물이 필요합니다.');
+    if(power<required&&!window.confirm(`아군 전투력이 ${format(required-power)} 부족합니다. 패배하면 보유 골드의 70%를 잃습니다. 위험을 감수하고 출정할까요?`)) return;
     const duration=warDurationMilliseconds(level), now=Date.now(), enemy=warOpponent(level);
     state.warStartedAt=now; state.warEndsAt=now+duration; state.warDuration=duration; state.warEnemyPower=required; state.warArmyPower=power; state.warPendingReward=warReward(level);
     toast(`${enemy.name}과의 전쟁이 시작됐습니다. ${formatDuration(duration)} 뒤 결과가 나옵니다.`); save(true); updateWarUI(now);
