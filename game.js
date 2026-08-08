@@ -247,6 +247,10 @@
     const curve=Math.sin(row*.36+phase)*2.15+Math.sin(row*.16+phase*.55)*1.15;
     return Math.max(2.5,Math.min(MAP_GRID.columns-3.5,base+curve));
   }
+  function bridgeRotationForRow(row,seed=0) {
+    const sample=.3,dx=(riverCenterColumn(row+sample,seed)-riverCenterColumn(row-sample,seed))*MAP_GRID.tile,dz=sample*2*MAP_GRID.tile;
+    return Math.atan2(-dx,dz)*180/Math.PI;
+  }
   function riverColumnForRow(row,seed=0) {
     return Math.round(riverCenterColumn(row,seed));
   }
@@ -301,7 +305,7 @@
       LANDS.push({ id, name, x, z, terrain, price: 700 + Math.floor(distance * 140), owned: false });
     }
   }
-  const START = { cash: 1000, owned: ['core1', 'core2', 'core3'], buildings: [], workers: 0, autoCollect: false, rotation: 0, rotationStep: 45, missionIndex: 0, rebirths: 0, terrainSeed: 0, year: 1, timeScale: 1, researchTokens: 0, researchCount: 0, researchStartedAt: 0, researchEndsAt: 0, researchDuration: 0, researchPendingReward: 0, warLevel:0, warVictories:0, warPopularityLoss:0, warStartedAt:0, warEndsAt:0, warDuration:0, warEnemyPower:0, warArmyPower:0, warPendingReward:0, castleLandId:'core5' };
+  const START = { cash: 1000, owned: ['core1', 'core2', 'core3'], buildings: [], workers: 0, autoCollect: false, rotation: 0, rotationStep: 45, gridSize:4, missionIndex: 0, rebirths: 0, terrainSeed: 0, year: 1, timeScale: 1, researchTokens: 0, researchCount: 0, researchStartedAt: 0, researchEndsAt: 0, researchDuration: 0, researchPendingReward: 0, warLevel:0, warVictories:0, warPopularityLoss:0, warStartedAt:0, warEndsAt:0, warDuration:0, warEnemyPower:0, warArmyPower:0, warPendingReward:0, castleLandId:'core5' };
   const storageKey = 'crownvale-browser-v1';
   let state = load();
   function applyTerrainLayout(seed=0) {
@@ -331,6 +335,13 @@
     if(!item||!land)return;
     const position=constrainPlacementToLand(land,item,building.rotation||0,building.x,building.z);
     building.x=position.x; building.z=position.z;
+  });
+  state.buildings.forEach((building)=>{
+    const item=BUILDINGS[building.type];if(!item?.bridgeStyle)return;
+    const land=LANDS.find((entry)=>entry.id===building.landId);if(!land)return;
+    const row=Math.round((land.z-MAP_GRID.minZ)/MAP_GRID.tile);
+    building.x=MAP_GRID.minX+riverCenterColumn(row,state.terrainSeed||0)*MAP_GRID.tile;
+    building.z=land.z;building.rotation=bridgeRotationForRow(row,state.terrainSeed||0);
   });
   const savedRiverHomes=state.buildings.filter((building)=>{
     const item=BUILDINGS[building.type];
@@ -365,6 +376,7 @@
   let deleteMode = false;
   let selectedLand = 'core1';
   let activeTab = 'build';
+  let pendingLandPurchase = null;
   let toastTimer = 0;
   let lastTime = performance.now();
   let autoTimer = 0;
@@ -798,13 +810,14 @@
     const land = world && landAtWorld(world);
     if (!land || !owned(land)) return null;
     if(land.id===state.castleLandId) return {landId:land.id,x:land.x,z:land.z,valid:false,reason:'royal-castle'};
-    const snapStep=item.category==='road'?2:4, snap = (value) => Math.round(value / snapStep) * snapStep;
-    let {x,z}=constrainPlacementToLand(land,item,state.rotation,snap(world.x),snap(world.z));
+    const snapStep=Math.max(1,Number(state.gridSize)||4), snap = (value) => Math.round(value / snapStep) * snapStep;
+    let effectiveRotation=state.rotation;
+    let {x,z}=constrainPlacementToLand(land,item,effectiveRotation,snap(world.x),snap(world.z));
     let connectedBridgeId=null;
     if(item.fullTile) { x=land.x; z=land.z; }
     if(item.bridgeStyle) {
       const row=Math.round((land.z-MAP_GRID.minZ)/MAP_GRID.tile);
-      x=MAP_GRID.minX+riverCenterColumn(row,state.terrainSeed||0)*MAP_GRID.tile; z=land.z;
+      x=MAP_GRID.minX+riverCenterColumn(row,state.terrainSeed||0)*MAP_GRID.tile; z=land.z;effectiveRotation=bridgeRotationForRow(row,state.terrainSeed||0);
     }
     if(item.category==='residential'&&item.requiredTerrain==='river') {
       const bridge=state.buildings.find((building)=>building.landId===land.id&&BUILDINGS[building.type]?.bridgeStyle);
@@ -813,7 +826,7 @@
         x=position.x;z=position.z;connectedBridgeId=bridge.id;
       }
     }
-    if(!item.bridgeStyle&&!connectedBridgeId) ({x,z}=constrainPlacementToLand(land,item,state.rotation,x,z));
+    if(!item.bridgeStyle&&!connectedBridgeId) ({x,z}=constrainPlacementToLand(land,item,effectiveRotation,x,z));
     if(item.category==='residential'&&(land.terrain==='river'||land.terrain==='lake')&&!item.requiredTerrain) return {landId:land.id,x,z,valid:false,reason:'residential-water'};
     if(item.requiredTerrain&&land.terrain!==item.requiredTerrain) return {landId:land.id,x,z,valid:false,reason:'terrain',requiredTerrain:item.requiredTerrain};
     if(item.category==='landmark') {
@@ -821,18 +834,19 @@
       const nearby=state.buildings.some((building)=>BUILDINGS[building.type].category==='landmark'&&Math.hypot(building.x-x,building.z-z)<MAP_GRID.tile*5);
       if(nearby) return {landId:land.id,x,z,valid:false,reason:'landmark-radius'};
     }
+    const [width,depth]=footprint(item,effectiveRotation);
     const occupied = state.buildings.some((building) => {
       const otherItem=BUILDINGS[building.type], [otherWidth, otherDepth] = footprint(otherItem, building.rotation);
       if(item.fullTile||otherItem.fullTile) return true;
       let padding=.6;
       if(item.category==='road'&&otherItem.category==='road') {
-        const directionDifference=Math.abs(((state.rotation-(building.rotation||0))%180+180)%180);
+        const directionDifference=Math.abs(((effectiveRotation-(building.rotation||0))%180+180)%180);
         if(directionDifference>1) return false;
         padding=-2.1;
       }
       return Math.abs(x - building.x) < (width + otherWidth) * .5 + padding && Math.abs(z - building.z) < (depth + otherDepth) * .5 + padding;
     });
-    return { landId: land.id, x, z, connectedBridgeId, valid: !occupied };
+    return { landId: land.id, x, z, rotation:effectiveRotation, connectedBridgeId, valid: !occupied };
   }
   function rotatePoint(point, center, angle) {
     const c = Math.cos(angle), s = Math.sin(angle), x = point.x - center.x, z = point.z - center.z;
@@ -1032,6 +1046,14 @@
     box(local(x-.25*scale,z,2.65*scale),[2.25*scale,.9*scale,1.8*scale],shade(color,18),r);
     for(const dx of [-1.4,1.4]) for(const dz of [-.95,.95]) box(local(x+dx*scale,z+dz*scale,1.35*scale),[.65*scale,.65*scale,.35*scale],'#252c32',r);
     for(const dz of [-.7,.7]) box(local(x+2.13*scale,z+dz*scale,1.95*scale),[.12*scale,.28*scale,.32*scale],'#ffe59b',r);
+  }
+  function drawPlacementGrid(land) {
+    if(!selectedBuilding||!land||!owned(land))return;
+    const step=Math.max(1,Number(state.gridSize)||4),half=24,color=hoveredPlacement&&hoveredPlacement.landId===land.id&&!hoveredPlacement.valid?'#ef8178':'#79e7e2';
+    for(let offset=-half;offset<=half+.01;offset+=step) {
+      box({x:land.x+offset,y:.94,z:land.z},[.13,.08,47.2],color,0,.48);
+      box({x:land.x,y:.94,z:land.z+offset},[47.2,.08,.13],color,0,.48);
+    }
   }
   function drawAutomotiveBuildingDetail(item,local,r,w,h,d) {
     const model=item.buildGroup==='automotive'&&item.model;if(!model)return;
@@ -1861,13 +1883,18 @@
     faceLayer = 0; LANDS.forEach(drawLand);
     faceLayer = 1; LANDS.forEach(drawTerrainFeatures); drawWorldArt(); drawDecorations();
     faceLayer = 2; drawRiverPath(); drawLake();
-    faceLayer = 3; LANDS.forEach(drawLandBorder);
+    faceLayer = 3;
+    if(selectedBuilding) {
+      const hoveredGridLand=LANDS.find((land)=>land.id===hoveredPlacement?.landId),selectedGridLand=LANDS.find((land)=>land.id===selectedLand);
+      drawPlacementGrid(hoveredGridLand&&owned(hoveredGridLand)?hoveredGridLand:selectedGridLand&&owned(selectedGridLand)?selectedGridLand:LANDS.find(owned));
+    }
+    LANDS.forEach(drawLandBorder);
     faceLayer = 4; state.buildings.forEach(drawBuilding);
     faceLayer = 5; drawRoadJunctions();
     faceLayer = 6; drawResidents();
     if (hoveredPlacement && hoveredPlacement.valid && selectedBuilding && isBuildingUnlocked(BUILDINGS[selectedBuilding])) {
       faceLayer = 7;
-      drawBuilding({ type: selectedBuilding, landId:hoveredPlacement.landId, connectedBridgeId:hoveredPlacement.connectedBridgeId, x: hoveredPlacement.x, z: hoveredPlacement.z, rotation: state.rotation }, true);
+      drawBuilding({ type: selectedBuilding, landId:hoveredPlacement.landId, connectedBridgeId:hoveredPlacement.connectedBridgeId, x: hoveredPlacement.x, z: hoveredPlacement.z, rotation: hoveredPlacement.rotation??state.rotation }, true);
     }
     faces.sort((a,b) => a.layer - b.layer || b.depth - a.depth);
     for (const face of faces) {
@@ -1904,7 +1931,7 @@
     if ((state.researchTokens || 0) < (item.researchCost || 0)) return toast(`연구 토큰 ${item.researchCost}개가 필요합니다.`);
     const slot = placement && placement.valid ? placement : null;
     if (!slot) return toast('이 영토는 이미 가득 찼습니다.');
-    state.cash -= item.price; state.researchTokens -= item.researchCost || 0; state.buildings.push({ id: crypto.randomUUID(), type: selectedBuilding, landId: land.id, connectedBridgeId:slot.connectedBridgeId||null, x: slot.x, z: slot.z, rotation: state.rotation, tax: 0 });
+    state.cash -= item.price; state.researchTokens -= item.researchCost || 0; state.buildings.push({ id: crypto.randomUUID(), type: selectedBuilding, landId: land.id, connectedBridgeId:slot.connectedBridgeId||null, x: slot.x, z: slot.z, rotation: slot.rotation??state.rotation, tax: 0 });
     selectedBuilding = null; hoveredLand = null; hoveredPlacement = null;
     toast(`${item.name}이(가) ${slot.connectedBridgeId?'다리와 연결되어 ':'실루엣 위치에 '}설치되었습니다.`); save(true); updateUI();
   }
@@ -1926,8 +1953,8 @@
     if (!window.confirm('환생해도 건물과 보유 영토는 그대로 남습니다. 보유 골드·수집자·자동 수금은 초기화되며, 모든 골드 수입이 영구적으로 10% 증가하고 건물이 발전합니다. 계속할까요?')) return;
     const rebirths = (state.rebirths || 0) + 1;
     const preservedBuildings=state.buildings.map((building)=>({ ...building, tax:0 }));
-    const preservedOwned=[...state.owned], preservedRotationStep=state.rotationStep||45;
-    state = { ...structuredClone(START), buildings:preservedBuildings, owned:preservedOwned, rotationStep:preservedRotationStep, autoCollect:false, castleLandId:state.castleLandId, rebirths, terrainSeed: rebirths, year: (state.year || 1) + 1, researchTokens: state.researchTokens || 0, warLevel:state.warLevel||0, warVictories:state.warVictories||0, lastWarResult:state.lastWarResult||'' };
+    const preservedOwned=[...state.owned], preservedRotationStep=state.rotationStep||45, preservedGridSize=state.gridSize||4;
+    state = { ...structuredClone(START), buildings:preservedBuildings, owned:preservedOwned, rotationStep:preservedRotationStep, gridSize:preservedGridSize, autoCollect:false, castleLandId:state.castleLandId, rebirths, terrainSeed: rebirths, year: (state.year || 1) + 1, researchTokens: state.researchTokens || 0, warLevel:state.warLevel||0, warVictories:state.warVictories||0, lastWarResult:state.lastWarResult||'' };
     applyTerrainLayout(state.terrainSeed);
     ensureRoyalCastleLand();
     residentWalkers.clear(); roadNetworkCache={signature:'',nodes:[]};
@@ -1935,6 +1962,16 @@
     const speedUnlock=rebirths===10?' · 2배속 해금!':rebirths===20?' · 4배속 해금!':'';
     toast(`환생 완료! 건물 ${state.buildings.length}채와 영토 ${state.owned.length}곳 보존 · 왕국력 ${state.year}년 · 수입 +${rebirths * 10}%${speedUnlock}`); save(true); updateUI(); updateTimeControls();
   }
+  function requestLandPurchase(id) {
+    const land=LANDS.find((entry)=>entry.id===id);if(!land||owned(land))return;
+    pendingLandPurchase=id;
+    $('#landConfirmTitle').textContent=`${land.name} 영토를 확장할까요?`;
+    $('#landConfirmMeta').textContent=`확장 비용 ${format(land.price)} 골드 · 보유 ${format(state.cash)} 골드 · 확장 후 ${format(Math.max(0,state.cash-land.price))} 골드`;
+    $('#confirmLandPurchase').disabled=state.cash<land.price;
+    $('#confirmLandPurchase').textContent=state.cash<land.price?'골드 부족':'영토 확장';
+    $('#landConfirmModal').hidden=false;pressedKeys.clear();$('#cancelLandPurchase').focus();
+  }
+  function closeLandConfirmation() { pendingLandPurchase=null;$('#landConfirmModal').hidden=true; }
   function purchaseLand(id) {
     const land = LANDS.find((entry) => entry.id === id); if (owned(land)) return;
     if (state.cash < land.price) return toast('골드가 부족합니다.');
@@ -1983,7 +2020,7 @@
       let detail=`🔒 필요: ${missingBuildingRequirements(item).join(' · ')}`;
       if(unlocked) {
         if(landmarkPlaced) detail='왕국에 이미 설치됨 · 종류별 1개 제한';
-        else if(item.category==='road') detail=item.bridgeStyle?`강을 건너는 ${item.size[0]}m 다리 · 강 지형 전용 · 회전 배치 가능`:`길 조각 ${item.size[0]}m · 회전 배치 가능`;
+        else if(item.category==='road') detail=item.bridgeStyle?`강을 건너는 ${item.size[0]}m 다리 · 강 지형 전용 · 강 방향 자동 정렬`:`길 조각 ${item.size[0]}m · 회전 배치 가능`;
         else if(item.category==='residential') detail=`세금 +${item.income} / 10초 · 주민 +${item.people}${item.requiredTerrain==='river'?' · 다리 옆 배치 시 자동 연결':''}`;
         else if(item.category==='production') detail=`세금 +${item.income} / 10초 · 가격의 1% 추가 · 일자리 ${item.people}${productionNote}${item.popularity?` · 인기도 +${item.popularity}`:''}${item.fullTile?' · 영토 한 칸 전체 사용':''}`;
         else if(item.category==='military') detail=`세금 +${item.income} / 10초 · 전투력 ${item.militaryPower} · 군인 일자리 ${item.people} · 해금 완료: ${buildingUnlockRequirements(item)}`;
@@ -2000,10 +2037,10 @@
     const nextBuilding = Object.values(BUILDINGS).filter((item) => !isBuildingUnlocked(item)).sort((a, b) => missingBuildingRequirements(a).length - missingBuildingRequirements(b).length || unlockYear(a) - unlockYear(b) || a.price - b.price)[0];
     els.unlockInfo.textContent = nextBuilding ? `왕국력 ${kingdomYear()}년 · 다음 해금: ${nextBuilding.name} (${missingBuildingRequirements(nextBuilding).join(' · ')})` : `왕국력 ${kingdomYear()}년 · 시대 건물 ${CATALOG_BUILDING_COUNT}개를 모두 해금했습니다.`;
     els.landList.innerHTML = ''; LANDS.forEach((land) => {
-      const button = document.createElement('button'); const active = owned(land); button.className = `land-card ${selectedLand===land.id?'selected':''}`;
+      const button = document.createElement('button'); const active = owned(land); button.className = `land-card ${selectedLand===land.id?'selected':''}`;button.dataset.landId=land.id;
       const terrain=TERRAIN_INFO[land.terrain||'plains'];
       button.innerHTML = `<span class="card-icon">${active?terrain.icon:'🔒'}</span><span><span class="card-title">${land.name}</span><span class="card-detail">${terrain.icon} ${terrain.name} · ${active ? `${buildingCount(land.id)}개 시설` : '새로운 건설 부지'}</span></span><b class="card-price">${active?'보유':`${format(land.price)} ✦`}</b>`;
-      button.onclick = () => active ? (selectedLand=land.id, updateUI()) : purchaseLand(land.id); els.landList.append(button);
+      button.onclick = () => active ? (selectedLand=land.id, updateUI()) : requestLandPurchase(land.id); els.landList.append(button);
     });
     const mission = MISSIONS[state.missionIndex];
     if (mission) {
@@ -2041,7 +2078,8 @@
     updateResearchTimerUI();
     updateWarUI();
     $('#rotationStep').value = String(state.rotationStep || 45);
-    const item = selectedBuilding && BUILDINGS[selectedBuilding]; els.selectionName.textContent = deleteMode ? '삭제 모드' : (item ? item.name : '건물을 선택하세요'); els.selectionMeta.textContent = deleteMode ? '철거할 건물을 직접 클릭하면 50% 환불됩니다. 빈 땅은 삭제되지 않습니다.' : (item ? (item.fullTile?`${format(item.price)} 골드 · 영토 한 칸 전체 사용 · 인기도 +${item.popularity}`:item.category==='road'?`${format(item.price)} 골드 · ${item.bridgeStyle?'다리':'길 조각'} · 회전 ${state.rotation}° · Z/X로 양방향 회전`:`${format(item.price)} 골드 · 연구 ${item.researchCost || 0} · 세금 ${item.income}/10초 · 회전 ${state.rotation}° · Z/X로 양방향 회전`) : `건설 메뉴에서 건물을 선택 · 환생 발전 ${Math.min(3, state.rebirths || 0)}단계`);
+    $('#gridSize').value = String(state.gridSize || 4);
+    const item = selectedBuilding && BUILDINGS[selectedBuilding]; els.selectionName.textContent = deleteMode ? '삭제 모드' : (item ? item.name : '건물을 선택하세요'); els.selectionMeta.textContent = deleteMode ? '철거할 건물을 직접 클릭하면 50% 환불됩니다. 빈 땅은 삭제되지 않습니다.' : (item ? (item.fullTile?`${format(item.price)} 골드 · 영토 한 칸 전체 사용 · 인기도 +${item.popularity}`:item.category==='road'?`${format(item.price)} 골드 · ${item.bridgeStyle?'다리 · 강 방향 자동 정렬':`길 조각 · 회전 ${state.rotation}° · Z/X로 양방향 회전`}`:`${format(item.price)} 골드 · 연구 ${item.researchCost || 0} · 세금 ${item.income}/10초 · 회전 ${state.rotation}° · Z/X로 양방향 회전`) : `건설 메뉴에서 건물을 선택 · 환생 발전 ${Math.min(3, state.rebirths || 0)}단계`);
     if(item?.requiredTerrain) { const terrain=TERRAIN_INFO[item.requiredTerrain]; els.selectionMeta.textContent+=` · ${terrain.icon} ${terrain.name} 지형 전용`; }
     let placedSelection=selectedPlacedBuilding&&state.buildings.find((building)=>building.id===selectedPlacedBuilding);
     if(selectedPlacedBuilding&&!placedSelection) selectedPlacedBuilding=null;
@@ -2056,6 +2094,15 @@
 
   const rightMenu=$('.right-column'), openMenuButton=$('#openMenu');
   function setMenuOpen(open) { rightMenu.classList.toggle('menu-hidden',!open); openMenuButton.hidden=open; }
+  function switchPanel(name) {
+    activeTab=name;
+    document.querySelectorAll('.tab').forEach((button)=>button.classList.toggle('active',button.dataset.tab===name));
+    document.querySelectorAll('.panel').forEach((panel)=>panel.classList.toggle('active',panel.id===`${name}Panel`));
+  }
+  function showLandInPanel(id) {
+    selectedLand=id;setMenuOpen(true);switchPanel('land');updateUI();
+    requestAnimationFrame(()=>els.landList.querySelector(`[data-land-id="${id}"]`)?.scrollIntoView({block:'center',behavior:'smooth'}));
+  }
   $('#closeMenu').onclick=()=>setMenuOpen(false); openMenuButton.onclick=()=>setMenuOpen(true);
   els.buildingList.addEventListener('wheel',(event)=>{
     event.preventDefault(); event.stopPropagation();
@@ -2065,7 +2112,7 @@
     event.preventDefault(); event.stopPropagation();
     els.categoryList.scrollLeft+=event.deltaY||event.deltaX;
   },{passive:false});
-  document.querySelectorAll('.tab').forEach((tab) => tab.onclick = () => { activeTab = tab.dataset.tab; document.querySelectorAll('.tab').forEach((button)=>button.classList.toggle('active',button===tab)); document.querySelectorAll('.panel').forEach((panel)=>panel.classList.toggle('active',panel.id===`${activeTab}Panel`)); });
+  document.querySelectorAll('.tab').forEach((tab) => tab.onclick = () => switchPanel(tab.dataset.tab));
   function rotateSelectedBuilding(direction=1) {
     if (!selectedBuilding) return false;
     const step=state.rotationStep||45;
@@ -2075,6 +2122,10 @@
   }
   $('#rotateButton').onclick = () => { if (!rotateSelectedBuilding(1)) toast('먼저 건물을 선택하세요.'); };
   $('#rotationStep').onchange = (event) => { state.rotationStep = Number(event.target.value); save(true); updateUI(); };
+  $('#gridSize').onchange = (event) => { state.gridSize = Math.max(1,Number(event.target.value)||4); hoveredPlacement=null; save(true); updateUI(); };
+  $('#cancelLandPurchase').onclick=closeLandConfirmation;
+  $('#confirmLandPurchase').onclick=()=>{const id=pendingLandPurchase;closeLandConfirmation();if(id)purchaseLand(id);};
+  $('#landConfirmModal').addEventListener('click',(event)=>{if(event.target.id==='landConfirmModal')closeLandConfirmation();});
   $('#deleteButton').onclick = () => { deleteMode = !deleteMode; if (deleteMode) { selectedBuilding = null; selectedPlacedBuilding=null; } updateUI(); };
   $('#rebirthButton').onclick = rebirth;
   $('#cancelButton').onclick = () => { selectedBuilding = null; selectedPlacedBuilding=null; deleteMode = false; updateUI(); };
@@ -2152,7 +2203,7 @@
     const placed=placedBuildingAtPoint(event.clientX,event.clientY);
     if (placed) { selectedPlacedBuilding=placed.id; selectedLand=placed.landId; updateUI(); return; }
     selectedPlacedBuilding=null;
-    if (tile) { selectedLand = tile.id; updateUI(); }
+    if (tile) { if(!owned(LANDS.find((land)=>land.id===tile.id)))showLandInPanel(tile.id); else { selectedLand = tile.id; updateUI(); } }
   });
   canvas.addEventListener('contextmenu', (event) => event.preventDefault());
   canvas.addEventListener('pointerdown', (event) => {
@@ -2188,6 +2239,7 @@
   }, { passive: false });
   window.addEventListener('keydown', (event) => {
     const key = event.code?.startsWith('Key') ? event.code.slice(3).toLowerCase() : event.key.toLowerCase();
+    if(!$('#landConfirmModal').hidden) { if(event.key==='Escape')closeLandConfirmation();event.preventDefault();return; }
     if (!els.tutorialModal.hidden) {
       if(event.key==='Escape') closeTutorial();
       else if(event.key==='ArrowLeft') showTutorialPage(tutorialPageIndex-1);
