@@ -7,7 +7,7 @@
   const interiorCtx = interiorCanvas.getContext('2d');
   const $ = (selector) => document.querySelector(selector);
   const els = {
-    cash: $('#cash'), population: $('#population'), popularity: $('#popularity'), popularityResource: $('#popularityResource'), rebirths: $('#rebirths'), year: $('#year'), researchTokens: $('#researchTokens'), dayIcon: $('#dayIcon'), dayClock: $('#dayClock'), productionStatus: $('#productionStatus'), categoryList: $('#categoryList'), buildingList: $('#buildingList'), landList: $('#landList'),
+    cash: $('#cash'), population: $('#population'), popularity: $('#popularity'), popularityResource: $('#popularityResource'), ownedLands: $('#ownedLands'), rebirths: $('#rebirths'), year: $('#year'), researchTokens: $('#researchTokens'), dayIcon: $('#dayIcon'), dayClock: $('#dayClock'), productionStatus: $('#productionStatus'), categoryList: $('#categoryList'), buildingList: $('#buildingList'), landList: $('#landList'),
     selectionName: $('#selectionName'), selectionMeta: $('#selectionMeta'), workerInfo: $('#workerInfo'), employmentInfo: $('#employmentInfo'), jobList: $('#jobList'),
     storedTax: $('#storedTax'), missionTitle: $('#missionTitle'), missionText: $('#missionText'), unlockInfo: $('#unlockInfo'), researchInfo: $('#researchInfo'), researchTimer: $('#researchTimer'), researchProgress: $('#researchProgress'),
     missionProgress: $('#missionProgress'), claimMission: $('#claimMission'), warEnemy:$('#warEnemy'), warInfo:$('#warInfo'), warProgress:$('#warProgress'), warStatus:$('#warStatus'), warHistory:$('#warHistory'), launchWar:$('#launchWar'), toast: $('#toast'), interiorModal: $('#interiorModal'), interiorTitle: $('#interiorTitle'), interiorMeta: $('#interiorMeta'), interiorButton: $('#interiorButton'), tutorialModal: $('#tutorialModal'), tutorialKicker: $('#tutorialKicker'), tutorialTitle: $('#tutorialTitle'), tutorialContent: $('#tutorialContent'), tutorialPage: $('#tutorialPage'), tutorialDots: $('#tutorialDots'),
@@ -55,6 +55,14 @@
     royalRoad: { name: '왕실 대로', icon: '♛', category: 'road', price: 90, income: 0, people: 0, body: '#8c6d66', trim: '#e2bf62', size: [10, .2, 6], roadStyle: 'royal', unlockYear: 5, noInterior: true },
     modernRoad: { name: '현대 도로', icon: '🛣️', category: 'road', price: 140, income: 0, people: 0, body: '#3f464d', trim: '#edf0d2', size: [10, .2, 6], roadStyle: 'modern', unlockYear: 7, noInterior: true },
     futureRoad: { name: '미래 광자도로', icon: '🔷', category: 'road', price: 230, income: 0, people: 0, body: '#263f62', trim: '#67ecff', size: [10, .2, 6], roadStyle: 'future', unlockYear: 10, researchCost: 8, noInterior: true },
+    grassTrail: { name:'왕국 잔디 오솔길', icon:'🌿', category:'road', price:20, income:0, people:0, body:'#6f8054', trim:'#c6b47b', size:[10,.2,4], roadStyle:'trail', noInterior:true },
+    brickLane: { name:'붉은 벽돌길', icon:'🧱', category:'road', price:42, income:0, people:0, body:'#965e4f', trim:'#d09a78', size:[10,.2,5], roadStyle:'brick', unlockYear:2, noInterior:true },
+    cobbleLane: { name:'왕실 조약돌길', icon:'⚪', category:'road', price:68, income:0, people:0, body:'#74777a', trim:'#c6c0b2', size:[10,.2,5], roadStyle:'cobble', unlockYear:3, noInterior:true },
+    treeBoulevard: { name:'가로수 왕실 대로', icon:'🌳', category:'road', price:110, income:0, people:0, body:'#80685a', trim:'#79a35d', size:[10,.2,7], roadStyle:'boulevard', unlockYear:4, noInterior:true },
+    industrialRoad: { name:'산업 수송 도로', icon:'🏭', category:'road', price:170, income:0, people:0, body:'#4e5152', trim:'#e0ac4f', size:[10,.2,7], roadStyle:'industrial', unlockYear:6, researchCost:1, noInterior:true },
+    kingdomHighway: { name:'왕국 고속도로', icon:'🛣', category:'road', price:260, income:0, people:0, body:'#343a42', trim:'#f3f0dc', size:[10,.2,8], roadStyle:'highway', unlockYear:8, researchCost:3, noInterior:true },
+    smartRoad: { name:'스마트 교통 도로', icon:'💡', category:'road', price:380, income:0, people:0, body:'#344e57', trim:'#64d8c7', size:[10,.2,7], roadStyle:'smart', unlockYear:9, researchCost:5, noInterior:true },
+    maglevRoad: { name:'자기부상 왕국 도로', icon:'🚄', category:'road', price:620, income:0, people:0, body:'#26344d', trim:'#8cf4ff', size:[10,.2,8], roadStyle:'maglev', unlockYear:10, researchCost:10, noInterior:true },
     woodenBridge: { name: '목재 다리', icon: '🌉', category: 'road', price: 80, income: 0, people: 0, body: '#8b633f', trim: '#d0ad6c', size: [22, .6, 8], bridgeStyle: 'wood', requiredTerrain: 'river', noInterior: true },
     stoneBridge: { name: '석재 다리', icon: '🌉', category: 'road', price: 180, income: 0, people: 0, body: '#777a7d', trim: '#c7c3b9', size: [22, .8, 9], bridgeStyle: 'stone', unlockYear: 3, requiredTerrain: 'river', noInterior: true },
     royalBridge: { name: '왕실 다리', icon: '♛', category: 'road', price: 400, income: 0, people: 0, body: '#8c5554', trim: '#e2bf62', size: [24, 1, 10], bridgeStyle: 'royal', unlockYear: 6, requiredTerrain: 'river', noInterior: true },
@@ -174,13 +182,14 @@
     { kicker:'제1장 · 왕국의 시작', title:'Crownvale에 오신 것을 환영합니다', lead:'작은 영토를 거대한 시대 왕국으로 성장시키세요.', tips:[['첫 번째 목표','주거 건물을 지어 주민을 늘리고 생산 건물로 세금을 모으세요.'],['왕실 의뢰','왼쪽 의뢰를 완료하면 골드 보상을 받아 더 빠르게 확장할 수 있습니다.'],['저장','상단의 ▣ 버튼을 누르면 현재 왕국이 브라우저에 저장됩니다.'],['메뉴','오른쪽 메뉴는 ✕로 닫고 ☰ 버튼으로 언제든 다시 열 수 있습니다.']] },
     { kicker:'제2장 · 카메라', title:'왕국을 자유롭게 둘러보기', lead:'높은 시점에서 영토 전체를 살펴보고 원하는 장소로 이동하세요.', tips:[['이동','<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>로 화면을 이동합니다.'],['카메라 각도','<kbd>F</kbd>로 지면을 더 내려다보고 <kbd>R</kbd>로 카메라 각도를 다시 위로 올립니다.'],['초기화','<kbd>O</kbd>를 누르면 위치·방향·각도·확대 배율이 처음 시점으로 돌아갑니다.'],['확대와 이동','마우스 휠로 확대·축소하고 오른쪽 버튼을 누른 채 드래그해 이동합니다.']] },
     { kicker:'제3장 · 건설', title:'건물을 선택하고 배치하기', lead:'건설 메뉴에서 시대와 목적에 맞는 건물을 선택하세요.', tips:[['건물 찾기','건설 목록에서는 위아래로, 카테고리 줄에서는 좌우로 마우스 휠을 움직여 원하는 종류를 찾습니다.'],['배치','건물을 선택한 뒤 소유한 영토를 좌클릭하면 실루엣 위치에 실제 건물이 설치됩니다.'],['놀이기구','놀이기구는 영토 한 칸의 중앙에 설치되며 그 칸 전체를 사용합니다. 빈 영토를 준비하세요.'],['철거','삭제 버튼을 켜고 건물을 선택하면 가격의 50%를 돌려받습니다.']] },
-    { kicker:'제4장 · 길과 주민', title:'살아 움직이는 왕국 만들기', lead:'길을 연결하면 주민들이 왕국 전역의 길망을 따라 이동합니다.', tips:[['길 연결','10m 길 조각을 이어 놓으세요. X자와 T자 교차로는 자동으로 부드럽게 연결됩니다.'],['백수의 산책','직업이 없는 백수 주민은 낮에 길을 따라 천천히 산책하고, 교차로에서 무작위 방향을 고릅니다.'],['길이 없을 때','설치된 길이 하나도 없으면 주민은 자기 집 출입문 앞에서 기다립니다.'],['밤','밤이 되면 모든 주민이 집 안으로 돌아가 거리에서 보이지 않습니다.']] },
+    { kicker:'제4장 · 길과 주민', title:'살아 움직이는 왕국 만들기', lead:'길을 연결하면 주민들이 왕국 전역의 길망을 따라 이동합니다.', tips:[['시대별 도로','오솔길·벽돌길에서 시작해 산업 도로·고속도로·스마트 도로·자기부상 도로까지 왕국력에 따라 해금됩니다.'],['길 연결','10m 길 조각을 이어 놓으세요. X자와 T자 교차로는 자동으로 부드럽게 연결됩니다.'],['길이 없을 때','일반 길이 하나도 없으면 주민은 집 앞에서 기다리고 인기도 -50·세금 -50% 불이익을 받습니다.'],['주민 이동','낮에는 주민이 연결된 길을 따라 이동하고, 밤에는 모든 주민이 집 안으로 돌아갑니다.']] },
     { kicker:'제5장 · 세금과 시간', title:'낮과 밤의 세금 관리', lead:'건물이 만든 세금은 쌓인 뒤 직접 또는 자동으로 수금됩니다.', tips:[['시간 속도','기본은 일시정지와 1배속이며 환생 10회에 2배속, 환생 20회에 4배속이 해금됩니다.'],['인기도','편의시설·놀이기구·장식은 인기도를 높입니다. 인기도 1점마다 모든 세금이 0.5% 증가합니다.'],['낮과 밤','낮에는 기본 세금 100%, 밤에는 50%를 획득하며 모든 세금 +% 보너스는 유지됩니다.'],['수입 증가','비싼 건물, 연구 토큰, 환생, 랜드마크와 인기도를 활용하면 세금이 크게 증가합니다.']] },
   { kicker:'제6장 · 영토와 지형', title:'880칸의 왕국 확장', lead:'평원·숲·산·강·호수가 어우러진 영토를 확장하세요.', tips:[['영토 구입','영토 탭에서 잠긴 땅을 골드로 구입해 건설 공간을 넓힙니다.'],['왕실 성','왕실 성은 기존 영토 한 칸 전체를 사용하며 다른 건물을 함께 설치할 수 없습니다.'],['강과 호수','강은 한 줄의 자연스러운 물길로 이어지고, 호수는 여러 영토에 걸친 넓은 물 지형으로 생성됩니다.'],['자연 군락','숲·산·호수는 군락으로 모이며 환생할 때 위치와 모양이 달라집니다.']] },
     { kicker:'제7장 · 연구와 시대', title:'더 최신식인 왕국으로', lead:'연구를 완료해 토큰을 모으고 새로운 시대의 건물을 해금하세요.', tips:[['연구 시간','연구는 즉시 끝나지 않습니다. 연구 탭에서 남은 시간을 확인하세요.'],['연구 토큰','연구 토큰 1개마다 세금 수입이 50% 증가하며 최신 연구일수록 더 많은 토큰을 줍니다.'],['연도 해금','왕국력이 올라가면 석재·산업·현대·미래 건물이 차례로 해금됩니다.'],['비용','최신식 건물은 연구 토큰과 골드가 더 필요하지만 더 많은 세금을 생산합니다.']] },
     { kicker:'제8장 · 환생과 탐험', title:'새로운 왕국으로 다시 시작하기', lead:'충분히 성장했다면 환생해 더 강한 다음 왕국을 시작하세요.', tips:[['환생 조건','필요한 골드·주민·영토를 모두 확보해야 하며 환생할수록 조건이 증가합니다.'],['건물 보존','환생해도 설치한 건물과 보유 영토는 그대로 남고, 건물에 쌓인 세금만 초기화됩니다.'],['영구 보너스','환생 횟수마다 세금 수입이 영구적으로 증가하고 건물 외형이 발전합니다.'],['새 지도','환생하면 숲·산 군락과 자연스러운 강의 위치가 새롭게 바뀝니다.']] },
     { kicker:'제9장 · 왕국 군사', title:'시대에 맞는 수비군 만들기', lead:'군사 카테고리에서 병사들의 주둔지와 훈련 시설을 건설하세요.', tips:[['해금 조건','경비 초소를 제외한 군사 건물은 왕국력 연도·환생 횟수·전쟁 승리 횟수를 모두 만족해야 해금됩니다.'],['시대 발전','첫 승리로 병영을 열고, 환생과 승리를 거듭해 기병대·요새·방공 기지·드론 지휘소까지 발전시키세요.'],['군인 직업','군사 건물은 주민에게 병사·궁수·기사·포병·드론 조종사 등의 일자리를 제공합니다.'],['내부 보기','설치한 군사 건물을 선택해 무기 거치대·작전 지도·통제 장비가 있는 내부를 확인하세요.']] },
-    { kicker:'제10장 · 전쟁', title:'적 왕국으로 출정하기', lead:'군사 건물의 전투력을 모아 점점 강해지는 적 왕국을 정복하세요.', tips:[['출정 조건','아군 전투력이 적 전투력 이상이면 전쟁 본부에서 출정할 수 있습니다.'],['전투 시간','출정 후 현실 시간이 지나면 전투가 자동으로 끝납니다. 게임을 닫아도 진행 시간은 유지됩니다.'],['승패','승리하면 골드와 연구 토큰을 얻지만, 패배하면 현재 보유 골드의 70%를 잃습니다.'],['영구 기록','전쟁 승리 횟수와 캠페인 단계는 환생해도 유지되며 다음 적은 더욱 강해집니다.']] },
+    { kicker:'제10장 · 전쟁', title:'적 왕국으로 출정하기', lead:'군사 건물의 전투력을 모아 점점 강해지는 적 왕국을 정복하세요.', tips:[['출정 조건','아군 전투력이 적 전투력 이상이면 전쟁 본부에서 출정할 수 있습니다.'],['전투 시간','출정 후 현실 시간이 지나면 전투가 자동으로 끝납니다. 게임을 닫아도 진행 시간은 유지됩니다.'],['승패','승리하면 골드와 연구 토큰을 얻지만, 패배하면 보유 골드의 70%와 인기도 1을 잃습니다.'],['영구 기록','전쟁 승리 횟수와 캠페인 단계는 환생해도 유지되며, 패배로 잃은 인기도는 환생하면 초기화됩니다.']] },
+    { kicker:'제11장 · 왕실 가이드북', title:'영토·길·철거 관리', lead:'상단 수치와 건설 관리 기능으로 왕국을 정확하게 운영하세요.', tips:[['보유 영토','상단 지도 수치는 현재 보유한 영토와 전체 880칸을 함께 표시합니다.'],['길 불이익','일반 길이 하나도 없으면 인기도 -50과 세금 -50%가 적용됩니다. 길을 하나 설치하면 이 불이익이 사라집니다.'],['인기도 세금','인기도가 양수면 1당 세금 +0.5%, 음수면 -1당 세금 -1%가 적용됩니다.'],['직접 철거','삭제 버튼을 켠 다음 원하는 건물을 직접 클릭하세요. 클릭한 건물만 철거되고 가격의 50%를 돌려받습니다.']] },
   ];
   const LANDS = [
     { id: 'core1', name: '왕실 들판', x: -96, z: -24, price: 0, owned: true },
@@ -283,7 +292,7 @@
       LANDS.push({ id, name, x, z, terrain, price: 700 + Math.floor(distance * 140), owned: false });
     }
   }
-  const START = { cash: 1000, owned: ['core1', 'core2', 'core3'], buildings: [], workers: 0, autoCollect: false, rotation: 0, rotationStep: 45, missionIndex: 0, rebirths: 0, terrainSeed: 0, year: 1, timeScale: 1, researchTokens: 0, researchCount: 0, researchStartedAt: 0, researchEndsAt: 0, researchDuration: 0, researchPendingReward: 0, warLevel:0, warVictories:0, warStartedAt:0, warEndsAt:0, warDuration:0, warEnemyPower:0, warArmyPower:0, warPendingReward:0, castleLandId:'core5' };
+  const START = { cash: 1000, owned: ['core1', 'core2', 'core3'], buildings: [], workers: 0, autoCollect: false, rotation: 0, rotationStep: 45, missionIndex: 0, rebirths: 0, terrainSeed: 0, year: 1, timeScale: 1, researchTokens: 0, researchCount: 0, researchStartedAt: 0, researchEndsAt: 0, researchDuration: 0, researchPendingReward: 0, warLevel:0, warVictories:0, warPopularityLoss:0, warStartedAt:0, warEndsAt:0, warDuration:0, warEnemyPower:0, warArmyPower:0, warPendingReward:0, castleLandId:'core5' };
   const storageKey = 'crownvale-browser-v1';
   let state = load();
   function applyTerrainLayout(seed=0) {
@@ -473,6 +482,7 @@
   function save(silent = false) { localStorage.setItem(storageKey, JSON.stringify(state)); if (!silent) toast('왕국 기록을 저장했습니다.'); }
   function format(value) { return Math.floor(value).toLocaleString('ko-KR'); }
   function formatTax(value) { return value.toLocaleString('ko-KR', { maximumFractionDigits: 1 }); }
+  function formatSignedPercent(value) { return `${value>0?'+':''}${formatTax(value)}%`; }
   function kingdomYear() { return Math.max(1, Math.floor(state.year || 1)); }
   function unlockYear(item) { return item && item.unlockYear ? item.unlockYear : 1; }
   function requiredRebirths(item) { return Math.max(0, Math.floor(item?.requiredRebirths || 0)); }
@@ -547,8 +557,10 @@
   }
   function interiorEra(item) { return Math.min(10,Math.max(unlockYear(item),kingdomYear())); }
   function storedTax() { return state.buildings.reduce((total, building) => total + building.tax, 0); }
-  function popularity() { return state.buildings.reduce((total, building) => total + (BUILDINGS[building.type].popularity || 0), 0); }
-  function popularityIncomeMultiplier() { return 1 + popularity() * .005; }
+  function hasKingdomRoad() { return state.buildings.some((building)=>!!BUILDINGS[building.type]?.roadStyle); }
+  function popularity() { return state.buildings.reduce((total, building) => total + (BUILDINGS[building.type].popularity || 0), 0) - (hasKingdomRoad()?0:50) - (state.warPopularityLoss||0); }
+  function popularityTaxPercent() { const points=popularity(); return points>=0?points*.5:points; }
+  function popularityIncomeMultiplier() { return Math.max(0,1+popularityTaxPercent()/100); }
   function researchIncomeMultiplier() { return 1 + (state.researchTokens || 0) * .5; }
   function landmarkIncomeMultiplier() { return 1 + state.buildings.filter((building)=>BUILDINGS[building.type].category==='landmark').length*.3; }
   function totalIncomeMultiplier() {
@@ -621,8 +633,9 @@
     } else {
       const goldLost=Math.floor(Math.max(0,state.cash)*WAR_DEFEAT_GOLD_LOSS_RATE);
       state.cash=Math.max(0,state.cash-goldLost);
-      state.lastWarResult=`패배 · 보유 골드 70% 손실 (${format(goldLost)} 골드) · 군사 건물을 보강하세요.`;
-      toast(`전쟁 패배! 보유 골드의 70%인 ${format(goldLost)} 골드를 잃었습니다.`);
+      state.warPopularityLoss=(state.warPopularityLoss||0)+1;
+      state.lastWarResult=`패배 · 보유 골드 70% 손실 (${format(goldLost)} 골드) · 인기도 -1 · 군사 건물을 보강하세요.`;
+      toast(`전쟁 패배! ${format(goldLost)} 골드와 인기도 1을 잃었습니다.`);
     }
     save(true); updateUI(); return true;
   }
@@ -1122,6 +1135,29 @@
     } else if(item.roadStyle==='future') {
       for(const z of [-d*.36,0,d*.36]) box(local(0,z,.86),[w-.2,.1,.16],item.trim,r);
       for(const factor of [-.4,-.2,0,.2,.4]) box(local(w*factor,0,.91),[.42,.14,d-.45],'#b6fbff',r);
+    } else if(item.roadStyle==='trail') {
+      for(const [factor,z] of [[-.4,-.35],[-.22,.42],[-.02,-.25],[.18,.38],[.38,-.3]]) box(local(w*factor,z,.84),[1.05,.07,.72],item.trim,r);
+    } else if(item.roadStyle==='brick') {
+      for(let x=-w*.4;x<=w*.4;x+=2) box(local(x,0,.84),[.12,.06,d-.25],item.trim,r);
+      for(const factor of [-.34,0,.34]) box(local(w*factor,0,.85),[w*.3,.06,.12],'#e3b18c',r);
+    } else if(item.roadStyle==='cobble') {
+      for(let x=-w*.4;x<=w*.4;x+=1.6) for(const z of [-d*.27,d*.27]) box(local(x,z+(Math.round(x*10)%2)*.18,.85),[.75,.09,.62],item.trim,r);
+    } else if(item.roadStyle==='boulevard') {
+      for(const z of [-d*.4,d*.4]) box(local(0,z,.85),[w-.15,.1,d*.16],item.trim,r);
+      for(const factor of [-.32,0,.32]) box(local(w*factor,0,.87),[w*.13,.07,.16],'#e8d8a8',r);
+    } else if(item.roadStyle==='industrial') {
+      for(const z of [-d*.42,d*.42]) box(local(0,z,.86),[w-.12,.1,.2],item.trim,r);
+      for(const factor of [-.36,-.12,.12,.36]) box(local(w*factor,0,.87),[w*.12,.08,.2],'#d9d3bb',r);
+    } else if(item.roadStyle==='highway') {
+      for(const z of [-d*.45,d*.45]) box(local(0,z,.86),[w-.1,.1,.16],'#e2b94e',r);
+      for(const z of [-d*.16,d*.16]) for(const factor of [-.36,-.12,.12,.36]) box(local(w*factor,z,.87),[w*.12,.08,.13],item.trim,r);
+    } else if(item.roadStyle==='smart') {
+      for(const z of [-d*.4,d*.4]) box(local(0,z,.88),[w-.1,.13,.2],item.trim,r);
+      for(const factor of [-.4,-.2,0,.2,.4]) box(local(w*factor,0,.9),[.28,.14,d*.62],'#9ff3dc',r);
+    } else if(item.roadStyle==='maglev') {
+      for(const z of [-d*.28,d*.28]) box(local(0,z,.96),[w-.05,.26,.28],item.trim,r);
+      box(local(0,0,.88),[w-.1,.14,d*.32],'#4f6f91',r);
+      for(const factor of [-.38,-.12,.12,.38]) box(local(w*factor,0,1.02),[w*.1,.12,d*.55],'#c8fbff',r);
     }
   }
   function roadCenterlineIntersection(first,second) {
@@ -1148,7 +1184,7 @@
       const firstItem=BUILDINGS[roads[firstIndex].type], secondItem=BUILDINGS[roads[secondIndex].type], dominant=firstItem.price>=secondItem.price?firstItem:secondItem;
       const radius=Math.max(firstItem.size[2],secondItem.size[2])*.62+.55;
       octagonalPad({x:point.x,y:.88,z:point.z},radius,.16,dominant.body);
-      if(['stone','royal','modern','future'].includes(dominant.roadStyle)) {
+      if(['stone','royal','modern','future','brick','cobble','boulevard','industrial','highway','smart','maglev'].includes(dominant.roadStyle)) {
         for(const road of [roads[firstIndex],roads[secondIndex]]) box({x:point.x,y:.985,z:point.z},[radius*1.55,.05,.16],dominant.trim,(road.rotation||0)*Math.PI/180);
       }
     }
@@ -1761,11 +1797,12 @@
     selectedBuilding = null; hoveredLand = null; hoveredPlacement = null;
     toast(`${item.name}이(가) ${slot.connectedBridgeId?'다리와 연결되어 ':'실루엣 위치에 '}설치되었습니다.`); save(true); updateUI();
   }
-  function deleteOn(landId) {
-    const index = state.buildings.map((building, i) => ({ building, i })).filter((entry) => entry.building.landId === landId).at(-1);
-    if (!index) return toast('이 토지에는 삭제할 건물이 없습니다.');
-    const item = BUILDINGS[index.building.type]; const refund = Math.floor(item.price * .5);
-    state.buildings.splice(index.i, 1); state.cash += refund;
+  function deleteBuilding(buildingId) {
+    const index=state.buildings.findIndex((building)=>building.id===buildingId);
+    if(index<0)return toast('삭제할 건물을 직접 클릭하세요.');
+    const building=state.buildings[index],item=BUILDINGS[building.type],refund=Math.floor(item.price*.5);
+    state.buildings.splice(index,1);state.cash+=refund;
+    if(selectedPlacedBuilding===buildingId)selectedPlacedBuilding=null;
     toast(`${item.name}을(를) 철거하고 ${format(refund)} 골드를 돌려받았습니다.`); save(true); updateUI();
   }
   function rebirthRequirements() {
@@ -1813,8 +1850,8 @@
 
   function updateUI() {
     if (selectedBuilding && !isBuildingUnlocked(BUILDINGS[selectedBuilding])) selectedBuilding = null;
-    const popularityPoints=popularity(), popularityBonus=popularityPoints*.5;
-    els.cash.textContent = format(state.cash); els.population.textContent = format(population()); els.popularity.textContent = format(popularityPoints); els.popularityResource.title=`인기도 ${format(popularityPoints)} · 모든 세금 +${formatTax(popularityBonus)}%`; els.rebirths.textContent = format(state.rebirths || 0); els.year.textContent = `${kingdomYear()}년`; els.researchTokens.textContent = format(state.researchTokens || 0); els.storedTax.textContent = format(storedTax());
+    const popularityPoints=popularity(), popularityBonus=popularityTaxPercent();
+    els.cash.textContent = format(state.cash); els.population.textContent = format(population()); els.popularity.textContent = format(popularityPoints); els.popularityResource.classList.toggle('negative',popularityPoints<0); els.popularityResource.title=`인기도 ${format(popularityPoints)} · 모든 세금 ${formatSignedPercent(popularityBonus)}${!hasKingdomRoad()?' · 길 없음 -50':''}${state.warPopularityLoss?` · 전쟁 패배 -${format(state.warPopularityLoss)}`:''}`; els.ownedLands.textContent=`${format(state.owned.length)} / ${format(LANDS.length)}`; els.rebirths.textContent = format(state.rebirths || 0); els.year.textContent = `${kingdomYear()}년`; els.researchTokens.textContent = format(state.researchTokens || 0); els.storedTax.textContent = format(storedTax());
     const rebirthNeed = rebirthRequirements(), rebirthButton = $('#rebirthButton');
     rebirthButton.textContent = `♛ ${format(rebirthNeed.cash)}G · ${rebirthNeed.lands}땅`;
     rebirthButton.title = `다음 환생: ${format(rebirthNeed.cash)} 골드 · 주민 ${rebirthNeed.population}명 · 영토 ${rebirthNeed.lands}곳`;
@@ -1870,8 +1907,8 @@
       els.missionText.textContent = 'Crownvale의 전설이 시작됩니다.';
       els.missionProgress.style.width = '100%'; els.claimMission.disabled = true; els.claimMission.textContent = '완료';
     }
-    const bonus = ((totalIncomeMultiplier() - 1) * 100).toFixed(1), rebirthBonus = (state.rebirths || 0) * 10;
-    els.workerInfo.textContent = state.autoCollect ? `수집자 ${state.workers}/20명 · 세금 ${format(AUTO_COLLECT_THRESHOLD)} 도달 시 자동 수금 · 세금 수입 +${bonus}% · 인기도 +${formatTax(popularityBonus)}%` : `수집자 ${state.workers}/20명 · 세금 수입 +${bonus}% · 인기도 +${formatTax(popularityBonus)}% · 환생 +${rebirthBonus}%`;
+    const bonus = (totalIncomeMultiplier() - 1) * 100, rebirthBonus = (state.rebirths || 0) * 10;
+    els.workerInfo.textContent = state.autoCollect ? `수집자 ${state.workers}/20명 · 세금 ${format(AUTO_COLLECT_THRESHOLD)} 도달 시 자동 수금 · 세금 수입 ${formatSignedPercent(bonus)} · 인기도 세금 ${formatSignedPercent(popularityBonus)}` : `수집자 ${state.workers}/20명 · 세금 수입 ${formatSignedPercent(bonus)} · 인기도 세금 ${formatSignedPercent(popularityBonus)} · 환생 +${rebirthBonus}%`;
     const employment = employmentSummary();
     els.employmentInfo.textContent = `취업자 ${format(employment.employed)}명 · 백수 ${format(employment.unemployed)}명 · 일자리 ${format(employment.capacity)}개`;
     els.jobList.innerHTML = '';
@@ -1893,7 +1930,7 @@
     updateResearchTimerUI();
     updateWarUI();
     $('#rotationStep').value = String(state.rotationStep || 45);
-    const item = selectedBuilding && BUILDINGS[selectedBuilding]; els.selectionName.textContent = deleteMode ? '삭제 모드' : (item ? item.name : '건물을 선택하세요'); els.selectionMeta.textContent = deleteMode ? '토지를 클릭하면 마지막 건물을 50% 환불로 철거합니다.' : (item ? (item.fullTile?`${format(item.price)} 골드 · 영토 한 칸 전체 사용 · 인기도 +${item.popularity}`:item.category==='road'?`${format(item.price)} 골드 · ${item.bridgeStyle?'다리':'길 조각'} · 회전 ${state.rotation}° · Z/X로 양방향 회전`:`${format(item.price)} 골드 · 연구 ${item.researchCost || 0} · 세금 ${item.income}/10초 · 회전 ${state.rotation}° · Z/X로 양방향 회전`) : `건설 메뉴에서 건물을 선택 · 환생 발전 ${Math.min(3, state.rebirths || 0)}단계`);
+    const item = selectedBuilding && BUILDINGS[selectedBuilding]; els.selectionName.textContent = deleteMode ? '삭제 모드' : (item ? item.name : '건물을 선택하세요'); els.selectionMeta.textContent = deleteMode ? '철거할 건물을 직접 클릭하면 50% 환불됩니다. 빈 땅은 삭제되지 않습니다.' : (item ? (item.fullTile?`${format(item.price)} 골드 · 영토 한 칸 전체 사용 · 인기도 +${item.popularity}`:item.category==='road'?`${format(item.price)} 골드 · ${item.bridgeStyle?'다리':'길 조각'} · 회전 ${state.rotation}° · Z/X로 양방향 회전`:`${format(item.price)} 골드 · 연구 ${item.researchCost || 0} · 세금 ${item.income}/10초 · 회전 ${state.rotation}° · Z/X로 양방향 회전`) : `건설 메뉴에서 건물을 선택 · 환생 발전 ${Math.min(3, state.rebirths || 0)}단계`);
     if(item?.requiredTerrain) { const terrain=TERRAIN_INFO[item.requiredTerrain]; els.selectionMeta.textContent+=` · ${terrain.icon} ${terrain.name} 지형 전용`; }
     let placedSelection=selectedPlacedBuilding&&state.buildings.find((building)=>building.id===selectedPlacedBuilding);
     if(selectedPlacedBuilding&&!placedSelection) selectedPlacedBuilding=null;
@@ -1963,8 +2000,10 @@
     const matches=[];
     for (const building of state.buildings) {
       const item=BUILDINGS[building.type], [w,h,d]=item.size, top=item.category==='road'?1.2:h+6;
-      const points=[];
-      for(const y of [1,top]) for(const dx of [-w/2,w/2]) for(const dz of [-d/2,d/2]) points.push(project({x:building.x+dx,y,z:building.z+dz}));
+      const points=[],center={x:building.x,y:0,z:building.z},rotation=(building.rotation||0)*Math.PI/180;
+      for(const y of [1,top]) for(const dx of [-w/2,w/2]) for(const dz of [-d/2,d/2]) {
+        const world=rotatePoint({x:building.x+dx,y,z:building.z+dz},center,rotation);points.push(project(world));
+      }
       const minX=Math.min(...points.map(point=>point.x))-6,maxX=Math.max(...points.map(point=>point.x))+6,minY=Math.min(...points.map(point=>point.y))-6,maxY=Math.max(...points.map(point=>point.y))+6;
       if(screenX>=minX&&screenX<=maxX&&screenY>=minY&&screenY<=maxY) matches.push({building,depth:project({x:building.x,y:top/2,z:building.z}).depth});
     }
@@ -1997,7 +2036,7 @@
   }
   canvas.addEventListener('click', (event) => {
     const tile = tileAtPoint(event.clientX, event.clientY);
-    if (deleteMode) { if (tile) deleteOn(tile.id); return; }
+    if (deleteMode) { const placed=placedBuildingAtPoint(event.clientX,event.clientY); if(placed)deleteBuilding(placed.id); else toast('삭제할 건물을 직접 클릭하세요.'); return; }
     if (selectedBuilding) { buildOn(placementFromScreen(event.clientX, event.clientY)); return; }
     const placed=placedBuildingAtPoint(event.clientX,event.clientY);
     if (placed) { selectedPlacedBuilding=placed.id; selectedLand=placed.landId; updateUI(); return; }
@@ -2016,7 +2055,7 @@
       hoveredPlacement = placementFromScreen(event.clientX, event.clientY);
       hoveredLand = hoveredPlacement ? hoveredPlacement.landId : null;
       const hoveredPlaced = selectedBuilding ? null : placedBuildingAtPoint(event.clientX,event.clientY);
-      canvas.style.cursor = selectedBuilding ? (hoveredPlacement && hoveredPlacement.valid ? 'crosshair' : 'not-allowed') : (hoveredPlaced ? 'pointer' : 'default');
+      canvas.style.cursor = deleteMode ? (hoveredPlaced ? 'crosshair' : 'default') : selectedBuilding ? (hoveredPlacement && hoveredPlacement.valid ? 'crosshair' : 'not-allowed') : (hoveredPlaced ? 'pointer' : 'default');
       return;
     }
     const dx = event.clientX - cameraDrag.x, dy = event.clientY - cameraDrag.y;

@@ -18,13 +18,14 @@
         <div class="resources">
           <div class="resource"><span>✦</span><strong id="cash">1,000</strong><small>골드</small></div>
           <div class="resource"><span>⌂</span><strong id="population">0</strong><small>주민</small></div>
-          <div id="popularityResource" class="resource popularity-resource" title="인기도 1점마다 모든 세금 수입이 0.5% 증가합니다."><span>😊</span><strong id="popularity">0</strong><small>인기도</small></div>
+          <div id="popularityResource" class="resource popularity-resource" title="양수 인기도는 1당 세금 +0.5%, 음수 인기도는 -1당 세금 -1%"><span>😊</span><strong id="popularity">0</strong><small>인기도</small></div>
+          <div class="resource land-resource" title="보유 영토 / 전체 영토"><span>🗺</span><strong id="ownedLands">0 / 880</strong><small>보유 영토</small></div>
           <div class="resource"><span>♛</span><strong id="rebirths">0</strong><small>환생</small></div>
           <div class="resource"><span>⌛</span><strong id="year">1년</strong><small>왕국력</small></div>
           <div class="resource clock-resource"><span id="dayIcon">☀</span><strong id="dayClock">낮 08:00</strong><small id="productionStatus">생산 가동</small></div>
           <div class="time-controls" aria-label="시간 속도"><button id="pauseTime" title="시간 일시정지">Ⅱ</button><button data-speed="1" class="active" title="1배속">▶</button><button data-speed="2" title="2배속">▶▶</button><button data-speed="4" title="4배속">▶▶▶</button></div>
           <div class="resource"><span>🧪</span><strong id="researchTokens">0</strong><small>연구 토큰</small></div>
-          <button id="tutorialButton" class="icon-button tutorial-button" title="튜토리얼 책자" aria-label="튜토리얼 책자 열기">📖</button>
+          <button id="tutorialButton" class="icon-button tutorial-button" title="왕실 가이드북" aria-label="왕실 가이드북 열기">📖 <span>가이드북</span></button>
           <button id="saveButton" class="icon-button" title="저장">▣</button>
         </div>
       </header>
@@ -53,12 +54,12 @@
           <p class="interior-help">마우스 드래그: 좌우·상하 둘러보기 · 휠: 확대/축소 · Q/E: 회전 · W/S: 줌 · R: 초기화 · Esc: 닫기</p>
         </div>
       </section>
-      <section id="tutorialModal" class="tutorial-modal" hidden aria-label="왕실 튜토리얼 책자" role="dialog" aria-modal="true">
+      <section id="tutorialModal" class="tutorial-modal" hidden aria-label="왕실 가이드북" role="dialog" aria-modal="true">
         <div class="tutorial-book">
-          <header class="tutorial-header"><div><span id="tutorialKicker">왕실 안내서</span><h2 id="tutorialTitle">왕국에 오신 것을 환영합니다</h2></div><button id="closeTutorial" class="tutorial-close" aria-label="튜토리얼 닫기">✕</button></header>
+          <header class="tutorial-header"><div><span id="tutorialKicker">왕실 가이드북</span><h2 id="tutorialTitle">왕국에 오신 것을 환영합니다</h2></div><button id="closeTutorial" class="tutorial-close" aria-label="가이드북 닫기">✕</button></header>
           <article id="tutorialContent" class="tutorial-content"></article>
-          <footer class="tutorial-footer"><button id="tutorialPrev">← 이전 장</button><span id="tutorialPage">1 / 8</span><button id="tutorialNext">다음 장 →</button></footer>
-          <div id="tutorialDots" class="tutorial-dots" aria-label="튜토리얼 페이지"></div>
+          <footer class="tutorial-footer"><button id="tutorialPrev">← 이전 장</button><span id="tutorialPage">1 / 11</span><button id="tutorialNext">다음 장 →</button></footer>
+          <div id="tutorialDots" class="tutorial-dots" aria-label="가이드북 페이지"></div>
         </div>
       </section>
       <div id="toast" role="status"></div>
