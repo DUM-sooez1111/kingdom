@@ -32,6 +32,14 @@
     generalStore: { name:'왕국 상점', icon:'🎁', category:'production', buildGroup:'amenity', price:900, people:5, body:'#d0aa75', roof:'#3d7890', trim:'#f2b45c', size:[14,7,12], unlockYear:3, model:'generalStore', leisure:true },
     bakery: { name:'왕실 베이커리', icon:'🍞', category:'production', buildGroup:'amenity', price:780, people:4, body:'#d9b77f', roof:'#9a5f45', trim:'#f0c477', size:[15,7,12], unlockYear:2, model:'bakery', leisure:true },
     arcade: { name:'왕국 게임센터', icon:'🎮', category:'production', buildGroup:'amenity', price:1500, people:6, body:'#76568f', roof:'#403b68', trim:'#ef69b7', size:[16,8,14], unlockYear:5, model:'arcade', leisure:true },
+    carriageWorkshop: { name:'왕실 마차 제작소', icon:'🛞', category:'production', buildGroup:'automotive', price:750, people:5, body:'#a4764d', roof:'#5c463c', trim:'#d9b96b', size:[16,7,14], unlockYear:2, model:'carriageWorkshop' },
+    royalGarage: { name:'왕실 자동차 차고', icon:'🚙', category:'production', buildGroup:'automotive', price:1400, people:7, body:'#8b877d', roof:'#4f5963', trim:'#d3b96d', size:[19,8,16], unlockYear:4, model:'royalGarage' },
+    fuelStation: { name:'왕국 주유소', icon:'⛽', category:'production', buildGroup:'automotive', price:2400, people:8, body:'#d4c6a5', roof:'#a4494d', trim:'#f1d46c', size:[20,7,17], unlockYear:6, researchCost:1, model:'fuelStation', openAir:true },
+    autoFactory: { name:'왕실 자동차 공장', icon:'🏭', category:'production', buildGroup:'automotive', price:4200, people:16, body:'#747d82', roof:'#3e4b57', trim:'#dfae58', size:[22,11,20], unlockYear:7, researchCost:3, model:'autoFactory' },
+    carDealership: { name:'왕국 자동차 대리점', icon:'🚗', category:'production', buildGroup:'automotive', price:3500, people:10, body:'#8aaab2', roof:'#37546a', trim:'#78d8e5', size:[21,8,17], unlockYear:7, researchCost:2, model:'carDealership' },
+    parkingTower: { name:'왕실 입체 주차장', icon:'🅿️', category:'production', buildGroup:'automotive', price:5200, people:9, body:'#7e8589', roof:'#44515e', trim:'#f0c762', size:[22,14,20], unlockYear:8, researchCost:4, model:'parkingTower', openAir:true },
+    evChargingHub: { name:'전기차 충전 허브', icon:'🔋', category:'production', buildGroup:'automotive', price:7200, people:12, body:'#5f7e7e', roof:'#315c63', trim:'#72e5bd', glow:'#a7ffe7', size:[22,9,18], unlockYear:9, researchCost:6, model:'evChargingHub', openAir:true },
+    mobilityCenter: { name:'자율주행 관제센터', icon:'📡', category:'production', buildGroup:'automotive', price:11000, people:18, body:'#465e76', roof:'#2f3a62', trim:'#72e6f2', glow:'#9ffcff', size:[23,14,20], unlockYear:10, researchCost:10, model:'mobilityCenter' },
     royalCarousel: { name:'왕실 회전목마', icon:'🎠', category:'production', buildGroup:'attraction', price:1200, people:4, body:'#7a9b68', roof:'#b9505d', trim:'#f4d06f', size:[42,9,42], unlockYear:2, model:'carousel', leisure:true, openAir:true, fullTile:true },
     bumperCars: { name:'왕국 범퍼카', icon:'🚗', category:'production', buildGroup:'attraction', price:2100, people:6, body:'#547c83', roof:'#76548e', trim:'#72e7f1', size:[42,8,42], unlockYear:4, model:'bumperCars', leisure:true, openAir:true, fullTile:true },
     ferrisWheel: { name:'왕실 대관람차', icon:'🎡', category:'production', buildGroup:'attraction', price:2800, people:8, body:'#527f72', roof:'#42658b', trim:'#ffd568', size:[42,22,42], unlockYear:5, model:'ferrisWheel', leisure:true, openAir:true, fullTile:true },
@@ -147,7 +155,7 @@
       : 0;
   });
   const CATALOG_BUILDING_COUNT = Object.values(BUILDINGS).filter((item) => item.catalog).length;
-  const CATEGORIES = [{ id: 'all', name: '전체' }, { id: 'terrain', name: '지형 전용' }, { id:'amenity', name:'편의시설' }, { id:'attraction', name:'놀이기구' }, { id: 'residential', name: '주거' }, { id: 'production', name: '생산' }, { id:'military', name:'군사' }, { id: 'landmark', name: '랜드마크' }, { id: 'decoration', name: '장식' }, { id: 'road', name: '길' }];
+  const CATEGORIES = [{ id: 'all', name: '전체' }, { id: 'terrain', name: '지형 전용' }, { id:'amenity', name:'편의시설' }, { id:'attraction', name:'놀이기구' }, { id:'automotive', name:'자동차' }, { id: 'residential', name: '주거' }, { id: 'production', name: '생산' }, { id:'military', name:'군사' }, { id: 'landmark', name:'랜드마크' }, { id: 'decoration', name:'장식' }, { id: 'road', name: '길' }];
   const WAR_ENEMIES = [
     ['🏴','잿빛 약탈단'],['🐺','북부 늑대 부족'],['🏹','붉은 활 연맹'],['🐎','황야 기병국'],['🏰','철벽 공국'],
     ['💣','화약 제국'],['⚙️','강철 군단'],['📡','하늘 감시국'],['🛸','네온 드론 연합'],['👑','황금 제국'],
@@ -190,6 +198,7 @@
     { kicker:'제9장 · 왕국 군사', title:'시대에 맞는 수비군 만들기', lead:'군사 카테고리에서 병사들의 주둔지와 훈련 시설을 건설하세요.', tips:[['해금 조건','경비 초소를 제외한 군사 건물은 왕국력 연도·환생 횟수·전쟁 승리 횟수를 모두 만족해야 해금됩니다.'],['시대 발전','첫 승리로 병영을 열고, 환생과 승리를 거듭해 기병대·요새·방공 기지·드론 지휘소까지 발전시키세요.'],['군인 직업','군사 건물은 주민에게 병사·궁수·기사·포병·드론 조종사 등의 일자리를 제공합니다.'],['내부 보기','설치한 군사 건물을 선택해 무기 거치대·작전 지도·통제 장비가 있는 내부를 확인하세요.']] },
     { kicker:'제10장 · 전쟁', title:'적 왕국으로 출정하기', lead:'군사 건물의 전투력을 모아 점점 강해지는 적 왕국을 정복하세요.', tips:[['출정 조건','아군 전투력이 적 전투력 이상이면 전쟁 본부에서 출정할 수 있습니다.'],['전투 시간','출정 후 현실 시간이 지나면 전투가 자동으로 끝납니다. 게임을 닫아도 진행 시간은 유지됩니다.'],['승패','승리하면 골드와 연구 토큰을 얻지만, 패배하면 보유 골드의 70%와 인기도 1을 잃습니다.'],['영구 기록','전쟁 승리 횟수와 캠페인 단계는 환생해도 유지되며, 패배로 잃은 인기도는 환생하면 초기화됩니다.']] },
     { kicker:'제11장 · 왕실 가이드북', title:'영토·길·철거 관리', lead:'상단 수치와 건설 관리 기능으로 왕국을 정확하게 운영하세요.', tips:[['보유 영토','상단 지도 수치는 현재 보유한 영토와 전체 880칸을 함께 표시합니다.'],['길 불이익','일반 길이 하나도 없으면 인기도 -50과 세금 -50%가 적용됩니다. 길을 하나 설치하면 이 불이익이 사라집니다.'],['인기도 세금','인기도가 양수면 1당 세금 +0.5%, 음수면 -1당 세금 -1%가 적용됩니다.'],['직접 철거','삭제 버튼을 켠 다음 원하는 건물을 직접 클릭하세요. 클릭한 건물만 철거되고 가격의 50%를 돌려받습니다.']] },
+    { kicker:'제12장 · 자동차 산업', title:'마차에서 자율주행까지', lead:'자동차 카테고리에서 시대별 교통 산업을 발전시키세요.', tips:[['초기 교통','왕국력 2년에 마차 제작소, 4년에 왕실 자동차 차고가 해금됩니다.'],['산업 시대','주유소·자동차 공장·대리점은 많은 일자리와 세금을 생산합니다.'],['현대 시설','입체 주차장과 전기차 충전 허브는 연구 토큰을 사용해 해금·건설합니다.'],['미래 교통','왕국력 10년의 자율주행 관제센터는 자동차 산업 중 가장 비싸지만 세금과 일자리가 가장 많습니다.']] },
   ];
   const LANDS = [
     { id: 'core1', name: '왕실 들판', x: -96, z: -24, price: 0, owned: true },
@@ -323,6 +332,28 @@
     const position=constrainPlacementToLand(land,item,building.rotation||0,building.x,building.z);
     building.x=position.x; building.z=position.z;
   });
+  const savedRiverHomes=state.buildings.filter((building)=>{
+    const item=BUILDINGS[building.type];
+    return item?.category==='residential'&&item.requiredTerrain==='river';
+  });
+  const repairedRiverHomes=[];
+  savedRiverHomes.forEach((building)=>{
+    const item=BUILDINGS[building.type];
+    const bridge=state.buildings.find((candidate)=>candidate.id===building.connectedBridgeId)
+      ||state.buildings.find((candidate)=>candidate.landId===building.landId&&BUILDINGS[candidate.type]?.bridgeStyle);
+    if(!bridge)return;
+    const preferred=riverHomeSide(bridge,building.x,building.z,building.id||item.name);
+    const laneGap=item.size[2]+3;
+    const candidates=[];
+    for(const lane of [0,-laneGap,laneGap,-laneGap*2,laneGap*2]) {
+      candidates.push(riverHomePosition(item,building.rotation||0,bridge,building.x,building.z,building.id,preferred,lane));
+      candidates.push(riverHomePosition(item,building.rotation||0,bridge,building.x,building.z,building.id,-preferred,lane));
+    }
+    const fixedBuildings=state.buildings.filter((candidate)=>!savedRiverHomes.includes(candidate)&&candidate.id!==bridge.id);
+    const position=candidates.find((candidate)=>![...fixedBuildings,...repairedRiverHomes].some((other)=>placementOverlapsBuilding(item,building.rotation||0,candidate.x,candidate.z,other,1.2)))||candidates[0];
+    building.x=position.x;building.z=position.z;building.connectedBridgeId=bridge.id;
+    repairedRiverHomes.push(building);
+  });
   let selectedBuilding = null;
   let tutorialPageIndex = Math.max(0,Math.min(TUTORIAL_PAGES.length-1,Number(localStorage.getItem('crownvale-tutorial-page'))||0));
   let selectedPlacedBuilding = null;
@@ -365,6 +396,14 @@
     generalStore: { name:'상점 직원', icon:'🎁', outdoor:false, color:'#d39a52' },
     bakery: { name:'제빵사', icon:'🍞', outdoor:false, color:'#c7895f' },
     arcade: { name:'게임센터 직원', icon:'🎮', outdoor:false, color:'#a06db5' },
+    carriageWorkshop: { name:'마차 제작 장인', icon:'🛞', outdoor:false, color:'#b98556' },
+    royalGarage: { name:'왕실 정비사', icon:'🔧', outdoor:false, color:'#8897a0' },
+    fuelStation: { name:'주유소 직원', icon:'⛽', outdoor:true, color:'#d86f62' },
+    autoFactory: { name:'자동차 조립공', icon:'🏭', outdoor:false, color:'#778c98' },
+    carDealership: { name:'자동차 판매원', icon:'🚗', outdoor:false, color:'#65b7c6' },
+    parkingTower: { name:'주차 관리원', icon:'🅿️', outdoor:false, color:'#d0a95c' },
+    evChargingHub: { name:'전기차 충전 기술자', icon:'🔋', outdoor:true, color:'#66c99f' },
+    mobilityCenter: { name:'자율주행 관제사', icon:'📡', outdoor:false, color:'#70dce8' },
     coaster: { name:'놀이기구 관리인', icon:'🎢', outdoor:true, color:'#e1a84f' },
     carousel: { name:'회전목마 관리인', icon:'🎠', outdoor:true, color:'#e0b95b' },
     bumperCars: { name:'범퍼카 안전요원', icon:'🚗', outdoor:true, color:'#8acdd7' },
@@ -734,6 +773,24 @@
       z:Math.max(land.z-24+depth*.5+margin,Math.min(land.z+24-depth*.5-margin,z)),
     };
   }
+  function riverHomeSide(bridge,referenceX,referenceZ,identity='') {
+    const angle=(bridge.rotation||0)*Math.PI/180,directionX=Math.cos(angle),directionZ=Math.sin(angle),bridgeItem=BUILDINGS[bridge.type];
+    const sideScore=(referenceX-bridge.x)*directionX+(referenceZ-bridge.z)*directionZ;
+    return Math.abs(sideScore)>.5?(sideScore<0?-1:1):(designSeed(String(identity||bridgeItem?.name||'river-home'))%2?-1:1);
+  }
+  function riverHomePosition(item,rotation,bridge,referenceX,referenceZ,identity='',forcedSide=0,laneOffset=0) {
+    const angle=(bridge.rotation||0)*Math.PI/180,directionX=Math.cos(angle),directionZ=Math.sin(angle),bridgeItem=BUILDINGS[bridge.type];
+    const side=forcedSide||riverHomeSide(bridge,referenceX,referenceZ,identity);
+    const homeClearance=footprintSupport(item,rotation,directionX*side,directionZ*side,.55);
+    const distance=bridgeItem.size[0]*.5+homeClearance+1.8;
+    return {x:bridge.x+directionX*side*distance-directionZ*laneOffset,z:bridge.z+directionZ*side*distance+directionX*laneOffset};
+  }
+  function placementOverlapsBuilding(item,rotation,x,z,building,padding=.6) {
+    const otherItem=BUILDINGS[building.type];
+    if(!otherItem||otherItem.category==='road')return false;
+    const [width,depth]=footprint(item,rotation),[otherWidth,otherDepth]=footprint(otherItem,building.rotation||0);
+    return Math.abs(x-building.x)<(width+otherWidth)*.5+padding&&Math.abs(z-building.z)<(depth+otherDepth)*.5+padding;
+  }
   function placementFromScreen(screenX, screenY) {
     if (!selectedBuilding) return null;
     const world = screenToGround(screenX, screenY), item = BUILDINGS[selectedBuilding];
@@ -752,12 +809,11 @@
     if(item.category==='residential'&&item.requiredTerrain==='river') {
       const bridge=state.buildings.find((building)=>building.landId===land.id&&BUILDINGS[building.type]?.bridgeStyle);
       if(bridge) {
-        const angle=(bridge.rotation||0)*Math.PI/180, normalX=-Math.sin(angle), normalZ=Math.cos(angle);
-        const side=((world.x-bridge.x)*normalX+(world.z-bridge.z)*normalZ)<0?-1:1;
-        x=bridge.x+normalX*side*14; z=bridge.z+normalZ*side*14; connectedBridgeId=bridge.id;
+        const position=riverHomePosition(item,state.rotation,bridge,world.x,world.z,`${selectedBuilding}:${world.x}:${world.z}`);
+        x=position.x;z=position.z;connectedBridgeId=bridge.id;
       }
     }
-    if(!item.bridgeStyle) ({x,z}=constrainPlacementToLand(land,item,state.rotation,x,z));
+    if(!item.bridgeStyle&&!connectedBridgeId) ({x,z}=constrainPlacementToLand(land,item,state.rotation,x,z));
     if(item.category==='residential'&&(land.terrain==='river'||land.terrain==='lake')&&!item.requiredTerrain) return {landId:land.id,x,z,valid:false,reason:'residential-water'};
     if(item.requiredTerrain&&land.terrain!==item.requiredTerrain) return {landId:land.id,x,z,valid:false,reason:'terrain',requiredTerrain:item.requiredTerrain};
     if(item.category==='landmark') {
@@ -766,7 +822,6 @@
       if(nearby) return {landId:land.id,x,z,valid:false,reason:'landmark-radius'};
     }
     const occupied = state.buildings.some((building) => {
-      if (building.landId !== land.id) return false;
       const otherItem=BUILDINGS[building.type], [otherWidth, otherDepth] = footprint(otherItem, building.rotation);
       if(item.fullTile||otherItem.fullTile) return true;
       let padding=.6;
@@ -972,6 +1027,53 @@
       box(local(0,0,6.6),[w*.68,1.1,1.1],'#4f8150',r); for(let index=-3;index<=3;index++) box(local(index*w*.09,0,6.8),[1.2,.8,1.2],index%2?accent:'#e77fa5',r);
     }
   }
+  function drawSmallVehicle(local,r,x,z,color,scale=1) {
+    box(local(x,z,1.85*scale),[4.2*scale,1.15*scale,2.2*scale],color,r);
+    box(local(x-.25*scale,z,2.65*scale),[2.25*scale,.9*scale,1.8*scale],shade(color,18),r);
+    for(const dx of [-1.4,1.4]) for(const dz of [-.95,.95]) box(local(x+dx*scale,z+dz*scale,1.35*scale),[.65*scale,.65*scale,.35*scale],'#252c32',r);
+    for(const dz of [-.7,.7]) box(local(x+2.13*scale,z+dz*scale,1.95*scale),[.12*scale,.28*scale,.32*scale],'#ffe59b',r);
+  }
+  function drawAutomotiveBuildingDetail(item,local,r,w,h,d) {
+    const model=item.buildGroup==='automotive'&&item.model;if(!model)return;
+    const accent=item.trim||'#e0bd69';
+    if(model==='carriageWorkshop') {
+      for(const x of [-w*.26,w*.26]) { box(local(x,-d*.57,3.4),[4.2,4.8,.28],'#704a32',r); for(const dx of [-1.35,1.35]) box(local(x+dx,-d*.72,1.85),[1.2,1.2,.35],'#3f3028',r); }
+      box(local(0,d*.57,h+2.8),[w*.58,.35,.25],accent,r);
+    } else if(model==='royalGarage') {
+      for(const x of [-w*.3,0,w*.3]) { box(local(x,-d*.55,3.5),[4.4,4.9,.28],'#4a545d',r); box(local(x,-d*.57,5.1),[3.7,.14,.2],accent,r); }
+      drawSmallVehicle(local,r,-w*.22,d*.58,'#8e4450',.8);drawSmallVehicle(local,r,w*.24,d*.58,'#557b96',.8);
+    } else if(model==='fuelStation') {
+      box(local(0,0,6.2),[w*.82,.55,d*.55],item.roof,r);
+      for(const x of [-w*.34,w*.34]) for(const z of [-d*.2,d*.2]) box(local(x,z,3.5),[.45,5.4,.45],'#d7d1bd',r);
+      for(const x of [-w*.2,w*.2]) { box(local(x,0,2.1),[1.2,2.2,.85],item.roof,r); box(local(x,-.46,2.4),[.65,.6,.12],accent,r); }
+      box(local(w*.42,d*.34,5.8),[1.1,8.5,1.1],'#d8d1bd',r);box(local(w*.42,d*.34,9.8),[3.8,1.8,.35],item.roof,r);
+      drawSmallVehicle(local,r,0,d*.34,'#d8a44f',.78);
+    } else if(model==='autoFactory') {
+      for(const x of [-w*.38,-w*.12,w*.14,w*.4]) box(local(x,-d*.53,h+2.4+(Math.round(x*10)%2)*.8),[w*.2,.35,.4],accent,r);
+      for(const x of [-w*.33,w*.33]) { box(local(x,d*.3,h+5),[1.1,7,1.1],'#4a5057',r);box(local(x,d*.3,h+8.7),[1.7,.4,1.7],'#a1a9ad',r); }
+      box(local(0,d*.58,2),[w*.72,.7,2.2],'#343a40',r);drawSmallVehicle(local,r,0,d*.7,'#b64f52',.9);
+    } else if(model==='carDealership') {
+      box(local(0,-d*.56,4),[w*.78,5.2,.18],'#8ce0eb',r,.78);
+      for(const x of [-w*.3,0,w*.3]) box(local(x,-d*.58,4),[.18,5.5,.22],accent,r);
+      drawSmallVehicle(local,r,-w*.28,d*.56,'#d85859',.72);drawSmallVehicle(local,r,0,d*.56,'#e4c05e',.72);drawSmallVehicle(local,r,w*.28,d*.56,'#5f91bd',.72);
+      box(local(0,d*.48,h+3),[w*.54,.4,.25],accent,r);
+    } else if(model==='parkingTower') {
+      for(const y of [2.2,5.2,8.2,11.2,14.2]) box(local(0,0,y),[w*.9,.42,d*.88],y===14.2?item.roof:item.body,r);
+      for(const x of [-w*.42,w*.42]) for(const z of [-d*.4,d*.4]) box(local(x,z,7.2),[.6,13,.6],'#646d73',r);
+      for(const [x,z,color] of [[-5,-4,'#bd5356'],[3,-3,'#5a8eb1'],[-2,3,'#d4ae55'],[5,4,'#7b6ca4']]) drawSmallVehicle(local,r,x,z,color,.62);
+      box(local(w*.45,-d*.5,9),[2.4,8,.35],'#2f628b',r);box(local(w*.45,-d*.53,11.8),[1.1,1.1,.15],'#ffffff',r);
+    } else if(model==='evChargingHub') {
+      box(local(0,0,6.8),[w*.86,.42,d*.68],item.roof,r);for(const x of [-w*.36,0,w*.36]) box(local(x,0,3.8),[.42,5.8,.42],'#a5c6c2',r);
+      for(const x of [-w*.3,-w*.1,w*.1,w*.3]) { box(local(x,-d*.22,2.1),[.8,2.5,.65],'#356d70',r);box(local(x,-d*.56,2.4),[.38,.7,.16],accent,r); }
+      for(let x=-w*.35;x<=w*.35;x+=3.4) box(local(x,0,7.08),[2.9,.12,d*.48],'#3b6680',r);
+      drawSmallVehicle(local,r,-w*.22,d*.32,'#5bc1a2',.76);drawSmallVehicle(local,r,w*.22,d*.32,'#e8e9df',.76);
+    } else if(model==='mobilityCenter') {
+      for(const x of [-w*.32,w*.32]) { box(local(x,-d*.52,4.4),[4.4,5.8,.3],'#4d7788',r);box(local(x,-d*.57,4.4),[2.8,3.4,.14],accent,r); }
+      box(local(0,d*.1,h+5.2),[.65,7,.65],'#5b6c7d',r);octagonalPad(local(0,d*.1,h+8.8),4,.42,accent);
+      for(const [x,z,color] of [[-5,4,'#65dce4'],[0,5,'#f0f2e4'],[5,4,'#9c83d8']]) { drawSmallVehicle(local,r,x,z,color,.68);box(local(x,z,3.2),[.18,2.4,.18],item.glow||accent,r); }
+      box(local(0,-d*.6,h+2.7),[w*.62,.35,.22],item.glow||accent,r);
+    }
+  }
   function drawTerrainBuildingDetail(item,local,r,w,h,d) {
     if(!item.requiredTerrain)return;
     const model=item.terrainModel,accent=item.trim||({plains:'#e0c267',river:'#64c6db',lake:'#76d4df',forest:'#79ad62',mountain:'#c4c8c6'}[item.requiredTerrain]);
@@ -1069,7 +1171,7 @@
       ||state.buildings.find((candidate)=>candidate.landId===building.landId&&BUILDINGS[candidate.type]?.bridgeStyle);
     if(!bridge)return;
     const dx=bridge.x-building.x,dz=bridge.z-building.z,length=Math.hypot(dx,dz);
-    if(length<2||length>25)return;
+    if(length<2||length>40)return;
     const directionX=dx/length,directionZ=dz/length,bridgeItem=BUILDINGS[bridge.type];
     const homeClearance=footprintSupport(item,building.rotation||0,directionX,directionZ,.45);
     const bridgeClearance=footprintSupport(bridgeItem,bridge.rotation||0,-directionX,-directionZ,.25);
@@ -1269,6 +1371,7 @@
     }
     drawCatalogDetail(item, local, r, w, h, d);
     drawLeisureBuildingDetail(item,local,r,w,h,d);
+    drawAutomotiveBuildingDetail(item,local,r,w,h,d);
     drawTerrainBuildingDetail(item,local,r,w,h,d);
     drawBridgeHomeConnection(building,item);
     drawMilitaryBuildingDetail(item,local,r,w,h,d);
@@ -1519,6 +1622,14 @@
     cannonBattery:{label:'포병 탄약 관리실',signature:'weaponrack',display:'#b09b78',kinds:['weaponrack','barrel','crate','map','toolrack','lantern']},
     airDefense:{label:'방공 관제실',signature:'console',display:'#87bdc3',kinds:['console','telescope','map','server','desk','machine']},
     droneCommand:{label:'미래 드론 통제실',signature:'holo',display:'#78d9e0',kinds:['holo','console','server','robot','desk','machine']},
+    carriageWorkshop:{label:'왕실 마차 제작 공방',signature:'workbench',display:'#d3ad76',kinds:['workbench','toolrack','cart','shelf','lantern','crate']},
+    royalGarage:{label:'왕실 자동차 정비고',signature:'machine',display:'#aab5b9',kinds:['machine','workbench','toolrack','shelf','crate','desk']},
+    fuelStation:{label:'왕국 주유소 관리실',signature:'counter',display:'#dfbd91',kinds:['counter','desk','shelf','machine','lamp','crate']},
+    autoFactory:{label:'자동차 조립 공장',signature:'machine',display:'#9faeb5',kinds:['machine','workbench','toolrack','cart','crate','console']},
+    carDealership:{label:'왕국 자동차 전시장',signature:'counter',display:'#9fd2db',kinds:['counter','desk','sofa','lamp','shelf','planter']},
+    parkingTower:{label:'입체 주차 관제실',signature:'console',display:'#b0b8bb',kinds:['console','desk','machine','server','shelf','lamp']},
+    evChargingHub:{label:'전기차 충전 제어실',signature:'console',display:'#8bd9c2',kinds:['console','machine','server','desk','solar','toolrack']},
+    mobilityCenter:{label:'자율주행 통합 관제실',signature:'holo',display:'#79dce7',kinds:['holo','console','server','robot','desk','machine']},
     mine:{label:'광산 작업소',signature:'crusher',display:'#aeb7c2',kinds:['ore','cart','crusher','toolrack','lantern','crate']},
     forge:{label:'대장장이 공방',signature:'bellows',display:'#d69a78',kinds:['forge','anvil','bellows','workbench','toolrack','barrel']},
     hall:{label:'왕국 행정실',signature:'throne',display:'#d8c4e1',kinds:['throne','writingdesk','bookcase','banner','statue','candelabra']},
@@ -1860,7 +1971,7 @@
       button.onclick = () => { selectedCategory = category.id; els.buildingList.scrollTop=0; updateUI(); }; els.categoryList.append(button);
     });
     const buildingEntries = Object.entries(BUILDINGS)
-      .filter(([, item]) => selectedCategory === 'all' || (selectedCategory==='terrain'?!!item.requiredTerrain:selectedCategory==='amenity'||selectedCategory==='attraction'?item.buildGroup===selectedCategory:item.category === selectedCategory))
+      .filter(([, item]) => selectedCategory === 'all' || (selectedCategory==='terrain'?!!item.requiredTerrain:['amenity','attraction','automotive'].includes(selectedCategory)?item.buildGroup===selectedCategory:item.category === selectedCategory))
       .sort(([, a], [, b]) => Number(isBuildingUnlocked(b)) - Number(isBuildingUnlocked(a)) || unlockYear(a) - unlockYear(b) || a.price - b.price);
     const previousBuildingScroll=els.buildingList.scrollTop;
     els.buildingList.innerHTML = ''; buildingEntries.forEach(([id,item]) => {
