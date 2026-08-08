@@ -1978,7 +1978,7 @@
     camera.zoom = Math.max(CAMERA_MIN_ZOOM, Math.min(CAMERA_MAX_ZOOM, camera.zoom - event.deltaY * CAMERA_ZOOM_STEP));
   }, { passive: false });
   window.addEventListener('keydown', (event) => {
-    const key = event.key.toLowerCase();
+    const key = event.code?.startsWith('Key') ? event.code.slice(3).toLowerCase() : event.key.toLowerCase();
     if (!els.tutorialModal.hidden) {
       if(event.key==='Escape') closeTutorial();
       else if(event.key==='ArrowLeft') showTutorialPage(tutorialPageIndex-1);
@@ -1987,15 +1987,15 @@
     }
     if (event.key === 'Escape' && interiorBuilding) { closeInterior(); return; }
     if (interiorBuilding) {
-      if(key==='q') interiorView.yaw-=.1;
-      if(key==='e') interiorView.yaw+=.1;
+      if(key==='q') interiorView.yaw+=.1;
+      if(key==='e') interiorView.yaw-=.1;
       if(key==='w') interiorView.zoom+=.08;
       if(key==='s') interiorView.zoom-=.08;
       if(key==='r') resetInteriorView();
       clampInteriorView(); if(['q','e','w','s','r'].includes(key)) event.preventDefault(); return;
     }
-    if (key === 'q') camera.yaw -= .08;
-    if (key === 'e') camera.yaw += .08;
+    if (key === 'q') camera.yaw += .08;
+    if (key === 'e') camera.yaw -= .08;
     if (key === 'f' || key === 'r') {
       // In this projection a smaller pitch lowers the camera toward the map,
       // while a larger pitch raises it back toward the overhead view.
@@ -2011,7 +2011,7 @@
     if (['w', 'a', 's', 'd'].includes(key) && !event.repeat) { pressedKeys.add(key); event.preventDefault(); }
     if (event.key === 'Escape') { selectedBuilding = null; deleteMode = false; updateUI(); }
   });
-  window.addEventListener('keyup', (event) => pressedKeys.delete(event.key.toLowerCase()));
+  window.addEventListener('keyup', (event) => pressedKeys.delete(event.code?.startsWith('Key')?event.code.slice(3).toLowerCase():event.key.toLowerCase()));
   window.addEventListener('blur', () => pressedKeys.clear());
   document.addEventListener('visibilitychange', () => { if (document.hidden) pressedKeys.clear(); });
   function pointInPolygon(x,y,points) { let inside=false; for(let i=0,j=points.length-1;i<points.length;j=i++) { const a=points[i],b=points[j]; if (((a.y>y)!==(b.y>y)) && (x < (b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x)) inside=!inside; } return inside; }
