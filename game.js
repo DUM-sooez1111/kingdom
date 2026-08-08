@@ -1742,11 +1742,13 @@
     }
     return collected;
   }
-  function collectTax(message = true) {
+  function collectTax(notification = 'manual') {
     const amount = takeTax(state.buildings);
-    if (amount < 1) { if (message) toast('아직 수금할 세금이 없습니다.'); return false; }
+    if (amount < 1) { if (notification==='manual') toast('아직 수금할 세금이 없습니다.'); return false; }
     state.cash += amount;
-    if (message) toast(`${format(amount)} 골드를 수금했습니다.`); save(true); updateUI(); return true;
+    if (notification==='auto') toast(`💰 자동 수금 · ${format(amount)} 골드를 획득했습니다.`);
+    else if(notification==='manual') toast(`${format(amount)} 골드를 수금했습니다.`);
+    save(true); updateUI(); return true;
   }
 
   function updateUI() {
@@ -2036,7 +2038,7 @@
     if (pressedKeys.has('a')) { camera.x -= c * move; camera.z += s * move; }
     if (pressedKeys.has('d')) { camera.x += c * move; camera.z -= s * move; }
     if (pressedKeys.size) clampCamera();
-    if (autoTimer >= 10) { autoTimer = 0; if (state.autoCollect) collectTax(false); else if (state.workers > 0) { const targets=state.buildings.slice(0,state.workers); const amount=takeTax(targets); if (amount) state.cash += amount; } save(true); updateUI(); }
+    if (autoTimer >= 10) { autoTimer = 0; if (state.autoCollect) collectTax('auto'); else if (state.workers > 0) { const targets=state.buildings.slice(0,state.workers); const amount=takeTax(targets); if (amount) state.cash += amount; } save(true); updateUI(); }
     requestAnimationFrame(tick);
   }
   updateUI(); updateClockUI(); updateTimeControls(); render(); requestAnimationFrame(tick);
