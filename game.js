@@ -60,20 +60,29 @@
     royalBridge: { name: '왕실 다리', icon: '♛', category: 'road', price: 400, income: 0, people: 0, body: '#8c5554', trim: '#e2bf62', size: [24, 1, 10], bridgeStyle: 'royal', unlockYear: 6, requiredTerrain: 'river', noInterior: true },
     futureBridge: { name: '미래 빛의 다리', icon: '🔷', category: 'road', price: 800, income: 0, people: 0, body: '#263f62', trim: '#67ecff', size: [24, .8, 10], bridgeStyle: 'future', unlockYear: 10, researchCost: 10, requiredTerrain: 'river', noInterior: true },
     plainsWindmill: { name:'평원 풍차 제분소', icon:'🌬️', category:'production', price:620, people:3, body:'#d7c18c', roof:'#8b5a3e', size:[14,8,12], unlockYear:2, requiredTerrain:'plains', terrainModel:'windmill' },
+    plainsCottage: { name:'초원 개척 주택', icon:'🏡', category:'residential', price:480, people:5, body:'#ddc58b', roof:'#8a5b3d', trim:'#e9cf79', size:[13,6,11], requiredTerrain:'plains', terrainModel:'plainsCottage' },
     cavalryRanch: { name:'왕실 기병 목장', icon:'🐎', category:'residential', price:1100, people:8, body:'#c69a63', roof:'#704936', size:[16,8,14], unlockYear:4, requiredTerrain:'plains', terrainModel:'cavalry' },
     royalGranary: { name:'대평원 왕실 곡물탑', icon:'🌾', category:'production', price:1600, people:6, body:'#c7ae76', roof:'#6b5546', size:[16,10,14], unlockYear:6, requiredTerrain:'plains', terrainModel:'silo' },
     fishingPier: { name:'강변 어업 부두', icon:'🎣', category:'production', price:420, people:3, body:'#a87952', roof:'#3e6878', size:[16,5,12], requiredTerrain:'river', terrainModel:'fishing' },
     watermill: { name:'강물 물레방앗간', icon:'🛞', category:'production', price:900, people:5, body:'#b2875e', roof:'#67483d', size:[14,7,12], unlockYear:3, requiredTerrain:'river', terrainModel:'watermill' },
+    riverStiltHomes: { name:'강변 기둥 주택', icon:'🛖', category:'residential', price:720, people:6, body:'#c79865', roof:'#496b72', trim:'#65c6d4', size:[14,7,12], unlockYear:2, requiredTerrain:'river', terrainModel:'riverStilts' },
     riverHouse: { name:'수상 가옥 마을', icon:'🏠', category:'residential', price:1250, people:10, body:'#d0a76f', roof:'#486b76', size:[16,7,14], unlockYear:5, requiredTerrain:'river', terrainModel:'riverhouse' },
+    riverCanalHomes: { name:'왕실 운하 주택', icon:'🏘️', category:'residential', price:2200, people:16, body:'#c9ad82', roof:'#3d6475', trim:'#75d8df', size:[19,9,16], unlockYear:7, researchCost:3, requiredTerrain:'river', terrainModel:'riverCanal' },
     lakeFishery: { name:'호수 어업장', icon:'🐟', category:'production', price:480, people:4, body:'#b58a5d', roof:'#3f6d77', size:[14,6,12], requiredTerrain:'lake', terrainModel:'lakeFishery', model:'lakeFishery' },
     floatingMarket: { name:'수상 장터', icon:'🛶', category:'production', price:1150, people:7, body:'#c8845d', roof:'#9e4f58', size:[18,7,15], unlockYear:3, requiredTerrain:'lake', terrainModel:'floatingMarket', model:'floatingMarket' },
+    lakeHouseboats: { name:'호수 선상 주택', icon:'⛵', category:'residential', price:850, people:7, body:'#d6b37e', roof:'#477482', trim:'#82dce2', size:[15,7,13], unlockYear:2, requiredTerrain:'lake', terrainModel:'lakeHouseboats' },
     lakeVilla: { name:'호숫가 수상 저택', icon:'🏡', category:'residential', price:1900, people:12, body:'#d9c89e', roof:'#426b78', size:[18,9,16], unlockYear:5, requiredTerrain:'lake', terrainModel:'lakeVilla', model:'lakeVilla' },
+    floatingVillage: { name:'호수 부유 마을', icon:'🏘️', category:'residential', price:2600, people:20, body:'#cdb991', roof:'#396979', trim:'#86e4e9', size:[20,10,18], unlockYear:8, researchCost:5, requiredTerrain:'lake', terrainModel:'floatingVillage' },
     aquaLab: { name:'수상 생태 연구소', icon:'🔬', category:'production', price:4600, people:10, body:'#79aeb7', roof:'#304e68', trim:'#74eff2', size:[20,11,18], unlockYear:8, researchCost:5, requiredTerrain:'lake', terrainModel:'aquaLab', model:'aquaLab' },
     lumberCamp: { name:'깊은 숲 벌목장', icon:'🪵', category:'production', price:500, people:4, body:'#98643e', roof:'#4c633f', size:[14,6,12], requiredTerrain:'forest', terrainModel:'lumber' },
+    forestTreehouse: { name:'숲속 나무 위 주택', icon:'🌳', category:'residential', price:980, people:8, body:'#a8784d', roof:'#3f623f', trim:'#83b967', size:[14,8,12], unlockYear:3, requiredTerrain:'forest', terrainModel:'treehouse' },
     hunterLodge: { name:'사냥꾼 산장', icon:'🏹', category:'residential', price:780, people:6, body:'#9f7048', roof:'#435a3c', size:[13,7,11], unlockYear:3, requiredTerrain:'forest', terrainModel:'hunter' },
+    forestCanopyHomes: { name:'왕실 수관 마을', icon:'🌲', category:'residential', price:2100, people:16, body:'#99734f', roof:'#355c43', trim:'#8fd27c', size:[19,10,17], unlockYear:7, researchCost:3, requiredTerrain:'forest', terrainModel:'canopyHomes' },
     forestShrine: { name:'고대 숲 제단', icon:'🗿', category:'decoration', price:950, people:0, body:'#71846a', roof:'#3f6548', size:[12,5,12], unlockYear:5, requiredTerrain:'forest', terrainModel:'shrine' },
     quarry: { name:'산악 채석장', icon:'🪨', category:'production', price:650, people:4, body:'#85827c', roof:'#55575a', size:[15,6,13], unlockYear:2, requiredTerrain:'mountain', terrainModel:'quarry' },
+    mountainStoneLodge: { name:'산악 석조 주택', icon:'🏔️', category:'residential', price:900, people:7, body:'#98958c', roof:'#53565d', trim:'#d5c18c', size:[14,8,12], unlockYear:3, requiredTerrain:'mountain', terrainModel:'mountainLodge' },
     deepMountainMine: { name:'심층 산악 광산', icon:'⛏️', category:'production', price:1100, people:6, body:'#62666b', roof:'#3c3e45', size:[16,9,14], unlockYear:4, requiredTerrain:'mountain', terrainModel:'deepmine' },
+    cliffApartments: { name:'절벽 공동 주택', icon:'🏢', category:'residential', price:2400, people:18, body:'#858b8c', roof:'#464e58', trim:'#d0be85', size:[19,11,16], unlockYear:7, researchCost:4, requiredTerrain:'mountain', terrainModel:'cliffHomes' },
     cliffFortress: { name:'절벽 왕국 요새', icon:'🏯', category:'landmark', price:2200, people:8, body:'#8c9193', roof:'#4b5060', size:[18,12,16], unlockYear:6, requiredTerrain:'mountain', terrainModel:'clifffort' },
   };
   // Each of the ten series has one building for every kingdom year: 10 × 10 = 100 new buildings.
@@ -696,7 +705,7 @@
       const row=Math.round((land.z-MAP_GRID.minZ)/MAP_GRID.tile);
       x=MAP_GRID.minX+riverCenterColumn(row,state.terrainSeed||0)*MAP_GRID.tile; z=land.z;
     }
-    if(item.category==='residential'&&(land.terrain==='river'||land.terrain==='lake')) return {landId:land.id,x,z,valid:false,reason:'residential-water'};
+    if(item.category==='residential'&&(land.terrain==='river'||land.terrain==='lake')&&!item.requiredTerrain) return {landId:land.id,x,z,valid:false,reason:'residential-water'};
     if(item.requiredTerrain&&land.terrain!==item.requiredTerrain) return {landId:land.id,x,z,valid:false,reason:'terrain',requiredTerrain:item.requiredTerrain};
     if(item.category==='landmark') {
       if(state.buildings.some((building)=>building.type===selectedBuilding)) return {landId:land.id,x,z,valid:false,reason:'landmark-unique'};
@@ -915,6 +924,9 @@
     const model=item.terrainModel,accent=item.trim||({plains:'#e0c267',river:'#64c6db',lake:'#76d4df',forest:'#79ad62',mountain:'#c4c8c6'}[item.requiredTerrain]);
     if(model==='windmill') {
       box(local(0,-d*.58,h+3.5),[.45,6.5,.45],'#765038',r); box(local(0,-d*.61,h+5.3),[6.2,.28,.28],'#efe1bd',r); box(local(0,-d*.62,h+5.3),[.28,6.2,.28],'#efe1bd',r);
+    } else if(model==='plainsCottage') {
+      for(const x of [-w*.5,0,w*.5]) box(local(x,d*.64,1.7),[.28,2.2,.28],'#79553a',r); box(local(0,d*.64,2.45),[w+1,.22,.22],'#79553a',r);
+      for(const x of [-w*.35,w*.35]) box(local(x,-d*.58,h+3.5),[.22,3.1,.22],accent,r); box(local(0,-d*.58,h+4.65),[w*.75,.24,.18],accent,r);
     } else if(model==='cavalry') {
       for(const x of [-w*.47,0,w*.47]) box(local(x,d*.62,1.6),[.3,2.2,.3],'#765138',r); box(local(0,d*.62,2.3),[w+1,.25,.25],'#765138',r); box(local(-w*.32,d*.38,1.35),[2.8,.9,1.5],'#d8b759',r);
     } else if(model==='silo') {
@@ -923,8 +935,14 @@
       box(local(0,d*.66,1.05),[w+5,.35,4.5],'#9a714b',r); for(const x of [-w*.48,0,w*.48]) box(local(x,d*.66,2),[.35,2.3,.35],'#5f412c',r); for(const x of [-w*.28,w*.28]) { box(local(x,-d*.58,3.2),[.18,4,.18],'#b78b54',r); box(local(x,-d*.63,4.9),[2.2,.12,.12],accent,r); }
     } else if(model==='watermill') {
       box(local(w*.52,0,h*.52+1.7),[.32,5.8,5.8],'#6f5138',r); box(local(w*.54,0,h*.52+1.7),[.4,6.4,.5],accent,r); box(local(w*.55,0,h*.52+1.7),[.42,.5,6.4],accent,r);
+    } else if(model==='riverStilts') {
+      for(const x of [-w*.4,w*.4]) for(const z of [-d*.4,d*.4]) box(local(x,z,2),[.48,3.8,.48],'#60432f',r);
+      box(local(0,d*.66,1.1),[w+5,.38,3.8],'#9b7048',r); for(const x of [-w*.42,0,w*.42]) box(local(x,d*.68,2),[.3,2.4,.3],accent,r);
     } else if(model==='riverhouse') {
       for(const x of [-w*.36,w*.36]) for(const z of [-d*.36,d*.36]) box(local(x,z,1.9),[.45,3.2,.45],'#65452f',r); box(local(0,d*.62,1.05),[w+3,.32,3.2],'#a77a4c',r);
+    } else if(model==='riverCanal') {
+      box(local(0,0,1.08),[w+5,.38,d+3],'#8e704f',r); for(const side of [-1,1]) box(local(side*w*.56,0,1.35),[2.8,.48,d+7],'#a97c4f',r);
+      for(const z of [-d*.35,d*.35]) { box(local(0,z,1.4),[w+2,.22,.35],accent,r); box(local(0,z,2.1),[3.8,.65,1.5],z>0?'#d49a55':'#6798a4',r); }
     } else if(model==='lakeFishery') {
       box(local(0,d*.68,1.08),[w+6,.34,4.8],'#9b7048',r); for(const x of [-w*.5,0,w*.5]) box(local(x,d*.68,2),[.35,2.3,.35],'#60422d',r);
       for(const x of [-w*.3,w*.3]) { box(local(x,-d*.58,3.1),[.18,4.2,.18],'#b88c55',r); box(local(x,-d*.63,5),[2.5,.12,.12],accent,r); }
@@ -932,24 +950,42 @@
     } else if(model==='floatingMarket') {
       box(local(0,0,1.08),[w+5,.42,d+4],'#9d744d',r); for(const x of [-w*.34,0,w*.34]) { box(local(x,-d*.58,4.15),[w*.24,.24,3.8],x?accent:'#f2ce72',r); for(const side of [-1,1]) box(local(x+side*w*.1,-d*.52,2.5),[.18,3.2,.18],'#69462f',r); }
       for(const z of [-d*.55,d*.55]) box(local(0,z,1.38),[w+3,.12,.35],'#edd28a',r);
+    } else if(model==='lakeHouseboats') {
+      for(const side of [-1,1]) box(local(side*w*.38,0,1.02),[3.4,.75,d+4],'#527c89',r); box(local(0,d*.62,1.15),[w+4,.36,3.5],'#a87b4d',r);
+      box(local(0,-d*.56,h+2.8),[w*.62,.22,.2],accent,r); box(local(w*.48,d*.74,1.55),[4.2,.55,1.7],'#d6b45f',r);
     } else if(model==='lakeVilla') {
       for(const x of [-w*.4,w*.4]) for(const z of [-d*.42,d*.42]) box(local(x,z,2),[.5,3.7,.5],'#5d4938',r);
       box(local(0,d*.62,2),[w+4,.4,4.2],'#a77d55',r); for(const x of [-w*.4,0,w*.4]) box(local(x,d*.66,3.1),[.25,2.2,.25],accent,r);
       box(local(0,d*.69,4.15),[w+2,.22,.25],accent,r); box(local(0,-d*.54,h*.7+1.8),[w*.62,.22,.18],'#9ce1e8',r);
+    } else if(model==='floatingVillage') {
+      box(local(0,0,1.02),[w+6,.4,d+5],'#8f724f',r); for(const x of [-w*.36,w*.36]) box(local(x,0,1.28),[4,.35,d+8],accent,r);
+      for(const z of [-d*.55,d*.55]) box(local(0,z,1.32),[w+7,.32,3.2],'#a67a4f',r); for(const [x,z] of [[-w*.55,d*.65],[w*.55,-d*.65]]) box(local(x,z,1.55),[4.5,.7,2],'#4d8492',r);
     } else if(model==='aquaLab') {
       octagonalPad(local(0,0,1.25),Math.max(w,d)*.67,.48,'#496b78'); octagonalPad(local(0,0,1.55),Math.max(w,d)*.56,.2,accent);
       for(const [x,z] of [[-w*.38,0],[w*.38,0],[0,d*.38]]) { box(local(x,z,h*.48+2),[2.4,h*.82,2.4],'#4e6d79',r); box(local(x,z,h*.88+2),[2.8,.28,2.8],accent,r); }
       box(local(0,-d*.58,h*.64+1.8),[w*.72,.28,.2],'#b7fbff',r);
     } else if(model==='lumber') {
       for(let row=0;row<3;row++) for(let i=0;i<4-row;i++) box(local(-w*.48+i*1.35+row*.62,d*.58,1.05+row*.65),[1.15,1.15,3.4],i%2?'#71482c':'#895a34',r);
+    } else if(model==='treehouse') {
+      for(const x of [-w*.42,w*.42]) { box(local(x,d*.18,4.2),[1.25,6.5,1.25],'#5f432e',r); pyramid(local(x,d*.18,8),4.2,'#3c7a49'); }
+      box(local(0,d*.58,2.6),[w+3,.38,3.8],'#85603e',r); for(let y=1.5;y<6;y+=1.1) box(local(-w*.55,-d*.25,y),[2.6,.18,.18],accent,r);
     } else if(model==='hunter') {
       box(local(0,-d*.56,h*.68+1.5),[4.5,.25,.25],'#d3c195',r); for(const x of [-1.7,1.7]) { box(local(x,-d*.6,h*.86+1.5),[.18,2.4,.18],'#d3c195',r); box(local(x+(x<0?-.6:.6),-d*.6,h+2.1),[1.2,.18,.18],'#d3c195',r); }
+    } else if(model==='canopyHomes') {
+      for(const [x,z] of [[-w*.42,-d*.3],[w*.42,-d*.25],[-w*.35,d*.35],[w*.38,d*.38]]) { box(local(x,z,5),[1.15,8,1.15],'#60452f',r); pyramid(local(x,z,9.5),4.6,'#397a4a'); }
+      for(const z of [-d*.42,d*.42]) box(local(0,z,5.4),[w+4,.42,3.2],'#8a6744',r); box(local(0,0,6),[.32,2.4,d+4],accent,r);
     } else if(model==='shrine') {
       box(local(0,0,1.35),[5.5,.45,5.5],'#898c80',r); box(local(0,0,3.2),[1.8,3.6,1.8],'#a8aaa1',r); for(const [x,z] of [[-4,-3],[4,-3],[-4,3],[4,3]]) pyramid(local(x,z,1.2),2.2,'#3f8050');
     } else if(model==='quarry') {
       for(const [x,z,size] of [[-w*.38,d*.38,2.8],[0,d*.48,2.2],[w*.36,d*.32,3.1]]) { box(local(x,z,1.3),[size,1.5,size*.8],'#777b7c',r); pyramid(local(x,z,2.05),size*.65,'#969a99'); }
+    } else if(model==='mountainLodge') {
+      for(const [x,z,size] of [[-w*.48,d*.42,2.5],[w*.46,d*.36,2.1],[-w*.42,-d*.35,1.7]]) pyramid(local(x,z,1.05),size,'#7d807d');
+      box(local(w*.34,d*.1,h+4),[1.1,5.2,1.1],'#4f5358',r); box(local(0,-d*.56,h*.58+1.8),[w*.58,.28,.22],accent,r);
     } else if(model==='deepmine') {
       box(local(0,-d*.53,2.8),[w*.66,4.6,.55],'#292d32',r); for(const x of [-w*.28,w*.28]) box(local(x,-d*.58,3.6),[.58,6,.58],'#9b7448',r); box(local(-w*.48,d*.4,1.25),[3.2,.6,2],'#b99248',r); box(local(-w*.48,d*.4,1.75),[2.1,.8,1.3],accent,r);
+    } else if(model==='cliffHomes') {
+      for(const x of [-w*.42,0,w*.42]) { box(local(x,d*.38,4.4),[3.8,6.5,3.8],'#747b7d',r); box(local(x,d*.38,7.8),[4.2,.35,4.2],accent,r); }
+      for(const y of [3.5,6.5,9.5]) box(local(0,-d*.56,y),[w*.78,.32,.25],'#d3c395',r); box(local(-w*.55,0,3.4),[2.5,.4,d+3],'#8a8173',r);
     } else if(model==='clifffort') {
       for(const x of [-w*.42,w*.42]) { box(local(x,0,h*.55+2),[3.8,h+1,3.8],'#777d82',r); prism(local(x,0,h+2.2),4.6,4.6,h+2,h+5,item.roof,r); } box(local(0,-d*.55,5.2),[5.5,7,.6],'#3e4149',r);
     }
@@ -1375,20 +1411,29 @@
     park:{label:'시민 휴게 정원',signature:'planter',display:'#a8d5ae',kinds:['planter','bench','fountain','statue','lamppost','trellis']},
     royalGarden:{label:'왕실 온실 정원',signature:'fountain',display:'#a9dfbd',kinds:['fountain','planter','trellis','statue','bench','lamppost']},
     plainsWindmill:{label:'평원 제분 작업실',signature:'grainbin',display:'#ddd09a',kinds:['grainbin','sack','workbench','scale','barrel','toolrack']},
+    plainsCottage:{label:'초원 개척 가정집',signature:'dining',display:'#dfcb9f',kinds:['bed','dining','wardrobe','stove','basket','chest']},
     cavalryRanch:{label:'기병대 생활관',signature:'weaponrack',display:'#d8bd8c',kinds:['bed','weaponrack','wardrobe','dining','haystack','chest']},
     royalGranary:{label:'대평원 곡물 관리실',signature:'grainbin',display:'#d8c887',kinds:['grainbin','barrel','sack','scale','shelf','desk']},
     fishingPier:{label:'강변 어업 작업실',signature:'fishnet',display:'#9bd8df',kinds:['fishnet','rope','barrel','crate','desk','lantern']},
     watermill:{label:'수차 제분실',signature:'machine',display:'#91cbd6',kinds:['machine','grainbin','sack','workbench','barrel','toolrack']},
+    riverStiltHomes:{label:'강변 기둥 주택 내부',signature:'fishnet',display:'#a5d4d7',kinds:['bed','dining','fishnet','wardrobe','rope','stove']},
     riverHouse:{label:'수상 가옥 생활실',signature:'fishnet',display:'#a4d8db',kinds:['bed','fishnet','dining','wardrobe','rope','stove']},
+    riverCanalHomes:{label:'왕실 운하 주택 내부',signature:'sofa',display:'#a8d8dc',kinds:['bed','sofa','dining','bookcase','fishnet','wardrobe']},
     lakeFishery:{label:'호수 어업 작업실',signature:'fishnet',display:'#8fd5df',kinds:['fishnet','rope','barrel','crate','workbench','lantern']},
     floatingMarket:{label:'수상 장터 상점',signature:'marketstall',display:'#e4b695',kinds:['marketstall','counter','scale','basket','barrel','shelf']},
+    lakeHouseboats:{label:'호수 선상 생활실',signature:'fishnet',display:'#acdce0',kinds:['bed','dining','fishnet','rope','stove','chest']},
     lakeVilla:{label:'호숫가 저택 거실',signature:'sofa',display:'#b9dfe1',kinds:['bed','sofa','dining','wardrobe','bookcase','planter']},
+    floatingVillage:{label:'호수 부유 마을 회관',signature:'sofa',display:'#a8dce0',kinds:['bed','sofa','dining','wardrobe','bookcase','fishnet']},
     aquaLab:{label:'수상 생태 연구실',signature:'console',display:'#7ee8ee',kinds:['console','machine','server','desk','holo','appliance']},
     lumberCamp:{label:'벌목 작업실',signature:'logpile',display:'#a8c392',kinds:['logpile','workbench','toolrack','barrel','shelf','lantern']},
+    forestTreehouse:{label:'숲속 나무 위 집',signature:'planter',display:'#a8ca9d',kinds:['bed','dining','planter','wardrobe','stove','bookcase']},
     hunterLodge:{label:'사냥꾼 산장 생활실',signature:'weaponrack',display:'#a8be91',kinds:['bed','weaponrack','stove','table','wardrobe','chest']},
+    forestCanopyHomes:{label:'왕실 수관 마을 집',signature:'planter',display:'#9fc89d',kinds:['bed','sofa','planter','dining','bookcase','wardrobe']},
     forestShrine:{label:'고대 숲 성소',signature:'statue',display:'#9bc69e',kinds:['statue','planter','candle','fountain','bench','trellis']},
     quarry:{label:'채석 작업소',signature:'crusher',display:'#c4c5c0',kinds:['crusher','ore','cart','toolrack','workbench','lantern']},
+    mountainStoneLodge:{label:'산악 석조 생활실',signature:'hearth',display:'#c2beb1',kinds:['bed','hearth','dining','wardrobe','lantern','chest']},
     deepMountainMine:{label:'심층 광산 작업소',signature:'ore',display:'#aeb7c2',kinds:['ore','cart','crusher','toolrack','lantern','crate']},
+    cliffApartments:{label:'절벽 공동 주택 내부',signature:'sofa',display:'#b7bdba',kinds:['bed','sofa','dining','wardrobe','bookcase','hearth']},
     cliffFortress:{label:'절벽 요새 지휘실',signature:'map',display:'#b9c2cb',kinds:['map','weaponrack','telescope','banner','writingdesk','candelabra']},
   };
   const ERA_INTERIOR_FURNITURE = ['candle','loom','bookcase','writingdesk','machine','appliance','console','solar','server','robot'];
