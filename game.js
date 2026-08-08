@@ -202,6 +202,12 @@
     lake:{name:'호수',icon:'🏞️',owned:'#4198b5',locked:'#2a6173'},
   };
   const MAP_GRID = { columns: 28, rows: 16, minX: -672, minZ: -360, tile: 48 };
+  // Extend around the original grid without moving its coordinates or realm IDs,
+  // so existing saves keep every purchased plot and placed building intact.
+  const MAP_EXTENT = { minColumn: -12, maxColumn: 31, minRow: -2, maxRow: 17 };
+  function insideMapExtent(column,row) {
+    return column>=MAP_EXTENT.minColumn&&column<=MAP_EXTENT.maxColumn&&row>=MAP_EXTENT.minRow&&row<=MAP_EXTENT.maxRow;
+  }
   function terrainHash(column,row,seed) {
     let value=(column+17)*374761393+(row+31)*668265263+(seed+7)*69069;
     value=(value^(value>>>13))*1274126177;
@@ -255,13 +261,16 @@
     return 'plains';
   }
   const occupiedLandCoordinates = new Set(LANDS.map((land) => `${land.x},${land.z}`));
-  for (let row = 0; row < MAP_GRID.rows; row++) {
-    for (let column = 0; column < MAP_GRID.columns; column++) {
+  for (let row = MAP_EXTENT.minRow; row <= MAP_EXTENT.maxRow; row++) {
+    for (let column = MAP_EXTENT.minColumn; column <= MAP_EXTENT.maxColumn; column++) {
       const x = MAP_GRID.minX + column * MAP_GRID.tile, z = MAP_GRID.minZ + row * MAP_GRID.tile;
       if (occupiedLandCoordinates.has(`${x},${z}`)) continue;
       const distance = Math.abs(x) / MAP_GRID.tile + Math.abs(z) / MAP_GRID.tile;
       const terrain=terrainForCell(column,row,0), terrainInfo=TERRAIN_INFO[terrain];
-      LANDS.push({ id: `realm_${column + 1}_${row + 1}`, name: `${terrainInfo.name} 영토 ${column + 1}-${row + 1}`, x, z, terrain, price: 700 + Math.floor(distance * 140), owned: false });
+      const originalCell=column>=0&&column<MAP_GRID.columns&&row>=0&&row<MAP_GRID.rows;
+      const id=originalCell?`realm_${column + 1}_${row + 1}`:`realm_ext_${column}_${row}`;
+      const name=originalCell?`${terrainInfo.name} 영토 ${column + 1}-${row + 1}`:`${terrainInfo.name} 확장 영토 ${column-MAP_EXTENT.minColumn+1}-${row-MAP_EXTENT.minRow+1}`;
+      LANDS.push({ id, name, x, z, terrain, price: 700 + Math.floor(distance * 140), owned: false });
     }
   }
   const START = { cash: 1000, owned: ['core1', 'core2', 'core3'], buildings: [], workers: 0, autoCollect: false, rotation: 0, rotationStep: 45, missionIndex: 0, rebirths: 0, terrainSeed: 0, year: 1, timeScale: 1, researchTokens: 0, researchCount: 0, researchStartedAt: 0, researchEndsAt: 0, researchDuration: 0, researchPendingReward: 0, warLevel:0, warVictories:0, warStartedAt:0, warEndsAt:0, warDuration:0, warEnemyPower:0, warArmyPower:0, warPendingReward:0 };
@@ -270,7 +279,7 @@
   function applyTerrainLayout(seed=0) {
     LANDS.forEach((land)=>{
       const column=Math.round((land.x-MAP_GRID.minX)/MAP_GRID.tile), row=Math.round((land.z-MAP_GRID.minZ)/MAP_GRID.tile);
-      land.terrain=column>=0&&column<MAP_GRID.columns&&row>=0&&row<MAP_GRID.rows?terrainForCell(column,row,seed):'plains';
+      land.terrain=insideMapExtent(column,row)?terrainForCell(column,row,seed):'plains';
     });
   }
   applyTerrainLayout(state.terrainSeed||0);
@@ -416,10 +425,10 @@
   }
 
   function clampCamera() {
-    const minX = MAP_GRID.minX - MAP_GRID.tile / 2;
-    const maxX = MAP_GRID.minX + (MAP_GRID.columns - 1) * MAP_GRID.tile + MAP_GRID.tile / 2;
-    const minZ = MAP_GRID.minZ - MAP_GRID.tile / 2;
-    const maxZ = MAP_GRID.minZ + (MAP_GRID.rows - 1) * MAP_GRID.tile + MAP_GRID.tile / 2;
+    const minX = MAP_GRID.minX + (MAP_EXTENT.minColumn - .5) * MAP_GRID.tile;
+    const maxX = MAP_GRID.minX + (MAP_EXTENT.maxColumn + .5) * MAP_GRID.tile;
+    const minZ = MAP_GRID.minZ + (MAP_EXTENT.minRow - .5) * MAP_GRID.tile;
+    const maxZ = MAP_GRID.minZ + (MAP_EXTENT.maxRow + .5) * MAP_GRID.tile;
     camera.x = Math.max(minX, Math.min(maxX, camera.x));
     camera.z = Math.max(minZ, Math.min(maxZ, camera.z));
   }
@@ -779,8 +788,9 @@
   }
   function riverPathPoints() {
     const seed=state.terrainSeed||0;
-    return Array.from({length:MAP_GRID.rows*2+1},(_,index)=>{
-      const row=-.5+index*.5;
+    const startRow=MAP_EXTENT.minRow-.5, pointCount=(MAP_EXTENT.maxRow-MAP_EXTENT.minRow+1)*2+1;
+    return Array.from({length:pointCount},(_,index)=>{
+      const row=startRow+index*.5;
       return {
         x:MAP_GRID.minX+riverCenterColumn(row,seed)*MAP_GRID.tile,
         z:MAP_GRID.minZ+row*MAP_GRID.tile,
@@ -1145,15 +1155,16 @@
     if (upgrade >= 3) { box(local(0, 0, h + 4.3), [2.2, 3.2, 2.2], '#c9b077', r); prism(local(0, 0, 0), 3.2, 3.2, h + 5.7, h + 7.3, '#79534e', r); }
   }
   function drawWorldArt() {
-    const centerX = MAP_GRID.minX + (MAP_GRID.columns - 1) * MAP_GRID.tile / 2;
-    const centerZ = MAP_GRID.minZ + (MAP_GRID.rows - 1) * MAP_GRID.tile / 2;
-    for (let row = 1; row < MAP_GRID.rows; row++) {
+    const mapColumns=MAP_EXTENT.maxColumn-MAP_EXTENT.minColumn+1, mapRows=MAP_EXTENT.maxRow-MAP_EXTENT.minRow+1;
+    const centerX = MAP_GRID.minX + (MAP_EXTENT.minColumn+MAP_EXTENT.maxColumn) * MAP_GRID.tile / 2;
+    const centerZ = MAP_GRID.minZ + (MAP_EXTENT.minRow+MAP_EXTENT.maxRow) * MAP_GRID.tile / 2;
+    for (let row = MAP_EXTENT.minRow+1; row <= MAP_EXTENT.maxRow; row++) {
       const z = MAP_GRID.minZ + (row - .5) * MAP_GRID.tile;
-      box({x:centerX,y:.65,z}, [MAP_GRID.columns * MAP_GRID.tile,.18,4], '#b7986f');
+      box({x:centerX,y:.65,z}, [mapColumns * MAP_GRID.tile,.18,4], '#b7986f');
     }
-    for (let column = 1; column < MAP_GRID.columns; column++) {
+    for (let column = MAP_EXTENT.minColumn+1; column <= MAP_EXTENT.maxColumn; column++) {
       const x = MAP_GRID.minX + (column - .5) * MAP_GRID.tile;
-      box({x,y:.65,z:centerZ}, [4,.18,MAP_GRID.rows * MAP_GRID.tile], '#ad8e68');
+      box({x,y:.65,z:centerZ}, [4,.18,mapRows * MAP_GRID.tile], '#ad8e68');
     }
     box({x:153,y:8,z:0}, [62,16,14], '#535e70');
     for (const x of [123,183]) { box({x,y:11,z:-8}, [12,22,12], '#657183'); prism({x,y:0,z:-8}, 16,16,22,29,'#693f56'); }
