@@ -700,10 +700,19 @@
     const margin = 1;
     let x = Math.max(land.x - 24 + width * .5 + margin, Math.min(land.x + 24 - width * .5 - margin, snap(world.x)));
     let z = Math.max(land.z - 24 + depth * .5 + margin, Math.min(land.z + 24 - depth * .5 - margin, snap(world.z)));
+    let connectedBridgeId=null;
     if(item.fullTile) { x=land.x; z=land.z; }
     if(item.bridgeStyle) {
       const row=Math.round((land.z-MAP_GRID.minZ)/MAP_GRID.tile);
       x=MAP_GRID.minX+riverCenterColumn(row,state.terrainSeed||0)*MAP_GRID.tile; z=land.z;
+    }
+    if(item.category==='residential'&&item.requiredTerrain==='river') {
+      const bridge=state.buildings.find((building)=>building.landId===land.id&&BUILDINGS[building.type]?.bridgeStyle);
+      if(bridge) {
+        const angle=(bridge.rotation||0)*Math.PI/180, normalX=-Math.sin(angle), normalZ=Math.cos(angle);
+        const side=((world.x-bridge.x)*normalX+(world.z-bridge.z)*normalZ)<0?-1:1;
+        x=bridge.x+normalX*side*14; z=bridge.z+normalZ*side*14; connectedBridgeId=bridge.id;
+      }
     }
     if(item.category==='residential'&&(land.terrain==='river'||land.terrain==='lake')&&!item.requiredTerrain) return {landId:land.id,x,z,valid:false,reason:'residential-water'};
     if(item.requiredTerrain&&land.terrain!==item.requiredTerrain) return {landId:land.id,x,z,valid:false,reason:'terrain',requiredTerrain:item.requiredTerrain};
@@ -724,7 +733,7 @@
       }
       return Math.abs(x - building.x) < (width + otherWidth) * .5 + padding && Math.abs(z - building.z) < (depth + otherDepth) * .5 + padding;
     });
-    return { landId: land.id, x, z, valid: !occupied };
+    return { landId: land.id, x, z, connectedBridgeId, valid: !occupied };
   }
   function rotatePoint(point, center, angle) {
     const c = Math.cos(angle), s = Math.sin(angle), x = point.x - center.x, z = point.z - center.z;
@@ -990,6 +999,16 @@
       for(const x of [-w*.42,w*.42]) { box(local(x,0,h*.55+2),[3.8,h+1,3.8],'#777d82',r); prism(local(x,0,h+2.2),4.6,4.6,h+2,h+5,item.roof,r); } box(local(0,-d*.55,5.2),[5.5,7,.6],'#3e4149',r);
     }
   }
+  function drawBridgeHomeConnection(building,item) {
+    if(item.category!=='residential'||item.requiredTerrain!=='river'||!building.landId)return;
+    const bridge=state.buildings.find((candidate)=>candidate.id===building.connectedBridgeId)
+      ||state.buildings.find((candidate)=>candidate.landId===building.landId&&BUILDINGS[candidate.type]?.bridgeStyle);
+    if(!bridge)return;
+    const dx=bridge.x-building.x,dz=bridge.z-building.z,length=Math.hypot(dx,dz);
+    if(length<2||length>25)return;
+    const angle=Math.atan2(dz,dx),midpoint={x:(bridge.x+building.x)/2,y:1.72,z:(bridge.z+building.z)/2};
+    box(midpoint,[length+.8,.3,2.4],'#a77a4c',angle); box({ ...midpoint, y:1.92 },[length+.4,.1,.3],'#e1bf78',angle);
+  }
   function designSeed(text) {
     let hash = 2166136261;
     for (let i = 0; i < text.length; i++) { hash ^= text.charCodeAt(i); hash = Math.imul(hash, 16777619); }
@@ -1155,6 +1174,7 @@
     drawCatalogDetail(item, local, r, w, h, d);
     drawLeisureBuildingDetail(item,local,r,w,h,d);
     drawTerrainBuildingDetail(item,local,r,w,h,d);
+    drawBridgeHomeConnection(building,item);
     drawMilitaryBuildingDetail(item,local,r,w,h,d);
     if(!item.openAir&&item.category!=='military') drawUniqueExterior(item, building.type, local, r, w, h, d);
     if (isGhost) return;
@@ -1640,7 +1660,7 @@
     faceLayer = 6; drawResidents();
     if (hoveredPlacement && hoveredPlacement.valid && selectedBuilding && isBuildingUnlocked(BUILDINGS[selectedBuilding])) {
       faceLayer = 7;
-      drawBuilding({ type: selectedBuilding, x: hoveredPlacement.x, z: hoveredPlacement.z, rotation: state.rotation }, true);
+      drawBuilding({ type: selectedBuilding, landId:hoveredPlacement.landId, connectedBridgeId:hoveredPlacement.connectedBridgeId, x: hoveredPlacement.x, z: hoveredPlacement.z, rotation: state.rotation }, true);
     }
     faces.sort((a,b) => a.layer - b.layer || b.depth - a.depth);
     for (const face of faces) {
@@ -1677,9 +1697,9 @@
     if ((state.researchTokens || 0) < (item.researchCost || 0)) return toast(`연구 토큰 ${item.researchCost}개가 필요합니다.`);
     const slot = placement && placement.valid ? placement : null;
     if (!slot) return toast('이 영토는 이미 가득 찼습니다.');
-    state.cash -= item.price; state.researchTokens -= item.researchCost || 0; state.buildings.push({ id: crypto.randomUUID(), type: selectedBuilding, landId: land.id, x: slot.x, z: slot.z, rotation: state.rotation, tax: 0 });
+    state.cash -= item.price; state.researchTokens -= item.researchCost || 0; state.buildings.push({ id: crypto.randomUUID(), type: selectedBuilding, landId: land.id, connectedBridgeId:slot.connectedBridgeId||null, x: slot.x, z: slot.z, rotation: state.rotation, tax: 0 });
     selectedBuilding = null; hoveredLand = null; hoveredPlacement = null;
-    toast(`${item.name}이(가) 실루엣 위치에 설치되었습니다.`); save(true); updateUI();
+    toast(`${item.name}이(가) ${slot.connectedBridgeId?'다리와 연결되어 ':'실루엣 위치에 '}설치되었습니다.`); save(true); updateUI();
   }
   function deleteOn(landId) {
     const index = state.buildings.map((building, i) => ({ building, i })).filter((entry) => entry.building.landId === landId).at(-1);
@@ -1754,7 +1774,7 @@
       if(unlocked) {
         if(landmarkPlaced) detail='왕국에 이미 설치됨 · 종류별 1개 제한';
         else if(item.category==='road') detail=item.bridgeStyle?`강을 건너는 ${item.size[0]}m 다리 · 강 지형 전용 · 회전 배치 가능`:`길 조각 ${item.size[0]}m · 회전 배치 가능`;
-        else if(item.category==='residential') detail=`세금 +${item.income} / 10초 · 주민 +${item.people}`;
+        else if(item.category==='residential') detail=`세금 +${item.income} / 10초 · 주민 +${item.people}${item.requiredTerrain==='river'?' · 다리 옆 배치 시 자동 연결':''}`;
         else if(item.category==='production') detail=`세금 +${item.income} / 10초 · 가격의 1% 추가 · 일자리 ${item.people}${productionNote}${item.popularity?` · 인기도 +${item.popularity}`:''}${item.fullTile?' · 영토 한 칸 전체 사용':''}`;
         else if(item.category==='military') detail=`세금 +${item.income} / 10초 · 전투력 ${item.militaryPower} · 군인 일자리 ${item.people} · 낮 경계·훈련`;
         else if(item.category==='decoration') detail=`세금 +${item.income} / 10초 · 가격의 0.5% 추가 · 인기도 +${item.popularity}`;
