@@ -674,6 +674,7 @@
       const row=Math.round((land.z-MAP_GRID.minZ)/MAP_GRID.tile);
       x=MAP_GRID.minX+riverCenterColumn(row,state.terrainSeed||0)*MAP_GRID.tile; z=land.z;
     }
+    if(item.category==='residential'&&(land.terrain==='river'||land.terrain==='lake')) return {landId:land.id,x,z,valid:false,reason:'residential-water'};
     if(item.requiredTerrain&&land.terrain!==item.requiredTerrain) return {landId:land.id,x,z,valid:false,reason:'terrain',requiredTerrain:item.requiredTerrain};
     if(item.category==='landmark') {
       if(state.buildings.some((building)=>building.type===selectedBuilding)) return {landId:land.id,x,z,valid:false,reason:'landmark-unique'};
@@ -1587,6 +1588,7 @@
     if (!isBuildingUnlocked(item)) { selectedBuilding = null; updateUI(); return toast(`이 건물은 왕국력 ${unlockYear(item)}년에 해금됩니다.`); }
     if(placement?.reason==='landmark-unique') return toast('같은 랜드마크는 왕국에 하나만 설치할 수 있습니다.');
     if(placement?.reason==='landmark-radius') return toast('다른 랜드마크의 원형 영향 범위 5칸 밖에 설치하세요.');
+    if(placement?.reason==='residential-water') return toast('주거 건물은 강이나 호수 위에 설치할 수 없습니다.');
     if(placement?.reason==='terrain') { const terrain=TERRAIN_INFO[placement.requiredTerrain]; return toast(`${item.name}은(는) ${terrain.icon} ${terrain.name} 지형에만 설치할 수 있습니다.`); }
     if (!placement || !land || !placement.valid) return toast('소유한 토지의 빈 위치를 선택하세요.');
     if (!owned(land)) return toast('먼저 이 영토를 구매해야 합니다.');
@@ -1612,11 +1614,11 @@
   function rebirth() {
     const { cash: requiredCash, population: requiredPopulation, lands: requiredLands } = rebirthRequirements();
     if (state.cash < requiredCash || population() < requiredPopulation || state.owned.length < requiredLands) return toast(`환생에는 ${format(requiredCash)} 골드 · 주민 ${requiredPopulation}명 · 영토 ${requiredLands}곳이 필요합니다.`);
-    if (!window.confirm('환생해도 건물과 보유 영토는 그대로 남습니다. 보유 골드와 수집자는 초기화되며, 모든 골드 수입이 영구적으로 10% 증가하고 건물이 발전합니다. 계속할까요?')) return;
+    if (!window.confirm('환생해도 건물과 보유 영토는 그대로 남습니다. 보유 골드·수집자·자동 수금은 초기화되며, 모든 골드 수입이 영구적으로 10% 증가하고 건물이 발전합니다. 계속할까요?')) return;
     const rebirths = (state.rebirths || 0) + 1;
     const preservedBuildings=state.buildings.map((building)=>({ ...building, tax:0 }));
     const preservedOwned=[...state.owned], preservedRotationStep=state.rotationStep||45;
-    state = { ...structuredClone(START), buildings:preservedBuildings, owned:preservedOwned, rotationStep:preservedRotationStep, rebirths, terrainSeed: rebirths, year: (state.year || 1) + 1, researchTokens: state.researchTokens || 0, warLevel:state.warLevel||0, warVictories:state.warVictories||0, lastWarResult:state.lastWarResult||'' };
+    state = { ...structuredClone(START), buildings:preservedBuildings, owned:preservedOwned, rotationStep:preservedRotationStep, autoCollect:false, rebirths, terrainSeed: rebirths, year: (state.year || 1) + 1, researchTokens: state.researchTokens || 0, warLevel:state.warLevel||0, warVictories:state.warVictories||0, lastWarResult:state.lastWarResult||'' };
     applyTerrainLayout(state.terrainSeed);
     residentWalkers.clear(); roadNetworkCache={signature:'',nodes:[]};
     selectedBuilding = null; selectedPlacedBuilding=null; selectedLand = state.owned[0]||'core1'; deleteMode = false;
@@ -1648,7 +1650,7 @@
   function updateUI() {
     if (selectedBuilding && !isBuildingUnlocked(BUILDINGS[selectedBuilding])) selectedBuilding = null;
     const popularityPoints=popularity(), popularityBonus=popularityPoints*.5;
-    els.cash.textContent = format(state.cash); els.population.textContent = format(population()); els.popularity.textContent = format(popularityPoints); els.popularityResource.title=`인기도 ${format(popularityPoints)} · 모든 세금 +${formatTax(popularityBonus)}%`; els.rebirths.textContent = format(state.rebirths || 0); els.year.textContent = `${kingdomYear()}년`; els.researchTokens.textContent = format(state.researchTokens || 0); els.storedTax.textContent = formatTax(storedTax());
+    els.cash.textContent = format(state.cash); els.population.textContent = format(population()); els.popularity.textContent = format(popularityPoints); els.popularityResource.title=`인기도 ${format(popularityPoints)} · 모든 세금 +${formatTax(popularityBonus)}%`; els.rebirths.textContent = format(state.rebirths || 0); els.year.textContent = `${kingdomYear()}년`; els.researchTokens.textContent = format(state.researchTokens || 0); els.storedTax.textContent = format(storedTax());
     const rebirthNeed = rebirthRequirements(), rebirthButton = $('#rebirthButton');
     rebirthButton.textContent = `♛ ${format(rebirthNeed.cash)}G · ${rebirthNeed.lands}땅`;
     rebirthButton.title = `다음 환생: ${format(rebirthNeed.cash)} 골드 · 주민 ${rebirthNeed.population}명 · 영토 ${rebirthNeed.lands}곳`;
@@ -1924,7 +1926,7 @@
       const item = BUILDINGS[building.type];
       building.tax = Math.min(item.income * 20 * multiplier, building.tax + item.income * timeRate * multiplier * dt / 10);
     }
-    els.storedTax.textContent = formatTax(storedTax());
+    els.storedTax.textContent = format(storedTax());
     autoTimer += dt;
     const move = CAMERA_KEYBOARD_SPEED * realDt * cameraMovementScale(), c = Math.cos(camera.yaw), s = Math.sin(camera.yaw);
     if (pressedKeys.has('w')) { camera.x += s * move; camera.z += c * move; }
