@@ -38,15 +38,15 @@
     royalCoaster: { name:'왕실 순환 열차', icon:'🎢', category:'production', buildGroup:'attraction', price:3600, people:10, body:'#496d70', roof:'#b24c50', trim:'#f2c84e', size:[42,12,42], unlockYear:6, model:'coaster', leisure:true, openAir:true, fullTile:true },
     dropTower: { name:'왕국 낙하 탑', icon:'🗼', category:'production', buildGroup:'attraction', price:4800, people:12, body:'#405f72', roof:'#713f66', trim:'#ff9c55', size:[42,26,42], unlockYear:7, researchCost:2, model:'dropTower', leisure:true, openAir:true, fullTile:true },
     royalWaterRide: { name:'왕실 급류타기', icon:'🌊', category:'production', buildGroup:'attraction', price:6500, people:15, body:'#3e788b', roof:'#315879', trim:'#82e6f2', size:[42,14,42], unlockYear:9, researchCost:5, model:'waterRide', leisure:true, openAir:true, fullTile:true },
-    guardPost: { name:'왕국 경비 초소', icon:'🛡️', category:'military', price:350, people:3, body:'#9b8667', roof:'#6f4d45', trim:'#e2c36d', size:[10,7,10], model:'guardPost', militaryModel:'guardPost' },
-    barracks: { name:'왕실 병영', icon:'⚔️', category:'military', price:800, people:8, body:'#96785e', roof:'#79434a', trim:'#d9bd70', size:[17,8,14], unlockYear:2, model:'barracks', militaryModel:'barracks' },
-    archeryRange: { name:'왕국 궁술 훈련장', icon:'🏹', category:'military', price:1100, people:6, body:'#668260', roof:'#76533f', trim:'#e2c574', size:[20,5,17], unlockYear:3, model:'archeryRange', militaryModel:'archeryRange', openAir:true },
-    royalStable: { name:'왕실 기병대', icon:'🐎', category:'military', price:1600, people:10, body:'#a47c55', roof:'#633f3d', trim:'#e1bd67', size:[19,8,16], unlockYear:4, model:'royalStable', militaryModel:'royalStable' },
-    armory: { name:'왕국 무기고', icon:'🗡️', category:'military', price:2300, people:12, body:'#777b78', roof:'#474e57', trim:'#d2b969', size:[17,10,15], unlockYear:5, model:'armory', militaryModel:'armory' },
-    stoneFort: { name:'왕실 석조 요새', icon:'🏰', category:'military', price:4000, people:18, body:'#7e8585', roof:'#4d5262', trim:'#d4bc74', size:[21,14,19], unlockYear:6, model:'stoneFort', militaryModel:'stoneFort' },
-    cannonBattery: { name:'왕국 대포 포대', icon:'💣', category:'military', price:6500, people:14, body:'#686f68', roof:'#42494d', trim:'#d19a54', size:[21,7,18], unlockYear:7, researchCost:2, model:'cannonBattery', militaryModel:'cannonBattery', openAir:true },
-    airDefense: { name:'왕실 방공 기지', icon:'📡', category:'military', price:9000, people:16, body:'#596b72', roof:'#394b5d', trim:'#75d8df', size:[22,12,19], unlockYear:8, researchCost:4, model:'airDefense', militaryModel:'airDefense' },
-    droneCommand: { name:'미래 드론 지휘소', icon:'🛸', category:'military', price:14000, people:20, body:'#40566d', roof:'#302f59', trim:'#73eff2', glow:'#9ffcff', size:[23,14,20], unlockYear:10, researchCost:8, model:'droneCommand', militaryModel:'droneCommand' },
+    guardPost: { name:'왕국 경비 초소', icon:'🛡️', category:'military', price:350, people:3, body:'#9b8667', roof:'#6f4d45', trim:'#e2c36d', size:[10,7,10], requiredRebirths:0, requiredWarVictories:0, model:'guardPost', militaryModel:'guardPost' },
+    barracks: { name:'왕실 병영', icon:'⚔️', category:'military', price:800, people:8, body:'#96785e', roof:'#79434a', trim:'#d9bd70', size:[17,8,14], unlockYear:2, requiredRebirths:0, requiredWarVictories:1, model:'barracks', militaryModel:'barracks' },
+    archeryRange: { name:'왕국 궁술 훈련장', icon:'🏹', category:'military', price:1100, people:6, body:'#668260', roof:'#76533f', trim:'#e2c574', size:[20,5,17], unlockYear:3, requiredRebirths:1, requiredWarVictories:2, model:'archeryRange', militaryModel:'archeryRange', openAir:true },
+    royalStable: { name:'왕실 기병대', icon:'🐎', category:'military', price:1600, people:10, body:'#a47c55', roof:'#633f3d', trim:'#e1bd67', size:[19,8,16], unlockYear:4, requiredRebirths:2, requiredWarVictories:3, model:'royalStable', militaryModel:'royalStable' },
+    armory: { name:'왕국 무기고', icon:'🗡️', category:'military', price:2300, people:12, body:'#777b78', roof:'#474e57', trim:'#d2b969', size:[17,10,15], unlockYear:5, requiredRebirths:3, requiredWarVictories:5, model:'armory', militaryModel:'armory' },
+    stoneFort: { name:'왕실 석조 요새', icon:'🏰', category:'military', price:4000, people:18, body:'#7e8585', roof:'#4d5262', trim:'#d4bc74', size:[21,14,19], unlockYear:6, requiredRebirths:4, requiredWarVictories:7, model:'stoneFort', militaryModel:'stoneFort' },
+    cannonBattery: { name:'왕국 대포 포대', icon:'💣', category:'military', price:6500, people:14, body:'#686f68', roof:'#42494d', trim:'#d19a54', size:[21,7,18], unlockYear:7, requiredRebirths:5, requiredWarVictories:10, researchCost:2, model:'cannonBattery', militaryModel:'cannonBattery', openAir:true },
+    airDefense: { name:'왕실 방공 기지', icon:'📡', category:'military', price:9000, people:16, body:'#596b72', roof:'#394b5d', trim:'#75d8df', size:[22,12,19], unlockYear:8, requiredRebirths:7, requiredWarVictories:14, researchCost:4, model:'airDefense', militaryModel:'airDefense' },
+    droneCommand: { name:'미래 드론 지휘소', icon:'🛸', category:'military', price:14000, people:20, body:'#40566d', roof:'#302f59', trim:'#73eff2', glow:'#9ffcff', size:[23,14,20], unlockYear:10, requiredRebirths:10, requiredWarVictories:20, researchCost:8, model:'droneCommand', militaryModel:'droneCommand' },
     townFountain: { name:'왕국 중앙 분수', icon:'⛲', category:'decoration', price:520, people:0, body:'#78b7c6', roof:'#d2d8d5', trim:'#8ce3ee', size:[14,4,14], model:'townFountain', leisure:true, openAir:true, noInterior:true },
     flowerArch: { name:'왕실 꽃 아치', icon:'🌸', category:'decoration', price:750, people:0, body:'#65a267', roof:'#d8789d', trim:'#f2a9c4', size:[14,6,10], unlockYear:2, model:'flowerArch', leisure:true, openAir:true, noInterior:true },
     dirtRoad: { name: '흙길', icon: '🟫', category: 'road', price: 15, income: 0, people: 0, body: '#9a7048', trim: '#c19868', size: [10, .2, 4], roadStyle: 'dirt', noInterior: true },
@@ -179,7 +179,7 @@
   { kicker:'제6장 · 영토와 지형', title:'880칸의 왕국 확장', lead:'평원·숲·산·강·호수가 어우러진 영토를 확장하세요.', tips:[['영토 구입','영토 탭에서 잠긴 땅을 골드로 구입해 건설 공간을 넓힙니다.'],['왕실 성','왕실 성은 기존 영토 한 칸 전체를 사용하며 다른 건물을 함께 설치할 수 없습니다.'],['강과 호수','강은 한 줄의 자연스러운 물길로 이어지고, 호수는 여러 영토에 걸친 넓은 물 지형으로 생성됩니다.'],['자연 군락','숲·산·호수는 군락으로 모이며 환생할 때 위치와 모양이 달라집니다.']] },
     { kicker:'제7장 · 연구와 시대', title:'더 최신식인 왕국으로', lead:'연구를 완료해 토큰을 모으고 새로운 시대의 건물을 해금하세요.', tips:[['연구 시간','연구는 즉시 끝나지 않습니다. 연구 탭에서 남은 시간을 확인하세요.'],['연구 토큰','연구 토큰 1개마다 세금 수입이 50% 증가하며 최신 연구일수록 더 많은 토큰을 줍니다.'],['연도 해금','왕국력이 올라가면 석재·산업·현대·미래 건물이 차례로 해금됩니다.'],['비용','최신식 건물은 연구 토큰과 골드가 더 필요하지만 더 많은 세금을 생산합니다.']] },
     { kicker:'제8장 · 환생과 탐험', title:'새로운 왕국으로 다시 시작하기', lead:'충분히 성장했다면 환생해 더 강한 다음 왕국을 시작하세요.', tips:[['환생 조건','필요한 골드·주민·영토를 모두 확보해야 하며 환생할수록 조건이 증가합니다.'],['건물 보존','환생해도 설치한 건물과 보유 영토는 그대로 남고, 건물에 쌓인 세금만 초기화됩니다.'],['영구 보너스','환생 횟수마다 세금 수입이 영구적으로 증가하고 건물 외형이 발전합니다.'],['새 지도','환생하면 숲·산 군락과 자연스러운 강의 위치가 새롭게 바뀝니다.']] },
-    { kicker:'제9장 · 왕국 군사', title:'시대에 맞는 수비군 만들기', lead:'군사 카테고리에서 병사들의 주둔지와 훈련 시설을 건설하세요.', tips:[['시대 발전','경비 초소에서 시작해 병영·기병대·요새·방공 기지·드론 지휘소까지 해금됩니다.'],['군인 직업','군사 건물은 주민에게 병사·궁수·기사·포병·드론 조종사 등의 일자리를 제공합니다.'],['세금','군사 시설도 유지되는 동안 건물 가격에 비례한 세금을 생산합니다.'],['내부 보기','설치한 군사 건물을 선택해 무기 거치대·작전 지도·통제 장비가 있는 내부를 확인하세요.']] },
+    { kicker:'제9장 · 왕국 군사', title:'시대에 맞는 수비군 만들기', lead:'군사 카테고리에서 병사들의 주둔지와 훈련 시설을 건설하세요.', tips:[['해금 조건','경비 초소를 제외한 군사 건물은 왕국력 연도·환생 횟수·전쟁 승리 횟수를 모두 만족해야 해금됩니다.'],['시대 발전','첫 승리로 병영을 열고, 환생과 승리를 거듭해 기병대·요새·방공 기지·드론 지휘소까지 발전시키세요.'],['군인 직업','군사 건물은 주민에게 병사·궁수·기사·포병·드론 조종사 등의 일자리를 제공합니다.'],['내부 보기','설치한 군사 건물을 선택해 무기 거치대·작전 지도·통제 장비가 있는 내부를 확인하세요.']] },
     { kicker:'제10장 · 전쟁', title:'적 왕국으로 출정하기', lead:'군사 건물의 전투력을 모아 점점 강해지는 적 왕국을 정복하세요.', tips:[['출정 조건','아군 전투력이 적 전투력 이상이면 전쟁 본부에서 출정할 수 있습니다.'],['전투 시간','출정 후 현실 시간이 지나면 전투가 자동으로 끝납니다. 게임을 닫아도 진행 시간은 유지됩니다.'],['승패','승리하면 골드와 연구 토큰을 얻지만, 패배하면 현재 보유 골드의 70%를 잃습니다.'],['영구 기록','전쟁 승리 횟수와 캠페인 단계는 환생해도 유지되며 다음 적은 더욱 강해집니다.']] },
   ];
   const LANDS = [
@@ -473,7 +473,23 @@
   function formatTax(value) { return value.toLocaleString('ko-KR', { maximumFractionDigits: 1 }); }
   function kingdomYear() { return Math.max(1, Math.floor(state.year || 1)); }
   function unlockYear(item) { return item && item.unlockYear ? item.unlockYear : 1; }
-  function isBuildingUnlocked(item) { return !!item && kingdomYear() >= unlockYear(item); }
+  function requiredRebirths(item) { return Math.max(0, Math.floor(item?.requiredRebirths || 0)); }
+  function requiredWarVictories(item) { return Math.max(0, Math.floor(item?.requiredWarVictories || 0)); }
+  function missingBuildingRequirements(item) {
+    if (!item) return [];
+    const missing = [];
+    if (kingdomYear() < unlockYear(item)) missing.push(`왕국력 ${unlockYear(item)}년`);
+    if ((state.rebirths || 0) < requiredRebirths(item)) missing.push(`환생 ${requiredRebirths(item)}회`);
+    if ((state.warVictories || 0) < requiredWarVictories(item)) missing.push(`전쟁 승리 ${requiredWarVictories(item)}회`);
+    return missing;
+  }
+  function buildingUnlockRequirements(item) {
+    const requirements = [`왕국력 ${unlockYear(item)}년`];
+    if (requiredRebirths(item)) requirements.push(`환생 ${requiredRebirths(item)}회`);
+    if (requiredWarVictories(item)) requirements.push(`전쟁 승리 ${requiredWarVictories(item)}회`);
+    return requirements.join(' · ');
+  }
+  function isBuildingUnlocked(item) { return !!item && missingBuildingRequirements(item).length === 0; }
   function toast(message) { clearTimeout(toastTimer); els.toast.textContent = message; els.toast.classList.add('show'); toastTimer = setTimeout(() => els.toast.classList.remove('show'), 2600); }
   function owned(land) { return state.owned.includes(land.id); }
   function buildingCount(landId) { return state.buildings.filter((building) => building.landId === landId).length+(state.castleLandId===landId?1:0); }
@@ -1690,7 +1706,7 @@
   function buildOn(placement) {
     if (!selectedBuilding) return;
     const land = placement && LANDS.find((entry) => entry.id === placement.landId), item = BUILDINGS[selectedBuilding];
-    if (!isBuildingUnlocked(item)) { selectedBuilding = null; updateUI(); return toast(`이 건물은 왕국력 ${unlockYear(item)}년에 해금됩니다.`); }
+    if (!isBuildingUnlocked(item)) { const missing=missingBuildingRequirements(item); selectedBuilding = null; updateUI(); return toast(`이 건물의 해금 조건이 부족합니다: ${missing.join(' · ')}`); }
     if(placement?.reason==='landmark-unique') return toast('같은 랜드마크는 왕국에 하나만 설치할 수 있습니다.');
     if(placement?.reason==='landmark-radius') return toast('다른 랜드마크의 원형 영향 범위 5칸 밖에 설치하세요.');
     if(placement?.reason==='royal-castle') return toast('이 영토는 왕실 성이 한 칸 전체를 사용하고 있습니다.');
@@ -1772,30 +1788,30 @@
       .sort(([, a], [, b]) => Number(isBuildingUnlocked(b)) - Number(isBuildingUnlocked(a)) || unlockYear(a) - unlockYear(b) || a.price - b.price);
     const previousBuildingScroll=els.buildingList.scrollTop;
     els.buildingList.innerHTML = ''; buildingEntries.forEach(([id,item]) => {
-      const unlocked = isBuildingUnlocked(item), requiredYear = unlockYear(item), tokenCost = item.researchCost || 0;
+      const unlocked = isBuildingUnlocked(item), tokenCost = item.researchCost || 0;
       const landmarkPlaced=item.category==='landmark'&&state.buildings.some((building)=>building.type===id);
       const button = document.createElement('button'); button.className = `building-card ${selectedBuilding === id ? 'selected':''} ${unlocked&&!landmarkPlaced ? '' : 'locked'}`; button.disabled = !unlocked||landmarkPlaced;
       button.dataset.buildingId=id;
       const productionNote = item.category === 'production' ? ' · 낮에만 생산' : '';
-      let detail=`🔒 왕국력 ${requiredYear}년 해금`;
+      let detail=`🔒 필요: ${missingBuildingRequirements(item).join(' · ')}`;
       if(unlocked) {
         if(landmarkPlaced) detail='왕국에 이미 설치됨 · 종류별 1개 제한';
         else if(item.category==='road') detail=item.bridgeStyle?`강을 건너는 ${item.size[0]}m 다리 · 강 지형 전용 · 회전 배치 가능`:`길 조각 ${item.size[0]}m · 회전 배치 가능`;
         else if(item.category==='residential') detail=`세금 +${item.income} / 10초 · 주민 +${item.people}${item.requiredTerrain==='river'?' · 다리 옆 배치 시 자동 연결':''}`;
         else if(item.category==='production') detail=`세금 +${item.income} / 10초 · 가격의 1% 추가 · 일자리 ${item.people}${productionNote}${item.popularity?` · 인기도 +${item.popularity}`:''}${item.fullTile?' · 영토 한 칸 전체 사용':''}`;
-        else if(item.category==='military') detail=`세금 +${item.income} / 10초 · 전투력 ${item.militaryPower} · 군인 일자리 ${item.people} · 낮 경계·훈련`;
+        else if(item.category==='military') detail=`세금 +${item.income} / 10초 · 전투력 ${item.militaryPower} · 군인 일자리 ${item.people} · 해금 완료: ${buildingUnlockRequirements(item)}`;
         else if(item.category==='decoration') detail=`세금 +${item.income} / 10초 · 가격의 0.5% 추가 · 인기도 +${item.popularity}`;
         else if(item.category==='landmark') detail='왕국 수입 +30% · 종류별 1개 · 다른 랜드마크와 5칸 거리';
         else detail=`세금 +${item.income} / 10초`;
       }
       if(item.requiredTerrain) { const terrain=TERRAIN_INFO[item.requiredTerrain]; detail+=` · ${terrain.icon} ${terrain.name} 전용`; }
-      const price = unlocked ? `${format(item.price)} ✦${tokenCost ? `<small>🧪 ${tokenCost}</small>` : ''}` : `${requiredYear}년${tokenCost ? `<small>🧪 ${tokenCost}</small>` : ''}`;
+      const price = unlocked ? `${format(item.price)} ✦${tokenCost ? `<small>🧪 ${tokenCost}</small>` : ''}` : `조건 확인${tokenCost ? `<small>🧪 ${tokenCost}</small>` : ''}`;
       button.innerHTML = `<span class="card-icon">${item.icon}</span><span><span class="card-title">${item.name}</span><span class="card-detail">${detail}</span></span><b class="card-price">${price}</b>`;
       button.onclick = () => { selectedPlacedBuilding=null; selectedBuilding = selectedBuilding === id ? null : id; state.rotation = 0; updateUI(); }; els.buildingList.append(button);
     });
     els.buildingList.scrollTop=Math.min(previousBuildingScroll,Math.max(0,els.buildingList.scrollHeight-els.buildingList.clientHeight));
-    const nextBuilding = Object.values(BUILDINGS).filter((item) => unlockYear(item) > kingdomYear()).sort((a, b) => unlockYear(a) - unlockYear(b))[0];
-    els.unlockInfo.textContent = nextBuilding ? `왕국력 ${kingdomYear()}년 · 총 ${CATALOG_BUILDING_COUNT}개 시대 건물 · 다음 해금: ${unlockYear(nextBuilding)}년 ${nextBuilding.name}` : `왕국력 ${kingdomYear()}년 · 시대 건물 ${CATALOG_BUILDING_COUNT}개를 모두 해금했습니다.`;
+    const nextBuilding = Object.values(BUILDINGS).filter((item) => !isBuildingUnlocked(item)).sort((a, b) => missingBuildingRequirements(a).length - missingBuildingRequirements(b).length || unlockYear(a) - unlockYear(b) || a.price - b.price)[0];
+    els.unlockInfo.textContent = nextBuilding ? `왕국력 ${kingdomYear()}년 · 다음 해금: ${nextBuilding.name} (${missingBuildingRequirements(nextBuilding).join(' · ')})` : `왕국력 ${kingdomYear()}년 · 시대 건물 ${CATALOG_BUILDING_COUNT}개를 모두 해금했습니다.`;
     els.landList.innerHTML = ''; LANDS.forEach((land) => {
       const button = document.createElement('button'); const active = owned(land); button.className = `land-card ${selectedLand===land.id?'selected':''}`;
       const terrain=TERRAIN_INFO[land.terrain||'plains'];
