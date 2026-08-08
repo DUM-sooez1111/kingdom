@@ -127,6 +127,7 @@
   // makes every more expensive building an unambiguous income upgrade while
   // keeping the catalogue display and the actual tax calculation identical.
   const BUILDING_INCOME_RATE = .1;
+  const AUTO_COLLECT_THRESHOLD = 1000;
   Object.values(BUILDINGS).forEach((item) => {
     if(item.category==='landmark') item.price=Math.max(5000,Math.round(item.price*6/100)*100);
     const categoryBonus=item.category==='production'?.01:item.category==='decoration'?.005:0;
@@ -1811,7 +1812,7 @@
       els.missionProgress.style.width = '100%'; els.claimMission.disabled = true; els.claimMission.textContent = '완료';
     }
     const bonus = ((totalIncomeMultiplier() - 1) * 100).toFixed(1), rebirthBonus = (state.rebirths || 0) * 10;
-    els.workerInfo.textContent = state.autoCollect ? `수집자 ${state.workers}/20명 · 자동 수금 · 세금 수입 +${bonus}% · 인기도 +${formatTax(popularityBonus)}%` : `수집자 ${state.workers}/20명 · 세금 수입 +${bonus}% · 인기도 +${formatTax(popularityBonus)}% · 환생 +${rebirthBonus}%`;
+    els.workerInfo.textContent = state.autoCollect ? `수집자 ${state.workers}/20명 · 세금 ${format(AUTO_COLLECT_THRESHOLD)} 도달 시 자동 수금 · 세금 수입 +${bonus}% · 인기도 +${formatTax(popularityBonus)}%` : `수집자 ${state.workers}/20명 · 세금 수입 +${bonus}% · 인기도 +${formatTax(popularityBonus)}% · 환생 +${rebirthBonus}%`;
     const employment = employmentSummary();
     els.employmentInfo.textContent = `취업자 ${format(employment.employed)}명 · 백수 ${format(employment.unemployed)}명 · 일자리 ${format(employment.capacity)}개`;
     els.jobList.innerHTML = '';
@@ -1891,7 +1892,7 @@
   $('#conductResearch').onclick = conductResearch;
   els.launchWar.onclick = launchWar;
   $('#hireWorker').onclick = () => { const cost = workerCost(); if (state.workers >= 20) return toast('수집자는 최대 20명입니다.'); if (state.cash < cost) return toast('골드가 부족합니다.'); state.cash -= cost; state.workers++; toast(`새 세금 수집자가 도착했습니다. 세금 수입 +0.5%`); save(true); updateUI(); };
-  $('#unlockAuto').onclick = () => { if (state.autoCollect) return toast('이미 왕실 자동 수금이 활성화되어 있습니다.'); if (state.cash < 1200) return toast('골드가 부족합니다.'); state.cash -= 1200; state.autoCollect = true; toast('왕실 자동 수금이 시작되었습니다.'); save(true); updateUI(); };
+  $('#unlockAuto').onclick = () => { if (state.autoCollect) return toast('이미 왕실 자동 수금이 활성화되어 있습니다.'); if (state.cash < 1200) return toast('골드가 부족합니다.'); state.cash -= 1200; state.autoCollect = true; toast(`세금이 ${format(AUTO_COLLECT_THRESHOLD)}골드에 도달하면 자동 수금합니다.`); save(true); updateUI(); };
   els.claimMission.onclick = () => {
     const mission = MISSIONS[state.missionIndex];
     if (!mission || missionProgress(mission) < mission.goal) return;
@@ -2038,7 +2039,8 @@
     if (pressedKeys.has('a')) { camera.x -= c * move; camera.z += s * move; }
     if (pressedKeys.has('d')) { camera.x += c * move; camera.z -= s * move; }
     if (pressedKeys.size) clampCamera();
-    if (autoTimer >= 10) { autoTimer = 0; if (state.autoCollect) collectTax('auto'); else if (state.workers > 0) { const targets=state.buildings.slice(0,state.workers); const amount=takeTax(targets); if (amount) state.cash += amount; } save(true); updateUI(); }
+    if(state.autoCollect&&storedTax()>=AUTO_COLLECT_THRESHOLD) { autoTimer=0; collectTax('auto'); }
+    if (autoTimer >= 10) { autoTimer = 0; if (!state.autoCollect&&state.workers > 0) { const targets=state.buildings.slice(0,state.workers); const amount=takeTax(targets); if (amount) state.cash += amount; } save(true); updateUI(); }
     requestAnimationFrame(tick);
   }
   updateUI(); updateClockUI(); updateTimeControls(); render(); requestAnimationFrame(tick);
