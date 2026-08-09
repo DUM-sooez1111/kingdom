@@ -827,6 +827,7 @@
       }
     }
     if(!item.bridgeStyle&&!connectedBridgeId) ({x,z}=constrainPlacementToLand(land,item,effectiveRotation,x,z));
+    if(selectedBuilding==='dirtRoad'&&land.terrain==='river') return {landId:land.id,x,z,rotation:effectiveRotation,valid:false,reason:'dirt-road-river'};
     if(item.category==='residential'&&(land.terrain==='river'||land.terrain==='lake')&&!item.requiredTerrain) return {landId:land.id,x,z,valid:false,reason:'residential-water'};
     if(item.requiredTerrain&&land.terrain!==item.requiredTerrain) return {landId:land.id,x,z,valid:false,reason:'terrain',requiredTerrain:item.requiredTerrain};
     if(item.category==='landmark') {
@@ -1923,6 +1924,7 @@
     if(placement?.reason==='landmark-unique') return toast('같은 랜드마크는 왕국에 하나만 설치할 수 있습니다.');
     if(placement?.reason==='landmark-radius') return toast('다른 랜드마크의 원형 영향 범위 5칸 밖에 설치하세요.');
     if(placement?.reason==='royal-castle') return toast('이 영토는 왕실 성이 한 칸 전체를 사용하고 있습니다.');
+    if(placement?.reason==='dirt-road-river') return toast('흙길은 강 위에 설치할 수 없습니다. 강에는 다리를 설치하세요.');
     if(placement?.reason==='residential-water') return toast('주거 건물은 강이나 호수 위에 설치할 수 없습니다.');
     if(placement?.reason==='terrain') { const terrain=TERRAIN_INFO[placement.requiredTerrain]; return toast(`${item.name}은(는) ${terrain.icon} ${terrain.name} 지형에만 설치할 수 있습니다.`); }
     if (!placement || !land || !placement.valid) return toast('소유한 토지의 빈 위치를 선택하세요.');
